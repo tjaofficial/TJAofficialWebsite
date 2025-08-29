@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}TJA — Official Site{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script defer src="{% static 'js/home.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="home-hero reveal">
+  <div class="home-hero__bg" aria-hidden="true"></div>
+  <div class="container home-hero__inner">
+    <h1 class="home-hero__title">TJA</h1>
+    <p class="home-hero__tag">Music • Shows • Day N Night Tour</p>
+    <div class="hero-actions">
+      <a class="btn" href="{% url 'tour_home' %}">Enter Day N Night</a>
+      <a class="btn ghost" href="{% url 'shows' %}">Upcoming Shows</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+
+{# ===== Highlight: Tour Banner ===== #}
+<section class="home-slab slab-tour reveal">
+  <div class="slab-inner">
+    <img class="tour-mark" src="{% static 'img/tour-logo.png' %}" alt="Day N Night">
+    <div class="slab-copy">
+      <h2>Day N Night Tour</h2>
+      <p>Experience the energy—collect badges with the Tour Passport, meet the headliners, and catch us live.</p>
+      <div class="slab-actions">
+        <a class="btn" href="{% url 'tour_home' %}">Tour Hub</a>
+        <a class="btn ghost" href="{% url 'tour_passport' %}">Tour Passport</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ===== Music / Latest Releases ===== #}
+{% if releases %}
+<section class="home-slab reveal">
+  <h2 class="slab-title">Latest Releases</h2>
+  <div class="cards-grid cards-4" id="releasesStrip">
+    {% for r in releases %}
+      <article class="card-tile hoverlift">
+        <a href="{% url 'music' %}#release-{{ r.slug }}">
+          <div class="tile-art">{% if r.cover %}<img src="{{ r.cover.url }}" alt="{{ r.title }}">{% endif %}</div>
+          <div class="tile-body">
+            <h3>{{ r.title }}</h3>
+            <div class="muted">{{ r.release_type|default:"Single" }} • {{ r.release_date|date:"Y" }}</div>
+          </div>
+        </a>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="slab-actions"><a class="btn ghost" href="{% url 'music' %}">View Discography</a></div>
+</section>
+{% endif %}
+
+{# ===== Videos ===== #}
+{% if videos %}
+<section class="home-slab reveal">
+  <h2 class="slab-title">Watch</h2>
+  <div class="cards-grid cards-3">
+    {% for v in videos %}
+      <article class="card-video hoverlift">
+        <a href="{% url 'videos' %}#video-{{ v.slug }}">
+          <div class="video-thumb">
+            <img src="https://i.ytimg.com/vi/{{ v.youtube_id }}/hqdefault.jpg" alt="{{ v.title }}">
+            <span class="play">▶</span>
+          </div>
+          <div class="tile-body"><h3>{{ v.title }}</h3></div>
+        </a>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="slab-actions"><a class="btn ghost" href="{% url 'videos' %}">All Videos</a></div>
+</section>
+{% endif %}
+
+{# ===== Shows ===== #}
+{% if shows %}
+<section class="home-slab reveal">
+  <h2 class="slab-title">Upcoming Shows</h2>
+  <div class="shows-list compact">
+    {% for s in shows %}
+      <article class="show-row">
+        <div class="sr-date">
+          <div class="sr-day">{{ s.date|date:"M d" }}</div>
+          <div class="sr-year">{{ s.date|date:"Y" }}</div>
+        </div>
+        <div class="sr-main">
+          <div class="sr-venue">{{ s.venue_name }}</div>
+          <div class="sr-city muted">{{ s.city }}, {{ s.state }}</div>
+        </div>
+        <div class="sr-cta">
+          {% if s.tickets_url %}<a class="btn" href="{{ s.tickets_url }}" target="_blank" rel="noopener">Tickets</a>{% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="slab-actions"><a class="btn ghost" href="{% url 'shows' %}">See All Dates</a></div>
+</section>
+{% endif %}
+
+{# ===== Shop ===== #}
+{% if products %}
+<section class="home-slab reveal">
+  <h2 class="slab-title">Shop</h2>
+  <div class="cards-grid cards-4">
+    {% for p in products %}
+      <article class="card-product hoverlift">
+        <a href="{% url 'product_detail' slug=p.slug %}">
+          <div class="prod-photo">{% if p.image_main %}<img src="{{ p.image_main.url }}" alt="{{ p.title }}">{% endif %}</div>
+          <div class="tile-body">
+            <h3>{{ p.title }}</h3>
+            <div class="muted">${{ p.price }}</div>
+          </div>
+        </a>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="slab-actions"><a class="btn ghost" href="{% url 'shop' %}">Visit Shop</a></div>
+</section>
+{% endif %}
+
+{# ===== Email Signup ===== #}
+<section class="home-slab reveal">
+  <div class="signup-cta card">
+    <h2>Join the List</h2>
+    <p class="muted">Be first to know about drops, shows, and exclusives.</p>
+    <form class="form signup-inline" method="post" action="{% url 'email_signup' %}">
+      {% csrf_token %}
+      <input type="email" name="email" placeholder="you@example.com" required>
+      <button class="btn" type="submit">Sign me up</button>
+      <a class="btn ghost" href="{% url 'email_signup' %}">More options</a>
+    </form>
+  </div>
+</section>
+
+{% endblock %}

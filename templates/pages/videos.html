@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Videos{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/videos.css' %}">
+    <script defer src="{% static 'js/videos.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Videos</h1>
+    <p class="hero-sub">Watch the latest drops and classics.</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="/links/">All links</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+
+  <div class="videos-controls">
+    <input type="search" id="videoFilter" placeholder="Filter videos… (e.g., live, official)" aria-label="Filter videos">
+  </div>
+
+  {% if videos %}
+    <div class="videos-list" id="videosList">
+      {% for v in videos %}
+        <article class="video-card" data-title="{{ v.title|lower }}">
+          <header class="v-head">
+            <h2 class="v-title">{{ v.title }}</h2>
+            {% if v.published_at %}
+              <span class="v-meta">{{ v.published_at|date:"F j, Y" }}</span>
+            {% endif %}
+          </header>
+
+          <div class="video-player" data-yt="{{ v.youtube_id }}">
+            <button class="video-lazy" aria-label="Play {{ v.title }}">
+              <img
+                src="https://i.ytimg.com/vi/{{ v.youtube_id }}/hqdefault.jpg"
+                alt="{{ v.title }}" loading="lazy" width="480" height="270">
+              <span class="play-btn" aria-hidden="true">▶</span>
+            </button>
+            <noscript>
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/{{ v.youtube_id }}"
+                title="{{ v.title }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+            </noscript>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="card">No videos yet. Check back soon.</p>
+  {% endif %}
+</section>
+{% endblock %}

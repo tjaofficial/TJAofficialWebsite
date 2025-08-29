@@ -1,0 +1,95 @@
+/* ===== Linktree Page ===== */
+.links-header {
+  display: flex; justify-content: flex-end; margin: 12px 0 20px;
+}
+#linkFilter {
+  width: 320px; max-width: 100%;
+  padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+#linkFilter:focus { border-color: rgba(255,255,255,0.2); box-shadow: var(--shadow); }
+
+.linktree { display: grid; gap: 8px 0; }
+.lt-heading {
+  margin: 20px 0 10px; font-size: 14px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lt-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 700px) {
+  .lt-grid { grid-template-columns: 1fr; }
+}
+
+.link-tile {
+  display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center;
+  padding: 14px; border-radius: 16px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(124,92,255,0.09), rgba(124,92,255,0) 40%),
+    var(--surface);
+  text-decoration: none; color: var(--text);
+  position: relative; overflow: hidden;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.link-tile { --accent1: var(--brand); --accent2: var(--brand-2); }
+.link-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: var(--shadow);
+}
+.link-tile:active { transform: translateY(-1px); }
+
+.link-tile .icon {
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+}
+.link-tile .icon svg {
+  width: 24px; height: 24px; fill: currentColor; color: var(--text);
+  opacity: .9;
+}
+
+.link-tile .text { display: grid; line-height: 1.3; }
+.link-tile .text strong { font-weight: 700; }
+.link-tile .text em { font-style: normal; color: var(--muted); font-size: 14px; }
+
+/* Nice hover sheen */
+.link-tile::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(400px 200px at var(--mx, 50%) var(--my, 50%), rgba(0,224,255,0.15), transparent 60%);
+  opacity: 0; transition: opacity .25s ease;
+}
+.link-tile::after {
+  background: radial-gradient(400px 200px at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent2) 70%, transparent), transparent 60%);
+}
+.link-tile:hover::after { opacity: 1; }
+
+.link-tile:hover { border-color: color-mix(in oklab, var(--accent1) 40%, var(--border)); }
+
+/* Socials */
+.brand-facebook   { --accent1:#1877F2; --accent2:#3b99ff; }
+.brand-instagram  { --accent1:#F56040; --accent2:#BC2A8D; }
+.brand-tiktok     { --accent1:#FE2C55; --accent2:#25F4EE; }
+.brand-snapchat   { --accent1:#FFFC00; --accent2:#FFD600; }
+
+/* Listen / Buy */
+.brand-spotify    { --accent1:#1DB954; --accent2:#1ed760; }
+.brand-applemusic { --accent1:#FA2A55; --accent2:#B145FF; }
+.brand-youtubemusic { --accent1:#FF0033; --accent2:#FF5A5A; }
+.brand-itunes     { --accent1:#B145FF; --accent2:#5AC8FA; }
+.brand-amazonmusic{ --accent1:#00A8E1; --accent2:#00d4ff; }
+.brand-pandora    { --accent1:#005FF9; --accent2:#7BA7FF; }
+.brand-tidal      { --accent1:#00FFFF; --accent2:#00B3B3; }
+.brand-deezer     { --accent1:#FF0000; --accent2:#00FF00; } /* multi-color vibe */
+.brand-soundcloud { --accent1:#FF5500; --accent2:#FF8800; }
+
+
+/* Icon chip subtle brand tint */
+.link-tile[class*="brand-"] .icon {
+  background: color-mix(in oklab, var(--accent1) 14%, transparent);
+  border-color: color-mix(in oklab, var(--accent1) 25%, var(--border));
+}

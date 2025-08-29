@@ -1,0 +1,33 @@
+{% load static %}{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Day N Night Tour{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tour_home.css' %}">
+  <script defer src="{% static 'js/tour_home.js' %}"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="tour-body">
+  <header class="tour-hero">
+    <div class="tour-bg" aria-hidden="true"></div>
+    <div class="tour-hero-inner">
+      <img src="{% static 'img/tour_logo.png' %}" alt="Day N Night Tour" class="tour-logo">
+      <p class="tour-tagline">Experience the energy — Day N Night Tour 2025</p>
+    </div>
+
+    <nav class="tour-nav">
+      <a href="{% url 'tour_home' %}" class="{% if request.path == '/tour/' %}active{% endif %}">The Stage</a>
+      <a href="{% url 'tour_headliners' %}" class="{% if '/headliners' in request.path %}active{% endif %}">Headliners</a>
+      <a href="{% url 'tour_media' %}" class="{% if '/media' in request.path %}active{% endif %}">Media</a>
+      <a href="{% url 'shows' %}" class="{% if '/shows' in request.path %}active{% endif %}">Shows</a>
+      <a href="{% url 'tour_passport' %}" class="{% if '/passport' in request.path %}active{% endif %}">Tour Passport</a>
+    </nav>
+  </header>
+
+  <main class="tour-content">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

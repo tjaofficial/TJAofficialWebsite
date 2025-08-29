@@ -1,0 +1,78 @@
+{% extends "base.html" %}{% load static %}
+{% load static %}
+{% block title %}Checkout{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+    <script defer src="{% static 'js/checkout.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Checkout</h1>
+    <p class="hero-sub">Choose shipping and estimate tax before payment.</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="/cart/">Back to Cart</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  {% if not items %}
+    <p class="card">Your cart is empty. <a href="/shop/">Go to shop</a>.</p>
+  {% else %}
+    <div class="checkout-grid">
+      <div class="card">
+        <h3>Shipping & Tax</h3>
+        <form id="quoteForm" class="quote-form" method="post" action="{% url 'checkout_start' %}">
+          {% csrf_token %}
+          <label class="field">
+            <span class="label">Shipping method</span>
+            <select name="method" id="shipMethod">
+              {% for code, m in shipping_methods.items %}
+                <option value="{{ code }}" {% if code == default_method %}selected{% endif %}>{{ m.label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="field">
+            <span class="label">State (for tax)</span>
+            <input type="text" name="state" id="taxState" placeholder="e.g., MI" maxlength="2">
+            <small class="hint">Currently estimating 6% tax for MI only.</small>
+          </div>
+
+          <!-- Totals (updated by JS) -->
+          <div class="summary card" style="margin-top:12px">
+            <div class="sum-line"><span>Subtotal</span><strong id="qSubtotal">{{ subtotal_display }}</strong></div>
+            <div class="sum-line"><span>Shipping</span><strong id="qShip">$0.00</strong></div>
+            <div class="sum-line"><span>Estimated Tax</span><strong id="qTax">$0.00</strong></div>
+            <div class="sum-line total"><span>Total</span><strong id="qTotal">{{ subtotal_display }}</strong></div>
+          </div>
+
+        <div class="field">
+            <span class="label">Email for receipt</span>
+            <input type="email" name="email" id="emailReceipt" placeholder="you@example.com" required>
+        </div>
+
+          <button class="btn" type="submit" style="margin-top:12px">Proceed to Payment</button>
+        </form>
+      </div>
+
+      <aside class="card">
+        <h3>Items</h3>
+        <ul class="mini-items">
+          {% for it in items %}
+            <li>
+              <span>{{ it.qty }} × {{ it.product.title }}</span>
+              <strong>${{ it.line_cents|floatformat:-2|divisibleby:100 }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </aside>
+    </div>
+  {% endif %}
+</section>
+
+<div id="toast" class="toast"></div>
+{% endblock %}

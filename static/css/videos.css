@@ -1,0 +1,49 @@
+/* ===== Videos ===== */
+.videos-list { display: grid; gap: 16px; }
+
+.video-card {
+  border: 1px solid var(--border); border-radius: 16px; padding: 14px;
+  background: linear-gradient(180deg, rgba(124,92,255,0.08), rgba(124,92,255,0) 40%), var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.v-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; margin-bottom: 10px; }
+.v-title { margin: 0; font-size: 20px; }
+.v-meta { color: var(--muted); font-size: 13px; }
+
+/* Responsive 16:9 player area */
+.video-player { position: relative; width: 100%; }
+.video-player::before {
+  content: ""; display: block; padding-top: 56.25%; /* 16:9 aspect ratio */
+}
+.video-player iframe,
+.video-player .video-lazy {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; border-radius: 12px; overflow: hidden;
+}
+
+/* Lazy thumbnail button */
+.video-lazy {
+  display: grid; place-items: center; cursor: pointer;
+  background: #000; padding: 0;
+}
+.video-lazy img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.88; }
+.video-lazy .play-btn {
+  position: absolute; width: 84px; height: 84px; display: grid; place-items: center;
+  font-size: 34px; line-height: 1;
+  background: rgba(0,0,0,0.55); color: #fff; border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.7);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.video-lazy:hover .play-btn { transform: scale(1.06); background: rgba(0,0,0,0.7); border-color: #fff; }
+
+/* When iframe is inserted, it inherits the rounded corners */
+.video-player iframe { border-radius: 12px; }
+
+/* Videos filter */
+.videos-controls { display:flex; justify-content:flex-end; margin: 8px 0 18px; }
+#videoFilter {
+  width: 360px; max-width: 100%;
+  padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+}

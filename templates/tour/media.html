@@ -1,0 +1,71 @@
+{% extends "tour/base_tour.html" %}
+{% load static %}
+{% block title %}Day N Night — Media{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/tour_media.css' %}">
+    <script defer src="{% static 'js/tour_media.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="tour-section">
+  <h1>Media</h1>
+  <p>Photos & videos from the Day N Night Tour — grouped by show.</p>
+
+  <form class="form card media-filters" method="get" action="">
+    <div class="form-grid">
+      <label class="field">
+        <span class="label">City</span>
+        <input type="text" name="city" value="{{ filters.city }}">
+      </label>
+      <label class="field">
+        <span class="label">State</span>
+        <input type="text" name="state" value="{{ filters.state }}" placeholder="e.g., MI, CA">
+      </label>
+      <label class="field">
+        <span class="label">Year</span>
+        <select name="year">
+          <option value="">All years</option>
+          {% for y in distinct_years %}
+            <option value="{{ y }}" {% if filters.year|add:'' == y|add:'' %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Filter</button>
+      <a class="btn ghost" href="{% url 'tour_media' %}">Reset</a>
+    </div>
+  </form>
+
+  {% for y, albums in year_groups %}
+    <h2 style="margin-top:18px">{{ y|default:"Undated" }}</h2>
+    <div class="albums-grid">
+      {% for a in albums %}
+        <article class="album-card">
+          <a class="album-link" href="{% url 'tour_media_album' slug=a.slug %}">
+            <div class="album-thumb">
+              {% with first=a.items.first %}
+                {% if first and first.image %}
+                  <img src="{{ first.image.url }}" alt="{{ a.title }}">
+                {% else %}
+                  <div class="img-ph">Album</div>
+                {% endif %}
+              {% endwith %}
+            </div>
+            <div class="album-meta">
+              <h3 class="album-title">{{ a.title }}</h3>
+              <div class="muted">
+                {% if a.date %}{{ a.date|date:"M j, Y" }} • {% endif %}
+                {% if a.city %}{{ a.city }}{% endif %}{% if a.state %}, {{ a.state }}{% endif %}
+              </div>
+            </div>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% empty %}
+    <p class="card">No media yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

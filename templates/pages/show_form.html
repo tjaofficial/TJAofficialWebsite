@@ -1,0 +1,72 @@
+{% extends "base.html" %}{% load static %}
+{% load static %}
+{% block title %}Add Show{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/show_form.css' %}">
+    <script defer src="{% static 'js/show_form.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Add a Show</h1>
+    <p class="hero-sub">Quickly post a new date without opening the admin.</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="{% url 'shows' %}">Back to Shows</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="form-errors">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="form-grid">
+      <label class="field">
+        <span class="label">Date & Time</span>
+        {{ form.date }}
+        {% if form.date.errors %}<small class="err">{{ form.date.errors|striptags }}</small>{% endif %}
+        <small class="hint">Local date/time (your browser). We’ll store it timezone-aware.</small>
+      </label>
+
+      <label class="field">
+        <span class="label">Venue Name</span>
+        {{ form.venue_name }}
+        {% if form.venue_name.errors %}<small class="err">{{ form.venue_name.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="field">
+        <span class="label">City</span>
+        {{ form.city }}
+        {% if form.city.errors %}<small class="err">{{ form.city.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="field">
+        <span class="label">State</span>
+        {{ form.state }}
+        {% if form.state.errors %}<small class="err">{{ form.state.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="field span-2">
+        <span class="label">Tickets URL</span>
+        {{ form.tickets_url }}
+        {% if form.tickets_url.errors %}<small class="err">{{ form.tickets_url.errors|striptags }}</small>{% endif %}
+        <small class="hint">Link to purchase page (optional). Leave blank to disable the button.</small>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Show</button>
+      <a class="btn ghost" href="{% url 'shows' %}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

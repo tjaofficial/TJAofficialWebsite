@@ -1,0 +1,94 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>TJA – {% block title %}{% endblock %}</title>
+        <meta name="theme-color" content="#0b0b0f">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <script defer src="{% static 'js/main.js' %}"></script>
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body>
+        <div class="top-glow" aria-hidden="true"></div>
+        <header class="site-header" data-sticky>
+            <div class="container nav-wrap">
+                <a class="brand" href="/">TJA</a>
+
+                <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
+
+                <nav class="nav" data-nav>
+                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="/shop/">Shop</a>
+                    <a class="nav-link" href="/music/">Music</a>
+                    <a class="nav-link" href="/shows/">Shows</a>
+                    <a class="nav-link" href="/videos/">Videos</a>
+                    <a class="nav-link" href="/email-signup/">Email Signup</a>
+                    <a class="nav-link" href="/tour/">Day N Night Tour</a>
+                    <a class="nav-link" href="/links/">Links</a>
+
+                    <div class="nav-ctas">
+                        <a class="btn ghost" href="/shop/">Store</a>
+                        <button class="btn" data-theme-toggle aria-label="Toggle theme">Day / Night</button>
+                        <a class="cart-link" href="/cart/" aria-label="Cart">
+                            <span class="cart-icon" aria-hidden="true">🛒</span>
+                            <span class="cart-badge" id="cartBadge" hidden>0</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Optional hero area pages can override -->
+        {% block hero %}
+            <section class="hero reveal">
+                <div class="container">
+                    <h1 class="hero-title">TJAofficial</h1>
+                    <p class="hero-sub">New music. Real shows. No fluff.</p>
+                    <div class="hero-actions">
+                        <a class="btn" href="/music/">Listen</a>
+                        <a class="btn ghost" href="/shows/">See Dates</a>
+                    </div>
+                </div>
+                <canvas id="orb" aria-hidden="true"></canvas>
+            </section>
+        {% endblock %}
+        <main class="container">
+            {% if messages %}
+                <div class="reveal" style="margin-bottom:12px">
+                    {% for message in messages %}
+                        <div class="card" role="status">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="site-footer">
+            <div class="footer-inner">
+            <p class="muted">&copy; {{ now|date:"Y" }} TJAofficial</p>
+            <div class="social-bar">
+            <a href="https://facebook.com/tjaofficial" aria-label="Facebook" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.9h2.54V9.41c0-2.51 1.5-3.9 3.79-3.9 1.1 0 2.25.2 2.25.2v2.47h-1.27c-1.25 0-1.64.78-1.64 1.57v1.88h2.79l-.45 2.9h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/></svg>
+            </a>
+            <a href="https://instagram.com/tjaofficial" aria-label="Instagram" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5ZM17.75 6a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 17.75 6Z"/></svg>
+            </a>
+            <a href="https://tiktok.com/@tjaofficial" aria-label="TikTok" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M16.1 2h2.2c.1 1.5 1.1 2.8 2.5 3.4v2.2c-.9-.08-1.8-.33-2.6-.73v6.9a6.93 6.93 0 1 1-6.93-6.93c.2 0 .4 0 .6.03v2.3a4.62 4.62 0 1 0 4.33 4.59V2z"/></svg>
+            </a>
+            <a href="https://x.com/tjaofficial" aria-label="X" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h4.6l5.1 6.9L17.6 3H21l-7.1 9.4L21 21h-4.6l-5.3-7.1L6.4 21H3l7.6-9.9L3 3z"/></svg>
+            </a>
+            <a href="https://youtube.com/@tjaofficial" aria-label="YouTube" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>
+            </a>
+            </div>
+        </div>
+        </div>
+        </footer>
+    </body>
+</html>

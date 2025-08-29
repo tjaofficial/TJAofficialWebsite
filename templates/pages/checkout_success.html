@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Thank you!{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/checkoput_success.css' %}">
+    <script defer src="{% static 'js/checkoput_success.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Payment received 🎉</h1>
+    <p class="hero-sub">We’ll email you a confirmation shortly.</p>
+    <div class="hero-actions"><a class="btn" href="/shop/">Keep shopping</a></div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+{% block content %}
+<section class="reveal"><p class="card">Order confirmed. If you don’t see a confirmation email, check spam.</p></section>
+{% endblock %}

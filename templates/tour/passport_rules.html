@@ -1,0 +1,19 @@
+{% extends "tour/base_tour.html" %}
+{% load static %}
+{% block title %}Passport Rules{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/epk.css' %}">
+{% endblock %}
+{% block content %}
+<section class="tour-section">
+  <h1>How Tour Passport Works</h1>
+  <ol class="card" style="text-align:left">
+    <li>Come to a Day N Night show.</li>
+    <li>Find the posted code (or scan the QR) at the venue.</li>
+    <li>Log in and enter the code on the Passport page.</li>
+    <li>Collect badges and earn milestone rewards.</li>
+  </ol>
+  <p class="muted">Codes may be time-limited and unique to each show. Don’t share them publicly 😉</p>
+  <a class="btn" href="{% url 'tour_passport' %}">Back to Passport</a>
+</section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Email Signup{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/email_signup.css' %}">
+    <script defer src="{% static 'js/email_signup.js' %}"></script>
+{% endblock %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Join the List</h1>
+    <p class="hero-sub">Get fresh drops, shows, and exclusives first.</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="/links/">All links</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  <!-- Inline success -->
+  {% if just_subscribed %}
+    <div class="notice success">Thanks! You’re on the list ✅</div>
+  {% endif %}
+
+  <!-- Django messages (works if you keep using messages in the view) -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="notice {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Form -->
+  <form method="post" class="form card email-form" novalidate>
+    {% csrf_token %}
+    <div class="form-grid">
+      <label class="field">
+        <span class="label">Email</span>
+        {{ form.email }}
+        {% if form.email.errors %}<small class="err">{{ form.email.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="field">
+        <span class="label">Name <span class="muted">(optional)</span></span>
+        {{ form.name }}
+        {% if form.name.errors %}<small class="err">{{ form.name.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <!-- Honeypot & timestamp -->
+      <div class="hp">{{ form.website }}</div>
+      {{ form.ts }}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Sign me up</button>
+      <a class="btn ghost" href="/">Home</a>
+    </div>
+
+    <p class="tiny-legal">By subscribing you agree to receive emails from TJA. Unsubscribe anytime.</p>
+  </form>
+</section>
+{% endblock %}

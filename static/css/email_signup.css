@@ -1,0 +1,4 @@
+/* ===== Email Signup ===== */
+.email-form .tiny-legal { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.email-form .hp { display: none; } /* hide honeypot field */
+.form-messages .card { margin-bottom: 8px; }

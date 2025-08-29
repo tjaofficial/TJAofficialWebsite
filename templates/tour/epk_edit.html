@@ -1,0 +1,120 @@
+{% extends "tour/base_tour.html" %}{% load static %}
+{% block title %}Edit My EPK{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/epk.css' %}">
+    <script defer src="{% static 'js/epk.js' %}"></script>
+{% endblock  %}
+{% block content %}
+<section class="tour-section">
+  <div class="dash-head">
+    <h1>Edit My EPK</h1>
+    <div class="dash-actions">
+      <a class="btn ghost" href="{% url 'tour_epk_detail' slug=a.slug %}">View Public Page</a>
+      <a class="btn ghost" href="{% url 'logout' %}">Log out</a>
+    </div>
+  </div>
+
+  {% for m in messages %}
+    <div class="notice {% if m.tags %}{{ m.tags }}{% endif %}">{{ m }}</div>
+  {% endfor %}
+
+  <div class="tabs" data-tabs>
+    <button class="tab is-active" data-tab="profile">Profile</button>
+    <button class="tab" data-tab="photos">Photos</button>
+    <button class="tab" data-tab="videos">Videos</button>
+  </div>
+
+  <!-- Profile -->
+  <section class="tab-panel is-active" id="tab-profile">
+    <form method="post" enctype="multipart/form-data" class="form card" novalidate>
+      {% csrf_token %}
+      <div class="form-grid">
+        <label class="field"><span class="label">Artist Name</span>{{ epk_form.name }}</label>
+        <label class="field"><span class="label">Short Tag</span>{{ epk_form.short_tag }}</label>
+        <label class="field"><span class="label">Genre</span>{{ epk_form.genre }}</label>
+        <label class="field"><span class="label">Hometown</span>{{ epk_form.hometown }}</label>
+        <label class="field span-2"><span class="label">Bio</span>{{ epk_form.bio }}</label>
+        <label class="field"><span class="label">Avatar</span>{{ epk_form.avatar }}</label>
+        <label class="field"><span class="label">Hero Image</span>{{ epk_form.hero_image }}</label>
+
+        <label class="field"><span class="label">Website</span>{{ epk_form.website_url }}</label>
+        <label class="field"><span class="label">Instagram</span>{{ epk_form.instagram_url }}</label>
+        <label class="field"><span class="label">TikTok</span>{{ epk_form.tiktok_url }}</label>
+        <label class="field"><span class="label">YouTube</span>{{ epk_form.youtube_url }}</label>
+        <label class="field"><span class="label">Spotify</span>{{ epk_form.spotify_url }}</label>
+        <label class="field"><span class="label">Apple Music</span>{{ epk_form.apple_url }}</label>
+        <label class="field"><span class="label">Press Contact Email</span>{{ epk_form.contact_email }}</label>
+      </div>
+      <div class="form-actions">
+        <button class="btn" type="submit">Save Profile</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Photos -->
+  <section class="tab-panel" id="tab-photos">
+    <form method="post" enctype="multipart/form-data" class="form card" novalidate>
+      {% csrf_token %}
+      <label class="field">
+        <span class="label">Upload photos (multiple allowed)</span>
+        {{ photos_form.new_photos }}
+      </label>
+      <div class="form-actions">
+        <button class="btn" type="submit">Upload</button>
+      </div>
+    </form>
+
+    {% if photos %}
+      <div class="epk-photos" style="margin-top:12px">
+        {% for p in photos %}
+          <figure>
+            <img src="{{ p.image.url }}" alt="{{ p.caption|default:a.name }}">
+            <form method="post" action="{% url 'tour_photo_delete' pk=p.pk %}">
+              {% csrf_token %}
+              <button class="btn ghost" type="submit">Delete</button>
+            </form>
+          </figure>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="card">No photos yet.</p>
+    {% endif %}
+  </section>
+
+  <!-- Videos -->
+  <section class="tab-panel" id="tab-videos">
+    <form method="post" class="form card" novalidate>
+      {% csrf_token %}
+      <div class="form-grid">
+        <label class="field span-2"><span class="label">Video URL (YouTube/Vimeo)</span>{{ vid_form.url }}</label>
+        <label class="field"><span class="label">Title</span>{{ vid_form.title }}</label>
+        <label class="field"><span class="label">Sort</span>{{ vid_form.sort }}</label>
+      </div>
+      <div class="form-actions">
+        <button class="btn" type="submit">Add Video</button>
+      </div>
+    </form>
+
+    {% if videos %}
+      <div class="epk-videos" style="margin-top:12px">
+        {% for v in videos %}
+          <div class="video-embed">
+            {% if v.embed_src %}
+              <iframe src="{{ v.embed_src }}" loading="lazy" frameborder="0" allowfullscreen></iframe>
+            {% else %}
+              <a href="{{ v.url }}" target="_blank" rel="noopener">{{ v.url }}</a>
+            {% endif %}
+            <div class="muted">{{ v.title|default:"" }}</div>
+            <form method="post" action="{% url 'tour_video_delete' pk=v.pk %}">
+              {% csrf_token %}
+              <button class="btn ghost" type="submit">Delete</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="card">No videos yet.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

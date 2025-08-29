@@ -1,0 +1,89 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Links{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/links.css' %}">
+    <script defer src="{% static 'js/links.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">All My Links</h1>
+    <p class="hero-sub">Follow, stream, and support the music.</p>
+    <div class="hero-actions">
+      <button class="btn" id="copyProfileLink" data-copy>Copy Profile Link</button>
+      <a class="btn ghost" href="/music/">Listen</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  <div class="links-header">
+    <input type="search" id="linkFilter" placeholder="Filter links… (e.g., spotify, instagram)" aria-label="Filter links">
+  </div>
+
+  <div class="linktree">
+    <h2 class="lt-heading">Socials</h2>
+    <div class="lt-grid" data-group="socials">
+      <a class="link-tile brand-facebook" href="https://facebook.com/TJAofficial" target="_blank" rel="noopener" data-label="facebook">
+        <span class="icon">{% include 'components/svg.html' with selector='facebook' %}</span>
+        <span class="text"><strong>Facebook</strong><em>@TJAofficial</em></span>
+      </a>
+      <a class="link-tile brand-instagram" href="https://instagram.com/TJAofficial" target="_blank" rel="noopener" data-label="instagram">
+        <span class="icon">{% include 'components/svg.html' with selector='instagram' %}</span>
+        <span class="text"><strong>Instagram</strong><em>@TJAofficial</em></span>
+      </a>
+      <a class="link-tile brand-tiktok" href="https://tiktok.com/@TJAofficial" target="_blank" rel="noopener" data-label="tiktok">
+        <span class="icon">{% include 'components/svg.html' with selector='tiktok' %}</span>
+        <span class="text"><strong>TikTok</strong><em>@TJAofficial</em></span>
+      </a>
+      <a class="link-tile brand-snapchat" href="https://snapchat.com/add/TJAofficial" target="_blank" rel="noopener" data-label="snapchat">
+        <span class="icon">{% include 'components/svg.html' with selector='snapchat' %}</span>
+        <span class="text"><strong>Snapchat</strong><em>@TJAofficial</em></span>
+      </a>
+    </div>
+
+    <h2 class="lt-heading">Listen / Buy</h2>
+    <div class="lt-grid" data-group="listen">
+      <a class="link-tile brand-spotify" href="https://open.spotify.com/artist/35OgBxQyHiMEsaTwKuajIB?si=yIUN23xCQDGZGD6lsk94Hw" target="_blank" rel="noopener" data-label="spotify">
+        <span class="icon">{% include 'components/svg.html' with selector='spotify' %}</span>
+        <span class="text"><strong>Spotify</strong><em>Stream now</em></span>
+      </a>
+      <a class="link-tile brand-applemusic" href="https://music.apple.com/artist/YOUR_ID" target="_blank" rel="noopener" data-label="apple music">
+        <span class="icon">{% include 'components/svg.html' with selector='apple-music' %}</span>
+        <span class="text"><strong>Apple Music</strong><em>Stream now</em></span>
+      </a>
+      <a class="link-tile brand-youtubemusic" href="https://music.youtube.com/TJAofficial" target="_blank" rel="noopener" data-label="youtube music">
+        <span class="icon">{% include 'components/svg.html' with selector='youtube-music' %}</span>
+        <span class="text"><strong>YouTube Music</strong><em>Watch & listen</em></span>
+      </a>
+      <a class="link-tile brand-itunes" href="https://itunes.apple.com/artist/YOUR_ID" target="_blank" rel="noopener" data-label="itunes store">
+        <span class="icon">{% include 'components/svg.html' with selector='itunes' %}</span>
+        <span class="text"><strong>iTunes Store</strong><em>Buy track</em></span>
+      </a>
+      <a class="link-tile brand-amazonmusic" href="https://music.amazon.com/artists/YOUR_ID" target="_blank" rel="noopener" data-label="amazon music">
+        <span class="icon">{% include 'components/svg.html' with selector='amazon-music' %}</span>
+        <span class="text"><strong>Amazon Music</strong><em>Stream now</em></span>
+      </a>
+      <a class="link-tile brand-pandora" href="https://www.pandora.com/artist/YOUR_ID" target="_blank" rel="noopener" data-label="pandora">
+        <span class="icon">{% include 'components/svg.html' with selector='pandora' %}</span>
+        <span class="text"><strong>Pandora</strong><em>Radio</em></span>
+      </a>
+      <a class="link-tile brand-tidal" href="https://tidal.com/browse/artist/YOUR_ID" target="_blank" rel="noopener" data-label="tidal">
+        <span class="icon">{% include 'components/svg.html' with selector='tidal' %}</span>
+        <span class="text"><strong>TIDAL</strong><em>Hi‑Fi</em></span>
+      </a>
+      <a class="link-tile brand-deezer" href="https://www.deezer.com/us/artist/YOUR_ID" target="_blank" rel="noopener" data-label="deezer">
+        <span class="icon">{% include 'components/svg.html' with selector='deezer' %}</span>
+        <span class="text"><strong>Deezer</strong><em>Stream now</em></span>
+      </a>
+      <a class="link-tile brand-soundcloud" href="https://soundcloud.com/TJAofficial" target="_blank" rel="noopener" data-label="soundcloud">
+        <span class="icon">{% include 'components/svg.html' with selector='soundcloud' %}</span>
+        <span class="text"><strong>SoundCloud</strong><em>Tracks & demos</em></span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

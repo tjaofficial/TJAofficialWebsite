@@ -1,0 +1,25 @@
+/* ===== Form Styles (shared) ===== */
+.form { display: grid; gap: 16px; }
+.form-errors { padding: 12px; border: 1px solid #ff7a7a66; background: #ff7a7a1a; border-radius: 12px; }
+.form-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 800px) { .form-grid { grid-template-columns: 1fr; } }
+
+.field { display: grid; gap: 6px; }
+.field.span-2 { grid-column: span 2; }
+.label { font-weight: 700; }
+.hint { color: var(--muted); font-size: 12px; }
+
+.form input[type="text"],
+.form input[type="url"],
+.form input[type="datetime-local"] {
+  width: 100%; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  outline: none; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.form input:focus { border-color: rgba(255,255,255,0.22); box-shadow: var(--shadow); }
+.err { color: #ff6b6b; }
+
+.form-actions { display: flex; gap: 10px; align-items: center; }

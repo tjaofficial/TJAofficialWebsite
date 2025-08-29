@@ -1,0 +1,106 @@
+/* ===== Tour Microsite Base ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 600px at 20% -20%, #142040 0%, transparent 60%), var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.tour-body {
+  background: #0a0a0a;
+  color: #f4f4f4;
+  font-family: system-ui, sans-serif;
+}
+
+/* Hero */
+.tour-hero {
+  position: relative;
+  text-align: center;
+  padding: 60px 20px 30px;
+  overflow: hidden;
+}
+.tour-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, #00BCD4, #f431f0);
+  background-size: 400% 400%;
+  animation: tourGradient 15s ease infinite;
+  z-index: 0;
+}
+@keyframes tourGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.tour-hero-inner { position: relative; z-index: 1; }
+.tour-logo { max-width: 372px; width: 80%;}
+.tour-tagline { font-size: 1.2rem; opacity: 0.9; }
+
+.tour-nav {
+  position: relative; z-index: 1;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+  margin-top: 24px;
+}
+.tour-nav a {
+  padding: 8px 16px; border-radius: 20px;
+  color: #f4f4f4; text-decoration: none;
+  transition: background .2s;
+}
+.tour-nav a:hover { background: rgba(255,255,255,0.15); }
+.tour-nav a.active { background: rgba(255,255,255,0.25); font-weight: 700; }
+
+.tour-content {
+  padding: 30px 20px;
+  max-width: 960px;
+  margin: auto;
+}
+
+.tour-section h1, 
+.tour-section h2,
+.tour-section h3 { color: #fff; }
+.tour-section p { color: #dcdcdc; }
+
+/* Make sure inputs stand out against dark bg */
+.form input[type="text"],
+.form input[type="email"],
+.form input[type="url"],
+.form input[type="file"],
+.form input[type="password"],
+.form textarea,
+.form select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #1a1a1a;
+  color: #f4f4f4;
+  font-size: 15px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.form input[type="file"] { padding: 6px; }
+
+.form input:focus,
+.form textarea:focus,
+.form select:focus {
+  border-color: #888;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+  background: #222;
+}
+
+/* Labels + error text */
+.field .label { 
+  font-size: 13px; 
+  font-weight: 600; 
+  margin-bottom: 4px; 
+  color: #ccc;
+}
+.field .err { 
+  color: #ff8a8a; 
+  font-size: 12px; 
+  margin-top: 4px;
+}

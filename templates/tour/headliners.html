@@ -1,0 +1,40 @@
+{% extends "tour/base_tour.html" %}{% load static %}
+{% block title %}Day N Night — Headliners{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/headliners.css' %}">
+    <script defer src="{% static 'js/headliners.js' %}"></script>
+{% endblock  %}
+{% block content %}
+<section class="tour-section">
+  <h1>Headliners</h1>
+  <p>Tap an artist to view their EPK.</p>
+
+  <div class="artists-grid">
+    {% for a in artists %}
+      <article class="artist-card">
+        <a href="{% url 'tour_epk_detail' slug=a.slug %}">
+          <div class="ac-media">
+            {% if a.avatar %}
+              <img src="{{ a.avatar.url }}" alt="{{ a.name }}">
+            {% elif a.hero_image %}
+              <img src="{{ a.hero_image.url }}" alt="{{ a.name }}">
+            {% else %}
+              <div class="img-ph">TJA</div>
+            {% endif %}
+          </div>
+          <div class="ac-body">
+            <h3>{{ a.short_tag|default:a.name }}</h3>
+            {% if a.genre %}<div class="muted">{{ a.genre }}</div>{% endif %}
+          </div>
+        </a>
+      </article>
+    {% empty %}
+      <p class="card">No headliners announced yet.</p>
+    {% endfor %}
+  </div>
+
+  {% if request.user.is_authenticated and request.user.artist %}
+    <p style="margin-top:12px"><a class="btn ghost" href="{% url 'tour_epk_edit_self' %}">Edit my EPK</a></p>
+  {% endif %}
+</section>
+{% endblock %}

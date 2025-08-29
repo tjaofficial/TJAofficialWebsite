@@ -1,0 +1,166 @@
+
+/* Passport UI */
+.passport-grid { display:grid; gap:14px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+@media (max-width: 980px){ .passport-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px){ .passport-grid { grid-template-columns: 1fr; } }
+
+.badge-card {
+  border:1px solid #2c2c2c; border-radius:14px; padding:12px; background:#111;
+  display:grid; grid-template-columns: 56px 1fr; gap:12px; align-items:center;
+}
+.badge-icon {
+  width:56px; height:56px; border-radius:12px; display:grid; place-items:center; font-size:26px; color:#fff;
+}
+.badge-title { color:#fff; margin:0; }
+.badge-sub { color:#bbb; font-size:.9rem; }
+
+.redeem-box { margin: 12px 0 18px; }
+.redeem-inline { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.redeem-inline input { max-width:260px; text-transform: uppercase; letter-spacing: 1px; }
+.stat-cards { display:grid; gap:10px; grid-template-columns: repeat(3, minmax(0,1fr)); margin: 10px 0 16px; }
+@media (max-width: 640px){ .stat-cards { grid-template-columns: 1fr; } }
+.stat { border:1px solid #2c2c2c; border-radius:12px; padding:12px; background:#121212; text-align:center; }
+.stat strong { font-size: 20px; display:block; color:#fff; }
+.stat span { color:#bbb; font-size:12px; }
+
+.upcoming-list { display:grid; gap:12px; }
+.upcoming-item { border:1px solid #2c2c2c; border-radius:12px; padding:10px; background:#101010; }
+.upcoming-meta { color:#bbb; }
+
+.notice { margin-bottom:10px; }
+
+/* ===== Passport Glow-up ===== */
+.passport-wrap { position: relative; }
+.passport-head { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+.white { color:#fff; }
+.tiny { font-size:12px; }
+
+.stat-cards.pretty .stat {
+  background: radial-gradient(1200px 80px at 10% -20%, rgba(124,92,255,0.25), transparent 60%),
+              #121212;
+  border: 1px solid #2c2c2c;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+
+/* Redeem box with neon edge */
+.card.neon {
+  border:1px solid #2c2c2c; background: #101010; border-radius:14px; box-shadow: inset 0 0 0 1px rgba(124,92,255,0.25);
+}
+.redeem-inline input {
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.redeem-inline .btn { height: 42px; }
+
+/* Milestone ring */
+.milestone-widget { display:flex; gap:12px; align-items:center; }
+.ring { position: relative; width: 120px; height: 120px; }
+.ring-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: #242424; stroke-width: 12; }
+.ring-fg { fill: none; stroke: url(#grad) #7c5cff; stroke-linecap: round; stroke-width: 12; stroke-dasharray: 339.292; stroke-dashoffset: 339.292; transition: stroke-dashoffset .8s ease; }
+.ring-center { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
+.ring-num { font-size: 22px; color:#fff; }
+.ring-cap { font-size: 11px; color:#bbb; }
+.ring-text .ring-title { color:#fff; font-weight:700; }
+.ring-text .ring-desc { color:#bbb; }
+
+/* Badge cards: flip on hover/focus */
+.badge-3d { perspective: 1200px; }
+.badge-card.flip {
+  position:relative; border:1px solid #2c2c2c; border-radius:14px; padding:12px;
+  background:#111; transform-style: preserve-3d; transition: transform .6s ease;
+}
+.badge-card.flip:focus,
+.badge-card.flip:hover { transform: rotateY(180deg); }
+.badge-face { position:absolute; inset:0; backface-visibility:hidden; display:grid; place-items:center; padding:12px; text-align:center; }
+.badge-face.back { transform: rotateY(180deg); }
+.badge-back-text { color:#ddd; }
+.badge-icon {
+  width:64px; height:64px; border-radius:12px; display:grid; place-items:center; font-size:28px; color:#fff; margin-bottom:8px;
+}
+.badge-title { color:#fff; margin:0; }
+.badge-sub { color:#bbb; font-size:.9rem; }
+
+/* Upcoming glow */
+.upcoming-item.glow { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+
+/* Shake for error */
+@keyframes shake { 10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); } }
+.shake { animation: shake 0.5s linear; }
+
+
+/* ===== Passport Redeem Box Inputs ===== */
+.redeem-box .field {
+  flex:1;
+  min-width:200px;
+}
+
+.redeem-box input[type="text"] {
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#1a1a1a;
+  color:#f4f4f4;
+  font-size:15px;
+  letter-spacing:1px;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.redeem-box input[type="text"]:focus {
+  border-color:#7c5cff;
+  box-shadow:0 0 0 2px rgba(124,92,255,0.35);
+  outline:none;
+}
+
+.redeem-box .btn {
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .15s ease, background .2s ease;
+}
+.redeem-box .btn:hover { transform:translateY(-2px); }
+.redeem-box .btn:active { transform:translateY(0); }
+
+.redeem-box .btn.ghost {
+  background:transparent;
+  border:1px solid #444;
+  color:#ccc;
+}
+.redeem-box .btn.ghost:hover {
+  border-color:#7c5cff;
+  color:#fff;
+}
+
+.redeem-inline {
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  flex-wrap:wrap;
+}
+
+/* ===== Level meter ===== */
+.level-pill {
+  min-width: 180px; background:#101010; border:1px solid #2c2c2c; border-radius:14px;
+  padding:10px 12px; box-shadow: inset 0 0 0 1px rgba(124,92,255,0.18);
+}
+.lvl-badge { color:#fff; font-weight:800; font-size:14px; margin-bottom:6px; }
+.lvl-bar { height:8px; background:#1c1c1c; border-radius:999px; overflow:hidden; border:1px solid #2a2a2a; }
+.lvl-fill { height:100%; width:0; background: linear-gradient(90deg,#7c5cff,#3cd1e4); transition: width .6s ease; }
+.lvl-sub { margin-top:6px; }
+
+/* ===== QR scanner ===== */
+.qr-actions { display:flex; gap:10px; align-items:center; margin-top:10px; }
+.qr-box {
+  margin-top:10px; border:1px solid #2c2c2c; border-radius:14px; padding:10px;
+  background:#0e0e0e; display:grid; gap:10px;
+}
+#qrVideo {
+  width:100%; max-height:55vh; background:#000; border-radius:12px; object-fit:cover;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+.qr-controls { display:flex; justify-content:flex-end; gap:10px; }

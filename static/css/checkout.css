@@ -1,0 +1,13 @@
+/* ===== Checkout ===== */
+.checkout-grid { display: grid; gap: 16px; grid-template-columns: 1fr 360px; }
+@media (max-width: 980px){ .checkout-grid { grid-template-columns: 1fr; } }
+
+.quote-form select,
+.quote-form input[type="text"] {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+}
+.summary .sum-line { display:flex; justify-content:space-between; margin:8px 0; }
+.summary .total strong { font-size: 18px; }
+.mini-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.mini-items li { display:flex; justify-content:space-between; }

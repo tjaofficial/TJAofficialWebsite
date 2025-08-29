@@ -1,0 +1,158 @@
+{% extends "tour/base_tour.html" %}
+{% load static %}
+{% block title %}Tour Passport{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/passport.css' %}">
+    <script defer src="{% static 'js/passport.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="tour-section passport-wrap">
+  <header class="passport-head">
+    <div>
+      <h1>Tour Passport</h1>
+      <p class="muted">Collect badges at shows, level up with milestones, unlock exclusives.</p>
+    </div>
+
+    <!-- Circular progress toward next milestone -->
+    <div class="milestone-widget">
+      {% if next_milestone %}
+        <div class="ring" data-progress="{{ ms_progress }}">
+          <svg viewBox="0 0 120 120" class="ring-svg" aria-hidden="true">
+            <circle cx="60" cy="60" r="54" class="ring-bg"></circle>
+            <circle cx="60" cy="60" r="54" class="ring-fg"></circle>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-num">{{ show_badges_count }}</div>
+            <div class="ring-cap">of {{ next_milestone.milestone_threshold }}</div>
+          </div>
+        </div>
+        <div class="ring-text">
+          <div class="ring-title">Next Milestone</div>
+          <div class="ring-desc"><strong>{{ next_milestone.name }}</strong> — {{ ms_needed }} more show{{ ms_needed|pluralize }}.</div>
+        </div>
+      {% else %}
+        <div class="ring done" data-progress="100">
+          <svg viewBox="0 0 120 120" class="ring-svg" aria-hidden="true">
+            <circle cx="60" cy="60" r="54" class="ring-bg"></circle>
+            <circle cx="60" cy="60" r="54" class="ring-fg"></circle>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-num">✔</div>
+          </div>
+        </div>
+        <div class="ring-text">
+          <div class="ring-title">All milestones cleared</div>
+          <div class="ring-desc">You’re at the top tier.</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="level-pill" title="Level based on total points">
+        <div class="lvl-badge">LVL {{ level }}</div>
+        <div class="lvl-bar">
+            <div class="lvl-fill" style="width: {{ level_progress }}%"></div>
+        </div>
+        <div class="lvl-sub tiny muted">{{ to_next }} pts to next</div>
+    </div>
+
+  </header>
+
+  {% for m in messages %}
+    <div class="notice {% if m.tags %}{{ m.tags }}{% endif %}">{{ m }}</div>
+  {% endfor %}
+
+  <!-- Stats -->
+  <div class="stat-cards pretty">
+    <div class="stat">
+      <strong>{{ total_points }}</strong><span>Total points</span>
+    </div>
+    <div class="stat">
+      <strong>{{ show_badges_count }}</strong><span>Show badges</span>
+    </div>
+    <div class="stat">
+      <strong>{{ earned|length }}</strong><span>Badges earned</span>
+    </div>
+  </div>
+
+  <!-- Redeem -->
+  <div class="redeem-box card neon">
+    <form class="redeem-inline" method="post" action="{% url 'tour_passport_redeem' %}" id="redeemForm">
+      {% csrf_token %}
+      <label class="field">
+        <span class="label">Enter code</span>
+        <input type="text" name="code" id="redeemCode" placeholder="DN25-DET-1" autocomplete="one-time-code" required>
+      </label>
+      <button class="btn" type="submit" id="redeemBtn">Redeem</button>
+      <button class="btn ghost" type="button" id="pasteBtn">Paste</button>
+      <a class="btn ghost" href="{% url 'tour_passport_rules' %}">How it works</a>
+    </form>
+    <div class="qr-actions">
+        <button class="btn ghost" type="button" id="scanBtn">Scan QR</button>
+        <span class="tiny muted" id="qrStatus" aria-live="polite"></span>
+    </div>
+
+    <div class="qr-box" id="qrBox" hidden>
+        <video id="qrVideo" autoplay playsinline></video>
+        <!-- we’ll use a hidden canvas for frame grabs -->
+        <canvas id="qrCanvas" width="640" height="480" hidden></canvas>
+        <div class="qr-controls">
+            <button class="btn ghost" type="button" id="stopScanBtn">Stop</button>
+        </div>
+    </div>
+
+    <p class="tiny muted">Tip: You can also scan a QR at the venue that opens this page with the code pre-filled.</p>
+  </div>
+
+  <!-- Earned badges -->
+  <h2>My Badges</h2>
+  {% if earned %}
+    <div class="passport-grid badge-3d" id="badgeGrid">
+      {% for ub in earned %}
+        <div class="badge-card flip" tabindex="0">
+          <div class="badge-face front">
+            <div class="badge-icon" style="background: {{ ub.badge.color }}">
+              {% if ub.badge.icon %}<img src="{{ ub.badge.icon.url }}" alt="" style="width:60%;height:60%;object-fit:contain">
+              {% elif ub.badge.emoji %}{{ ub.badge.emoji }}{% else %}★{% endif %}
+            </div>
+            <h3 class="badge-title">{{ ub.badge.name }}</h3>
+            <div class="badge-sub">{{ ub.badge.points }} pts</div>
+          </div>
+          <div class="badge-face back">
+            <div class="badge-back-text">
+              {% if ub.show %}
+                <div><strong>{{ ub.show.venue_name }}</strong></div>
+                <div class="muted">{{ ub.show.city }}, {{ ub.show.state }}</div>
+                <div class="muted">{{ ub.acquired_at|date:"M j, Y" }}</div>
+              {% else %}
+                <div><strong>Milestone</strong></div>
+                <div class="muted">{{ ub.acquired_at|date:"M j, Y" }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="card">No badges yet — redeem your first code at the next show.</p>
+  {% endif %}
+
+  <h2 style="margin-top:18px">Redeemable Now / Upcoming</h2>
+  {% if upcoming %}
+    <div class="upcoming-list gridish">
+      {% for sb in upcoming %}
+        <div class="upcoming-item glow">
+          <strong class="white">{{ sb.badge.name }}</strong>
+          <div class="upcoming-meta">
+            {{ sb.show.venue_name }} — {{ sb.show.city }}, {{ sb.show.state }} • {{ sb.show.date|date:"M j, Y, g:ia" }}
+          </div>
+          <div class="muted tiny">Have the code? Enter above.</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="card">Nothing redeemable right now. Check back on show day.</p>
+  {% endif %}
+</section>
+{% endblock %}
+

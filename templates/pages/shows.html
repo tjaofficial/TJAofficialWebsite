@@ -1,0 +1,121 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Shows{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/shows.css' %}">
+    <script defer src="{% static 'js/shows.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero hero--shows reveal">
+  <div class="container hero-split">
+    <div class="hero-copy">
+      <h1 class="hero-title">Shows</h1>
+      <p class="hero-sub">Catch TJA live — dates updated regularly.</p>
+
+      {% if next_show %}
+        <div class="next-show card">
+          <div class="ns-left">
+            <div class="date-badge big">
+              <span class="day">{{ next_show.date|date:"d" }}</span>
+              <span class="mon">{{ next_show.date|date:"M" }}</span>
+              <span class="yr">{{ next_show.date|date:"Y" }}</span>
+            </div>
+          </div>
+          <div class="ns-main">
+            <h3 class="venue">{{ next_show.venue_name }}</h3>
+            <p class="loc">{{ next_show.city }}, {{ next_show.state }}</p>
+
+            <div class="countdown"
+                 data-dt="{{ next_show.date|date:'c' }}">
+              <div><strong data-dd>--</strong><span>Days</span></div>
+              <div><strong data-hh>--</strong><span>Hours</span></div>
+              <div><strong data-mm>--</strong><span>Mins</span></div>
+              <div><strong data-ss>--</strong><span>Secs</span></div>
+            </div>
+
+            <div class="hero-actions" style="margin-top:10px">
+              {% if next_show.tickets_url %}
+                <a class="btn" href="{{ next_show.tickets_url }}" target="_blank" rel="noopener">Tickets</a>
+              {% endif %}
+              <a class="btn ghost" href="#showsList">See all dates</a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="card">No upcoming dates yet — join the list for alerts.</div>
+      {% endif %}
+    </div>
+
+    <div class="hero-art">
+      <canvas id="orb" aria-hidden="true"></canvas>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  <!-- Controls -->
+  <div class="shows-controls">
+    <input type="search" id="showFilter" placeholder="Filter by city, state, or venue…" aria-label="Filter shows">
+    <div class="control-right">
+      <label class="switch">
+        <input type="checkbox" id="togglePast">
+        <span>Show past</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="shows-layout">
+    <!-- Month index (auto-built by JS) -->
+    <aside class="month-index" id="monthIndex" aria-label="Month index"></aside>
+
+    <!-- Shows list -->
+    <div class="shows-list" id="showsList">
+      {# Expect a context variable "shows" sorted ascending by date #}
+      {# Each "show" should have: date (datetime/date), venue_name, city, state, tickets_url #}
+
+      {% for month, items in shows_by_month %}
+        <div class="month-group" data-month="{{ month }}">
+            <h2 class="month-heading">{{ month }}</h2>
+
+            {% for s in items %}
+            {# Normalize date/time strings for JS via data-* attributes #}
+                <article
+                    class="show-card"
+                    data-city="{{ s.city|lower }}"
+                    data-state="{{ s.state|lower }}"
+                    data-venue="{{ s.venue_name|lower }}"
+                    data-date="{{ s.date|date:'Y-m-d' }}"
+                    data-datetime="{{ s.date|date:'Y-m-d\\TH:i' }}"
+                    data-title="TJA — Live at {{ s.venue_name }}"
+                    data-location="{{ s.venue_name }}, {{ s.city }}, {{ s.state }}"
+                >
+                    <div class="date-badge">
+                        <span class="day">{{ s.date|date:"d" }}</span>
+                        <span class="mon">{{ s.date|date:"M" }}</span>
+                        <span class="yr">{{ s.date|date:"Y" }}</span>
+                    </div>
+
+                    <div class="show-main">
+                        <h3 class="venue">{{ s.venue_name }}</h3>
+                        <p class="loc">{{ s.city }}, {{ s.state }}</p>
+                    </div>
+
+                    <div class="show-ctas">
+                        {% if s.tickets_url %}
+                            <a class="btn" href="{{ s.tickets_url }}" target="_blank" rel="noopener">Tickets</a>
+                        {% else %}
+                            <button class="btn" disabled>Tickets</button>
+                        {% endif %}
+                        <button class="btn ghost addCal">Add to Calendar</button>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+        {% empty %}
+            <p class="card">No shows announced yet — check back soon or <a href="/email-signup/">join the list</a>.</p>
+        {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

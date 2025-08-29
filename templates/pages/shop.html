@@ -1,0 +1,76 @@
+{% extends "base.html" %}{% load static %}
+{% load static %}
+{% block title %}Shop{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <script defer src="{% static 'js/shop.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Shop</h1>
+    <p class="hero-sub">Official merch & exclusives.</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="/links/">All links</a>
+    </div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="reveal">
+  <!-- Controls -->
+  <form class="shop-controls" method="get" action="/shop/">
+    <input type="search" name="q" value="{{ query }}" placeholder="Search products… (e.g., hoodie, vinyl)" aria-label="Search products">
+    <button class="btn" type="submit">Search</button>
+  </form>
+
+  {% if products %}
+    <div class="shop-grid">
+      {% for p in products %}
+        <article class="product-card" data-id="{{ p.id }}" data-title="{{ p.title }}">
+            <div class="p-media">
+                <a class="p-media" href="{% url 'product_detail' slug=p.slug %}">
+                    {% if p.image_url %}
+                    <img loading="lazy" src="{{ p.image_url }}" alt="{{ p.title }}">
+                    {% else %}
+                    <div class="img-ph">TJA</div>
+                    {% endif %}
+                </a>
+            </div>
+
+          <div class="p-body">
+            <h3 class="p-title">
+                <a href="{% url 'product_detail' slug=p.slug %}">{{ p.title }}</a>
+            </h3>
+            <p class="p-price">{{ p.price_display }}</p>
+            {% if p.inventory > 0 %}
+              <p class="p-stock in">In stock</p>
+            {% else %}
+              <p class="p-stock out">Sold out</p>
+            {% endif %}
+            {% if p.description %}
+              <p class="p-desc">{{ p.description|truncatechars:140 }}</p>
+            {% endif %}
+          </div>
+
+          <div class="p-ctas">
+            <div class="qty">
+              <button class="qty-btn" data-dec aria-label="Decrease">−</button>
+              <input class="qty-in" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantity">
+              <button class="qty-btn" data-inc aria-label="Increase">+</button>
+            </div>
+            <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %}>Add to Cart</button>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="card">No products found. Try a different search.</p>
+  {% endif %}
+</section>
+
+<!-- Toast -->
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+{% endblock %}

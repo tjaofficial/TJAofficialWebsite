@@ -1,0 +1,16 @@
+{% extends "tour/base_tour.html" %}{% load static %}
+{% block title %}Day N Night Tour — The Stage{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/tour_home.css' %}">
+    <script defer src="{% static 'js/tour_home.js' %}"></script>
+{% endblock  %}
+{% block content %}
+<section class="tour-section">
+  <h1>Welcome to the Day N Night Tour</h1>
+  <p>The tour that blends vibes from sunrise to midnight. Check the shows, meet the headliners, and collect your passport badges as you follow us across the country.</p>
+  <div class="hero-actions">
+    <a href="{% url 'shows' %}" class="btn">See Tour Dates</a>
+    <a href="{% url 'tour_passport' %}" class="btn ghost">Collect Badges</a>
+  </div>
+</section>
+{% endblock %}

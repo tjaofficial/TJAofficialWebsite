@@ -1,0 +1,43 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Artist Login</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+    <body class="tour-body">
+        <header class="tour-hero">
+            <div class="tour-bg" aria-hidden="true"></div>
+            <div class="tour-hero-inner">
+                <img src="{% static 'img/tour_logo.png' %}" class="tour-logo" alt="Day N Night">
+                <p class="tour-tagline">Artist Portal</p>
+            </div>
+        </header>
+
+        <main class="tour-content">
+            <section class="tour-section">
+                <form method="post" class="form card" style="max-width:420px;margin:auto">
+                    {% csrf_token %}
+                    <h1 style="text-align:center">Log in</h1>
+                    {% if form.errors %}
+                    <div class="notice error" style="margin-top:8px">Invalid username or password.</div>
+                    {% endif %}
+                    <label class="field">
+                    <span class="label">Username</span>
+                    {{ form.username }}
+                    </label>
+                    <label class="field">
+                    <span class="label">Password</span>
+                    {{ form.password }}
+                    </label>
+                    <div class="form-actions" style="justify-content:center">
+                        <button class="btn" type="submit">Sign in</button>
+                        <a class="btn ghost" href="/tour/">Back to Tour</a>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </body>
+</html>

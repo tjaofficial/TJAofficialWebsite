@@ -1,0 +1,49 @@
+{% extends "tour/base_tour.html" %}
+{% load static %}
+{% block title %}{{ album.title }} — Media{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/tour_media.css' %}">
+    <script defer src="{% static 'js/tour_media.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="tour-section">
+  <h1>{{ album.title }}</h1>
+  <p class="muted">
+    {% if album.date %}{{ album.date|date:"F j, Y" }}{% endif %}
+    {% if album.city %} • {{ album.city }}{% endif %}
+    {% if album.state %}, {{ album.state }}{% endif %}
+  </p>
+
+  <div class="gallery-grid" id="galleryGrid">
+    {% for it in album.items.all %}
+      {% if it.kind == "photo" and it.image %}
+        <a href="{{ it.image.url }}" class="g-item" data-kind="photo" data-caption="{{ it.caption|escape }}">
+          <img src="{{ it.image.url }}" alt="{{ it.caption|default:album.title }}">
+        </a>
+      {% elif it.kind == "video" and it.embed_src %}
+        <button class="g-item g-video" data-kind="video" data-embed="{{ it.embed_src }}" aria-label="Play video: {{ it.caption|default:album.title }}">
+          <div class="v-thumb">
+            <span>▶</span>
+          </div>
+        </button>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="form-actions" style="margin-top:12px">
+    <a class="btn ghost" href="{% url 'tour_media' %}">Back to albums</a>
+    <a class="btn" href="{% url 'tour_shows' %}">See tour dates</a>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-close" aria-label="Close">×</button>
+  <button class="lb-prev" aria-label="Previous">‹</button>
+  <button class="lb-next" aria-label="Next">›</button>
+  <div class="lb-stage" id="lbStage"></div>
+  <div class="lb-caption" id="lbCaption"></div>
+</div>
+{% endblock %}

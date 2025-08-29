@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Payment canceled{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/checkoput_cancel.css' %}">
+    <script defer src="{% static 'js/checkoput_cancel.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+<section class="hero reveal">
+  <div class="container">
+    <h1 class="hero-title">Payment canceled</h1>
+    <p class="hero-sub">No charge was made. You can try again anytime.</p>
+    <div class="hero-actions"><a class="btn" href="/cart/">Back to cart</a></div>
+  </div>
+  <canvas id="orb" aria-hidden="true"></canvas>
+</section>
+{% endblock %}
