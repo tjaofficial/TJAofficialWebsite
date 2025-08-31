@@ -123,7 +123,7 @@ MEDIA_URL  = "/media/"
 
 # These will be set via environment to match Docker volumes
 STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
-MEDIA_ROOT  = os.getenv("DJANGO_MEDIA_ROOT",  str(BASE_DIR / "mediafiles"))
+MEDIA_ROOT  = os.getenv("DJANGO_MEDIA_ROOT",  str(BASE_DIR / "media"))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
