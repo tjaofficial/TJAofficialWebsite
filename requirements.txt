@@ -12,7 +12,6 @@ typing_extensions==4.14.1
 urllib3==2.5.0
 whitenoise==6.7.0
 gunicorn
-dj-database-url
-python-dotenv
-psycopg2-binary
-
+dj-database-url==3.0.1
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
