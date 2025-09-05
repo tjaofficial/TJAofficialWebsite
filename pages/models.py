@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 import re
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -36,6 +37,7 @@ class Product(models.Model):
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     description = models.TextField(blank=True)
     price_cents = models.PositiveIntegerField()  # store in cents to avoid float issues
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
     image_url = models.URLField(blank=True)      # swap to ImageField later if you want
     category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
     is_active = models.BooleanField(default=True)
@@ -45,6 +47,18 @@ class Product(models.Model):
 
     class Meta:
         ordering = ["title"]
+
+    def image_src(self):
+        if self.image:
+            return self.image.url
+        return self.image_url or ""
+    
+    def clean(self):
+        super().clean()
+        if not self.image and not self.image_url:
+            raise ValidationError("Upload an image or provide an image URL.")
+        if self.image and self.image_url:
+            raise ValidationError("Use either an upload or a URL, not both.")
 
     def __str__(self):
         return self.title
@@ -155,15 +169,30 @@ class Release(models.Model):
     slug = models.SlugField(max_length=220, unique=True, blank=True)
     release_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     release_date = models.DateField()
+    cover = models.ImageField(upload_to="releases/", blank=True, null=True)
     cover_url = models.URLField(blank=True)         # swap to ImageField later if you wish
     description = models.TextField(blank=True)
     links_url = models.URLField(blank=True, help_text="Smartlink/Linktree for this release")
     is_public = models.BooleanField(default=True)
+    
     class Meta:
         ordering = ["-release_date", "-id"]        # newest first
 
     def __str__(self):
         return self.title
+    
+    def clean(self):
+        super().clean()
+        if not self.cover and not self.cover_url:
+            raise ValidationError("Upload a cover image or provide a cover URL.")
+        if self.cover and self.cover_url:
+            raise ValidationError("Use either an upload or a URL, not both.")
+    
+    def cover_src(self):
+        # Prefer uploaded image; fallback to external URL
+        if self.cover:
+            return self.cover.url
+        return self.cover_url or ""
 
     def save(self, *args, **kwargs):
         if not self.slug:

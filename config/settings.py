@@ -119,6 +119,33 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+INSTALLED_APPS += ['storages']
+USE_S3 = os.getenv("USE_S3") == "1"
+
+if USE_S3:
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-2")
+    AWS_S3_SIGNATURE_VERSION = os.getenv("AWS_S3_SIGNATURE_VERSION", "s3v4")
+    AWS_S3_ADDRESSING_STYLE = os.getenv("AWS_S3_ADDRESSING_STYLE", "auto")
+    # Make files publicly readable (with the bucket policy above)
+    AWS_DEFAULT_ACL = None  # ACLs disabled is common; rely on bucket policy
+    AWS_QUERYSTRING_AUTH = False  # clean, cacheable URLs
+
+    # Optional: custom domain (CloudFront) if you set one later
+    AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN")  # e.g. cdn.tjaofficial.com
+
+    if AWS_S3_CUSTOM_DOMAIN:
+        MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    else:
+        MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
+
+    # Static can stay local/WhiteNoise; only media goes to S3
+else:
+    MEDIA_URL  = "/media/"
+
+
 #STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 #STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -126,7 +153,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 #MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATIC_URL = "/static/"
-MEDIA_URL  = "/media/"
 
 # These will be set via environment to match Docker volumes
 STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))

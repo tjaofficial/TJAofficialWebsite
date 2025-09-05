@@ -45,7 +45,7 @@
     {% for r in releases %}
       <article class="card-tile hoverlift">
         <a href="{% url 'music' %}#release-{{ r.slug }}">
-          <div class="tile-art">{% if r.cover %}<img src="{{ r.cover.url }}" alt="{{ r.title }}">{% endif %}</div>
+          <div class="tile-art">{% if r.cover_url %}<img src="{{ r.cover_url }}" alt="{{ r.title }}">{% endif %}</div>
           <div class="tile-body">
             <h3>{{ r.title }}</h3>
             <div class="muted">{{ r.release_type|default:"Single" }} • {{ r.release_date|date:"Y" }}</div>
