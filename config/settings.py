@@ -119,10 +119,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-INSTALLED_APPS += ['storages']
 USE_S3 = os.getenv("USE_S3") == "1"
 
+STATIC_URL = "/static/"
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
+
+MEDIA_URL  = "/media/"
+MEDIA_ROOT  = os.getenv("DJANGO_MEDIA_ROOT",  str(BASE_DIR / "media"))
+
 if USE_S3:
+    INSTALLED_APPS += ['storages']
+
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
@@ -142,9 +149,25 @@ if USE_S3:
         MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
 
     # Static can stay local/WhiteNoise; only media goes to S3
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 else:
-    MEDIA_URL  = "/media/"
-
+    # Local filesystem storage for uploaded media
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 #STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -152,11 +175,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 #MEDIA_URL = "/media/"
 #MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATIC_URL = "/static/"
 
-# These will be set via environment to match Docker volumes
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
-MEDIA_ROOT  = os.getenv("DJANGO_MEDIA_ROOT",  str(BASE_DIR / "media"))
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
