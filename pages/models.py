@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 import re
@@ -32,6 +33,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+SIZE_CHOICES = [
+    ("XS", "XS"), ("S", "S"), ("M", "M"), ("L", "L"),
+    ("XL", "XL"), ("2XL", "2XL"), ("3XL", "3XL"),
+]
+
 class Product(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
@@ -44,6 +50,13 @@ class Product(models.Model):
     inventory = models.PositiveIntegerField(default=0)  # simple stock tracking
     created_at = models.DateTimeField(auto_now_add=True)  # optional but nice
     updated_at = models.DateTimeField(auto_now=True)  
+    has_variants = models.BooleanField(default=False)
+
+    def min_variant_price_cents(self) -> int:
+        if not self.has_variants:
+            return self.price_cents
+        v = self.variants.filter(is_active=True, inventory__gt=0).order_by('price_cents').first()
+        return v.price_cents if v else self.price_cents
 
     class Meta:
         ordering = ["title"]
@@ -77,7 +90,22 @@ class Product(models.Model):
         if self.category_id:
             qs = qs.filter(category_id=self.category_id)
         return qs[:limit]
-    
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    size = models.CharField(max_length=8)  # or choices=SIZE_CHOICES if you want to restrict
+    price_cents = models.PositiveIntegerField(default=0)
+    inventory = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    sku = models.CharField(max_length=64, blank=True)
+
+    class Meta:
+        unique_together = [('product', 'size')]
+        ordering = ['product__title', 'size']
+
+    def __str__(self):
+        return f"{self.product.title} – {self.size}"
+
 class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, 
@@ -118,9 +146,25 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     qty = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
+    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
+    unit_price_cents = models.PositiveIntegerField(default=0)
 
-    class Meta:
-        unique_together = ("cart", "product")
+    constraints = [
+        # For no-size products (variant IS NULL): only one row per (cart, product)
+        models.UniqueConstraint(
+            fields=["cart", "product"],
+            condition=Q(variant__isnull=True),
+            name="uniq_cart_product_no_variant",
+        ),
+        # For sized products (variant NOT NULL): only one row per (cart, product, variant)
+        models.UniqueConstraint(
+            fields=["cart", "product", "variant"],
+            condition=Q(variant__isnull=False),
+            name="uniq_cart_product_with_variant",
+        ),
+    ]
+    def line_total_cents(self) -> int:
+        return self.unit_price_cents * self.qty
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -165,6 +209,8 @@ class OrderItem(models.Model):
     title_snapshot = models.CharField(max_length=200)               # snapshot title at purchase time
     price_cents_snapshot = models.PositiveIntegerField()            # snapshot price
     qty = models.PositiveIntegerField(default=1)
+    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
+    size = models.CharField(max_length=8, blank=True) # snapshot for variant label
 
     def line_cents(self):
         return self.price_cents_snapshot * self.qty

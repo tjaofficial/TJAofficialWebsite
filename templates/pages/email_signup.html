@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="reveal">
+<section class="reveal" style="margin-top: 40px;">
   <!-- Inline success -->
   {% if just_subscribed %}
     <div class="notice success">Thanks! You’re on the list ✅</div>
@@ -36,7 +36,7 @@
   <!-- Form -->
   <form method="post" class="form card email-form" novalidate>
     {% csrf_token %}
-    <div class="form-grid">
+    <div class="form-grid" style="margin-bottom: 20px;">
       <label class="field">
         <span class="label">Email</span>
         {{ form.email }}

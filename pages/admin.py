@@ -6,7 +6,19 @@ import csv
 # Register your models here.
 
 admin.site.register(Show)
-admin.site.register(Product)
+
+class ProductVariantInline(admin.TabularInline):
+    model = ProductVariant
+    extra = 1
+    fields = ('size', 'price_cents', 'inventory', 'is_active', 'sku')
+    
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active', 'has_variants', 'price_cents', 'inventory')
+    list_filter = ('is_active', 'has_variants', 'category')
+    prepopulated_fields = {"slug": ("title",)}
+    inlines = [ProductVariantInline]
+
 admin.site.register(Category)
 admin.site.register(ProductImage)
 admin.site.register(Cart)
@@ -103,3 +115,4 @@ class UserBadgeAdmin(admin.ModelAdmin):
     list_display = ("user","badge","show","source","acquired_at")
     list_filter  = ("source","badge")
     search_fields= ("user__username","badge__name","show__venue_name")
+

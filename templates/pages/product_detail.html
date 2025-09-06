@@ -1,15 +1,25 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% load static %}
-{% block title %}{{ p.title }}{% endblock %}
+{% load shop_extras %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
-    <script defer src="{% static 'js/product_detail.js' %}"></script>
-{% endblock  %}
+  <link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
+  <script defer src="{% static 'js/product_detail.js' %}"></script>
+{% endblock %}
+
 {% block hero %}
 <section class="hero reveal">
   <div class="container">
-    <h1 class="hero-title">{{ p.title }}</h1>
-    <p class="hero-sub">{{ p.price_display }}</p>
+    <h1 class="hero-title">{{ product.title }}</h1>
+    <p class="hero-sub">
+      {% if product.has_variants %}
+        from {{ product.min_variant_price_cents|money }}
+      {% else %}
+        {{ product.price_cents|money }}
+      {% endif %}
+    </p>
     <div class="hero-actions">
       <a class="btn ghost" href="/shop/">Back to shop</a>
     </div>
@@ -19,70 +29,123 @@
 {% endblock %}
 
 {% block content %}
-<section class="reveal">
-    <div class="pd-grid">
-        <div class="pd-gallery">
-            <div class="pd-main">
-                {% if images %}
-                    <img id="pdMainImg" src="{{ images.0.image.url }}" alt="{{ images.0.alt|default:p.title }}">
-                {% else %}
-                    <div class="img-ph">TJA</div>
-                {% endif %}
-            </div>
-            {% if images|length > 1 %}
-                <div class="pd-thumbs">
-                    {% for img in images %}
-                        <button class="pd-thumb{% if forloop.first %} is-active{% endif %}" data-src="{{ img.image.url }}" aria-label="Image {{ forloop.counter }}">
-                            <img src="{{ img.image.url }}" alt="{{ img.alt|default:p.title }}">
-                        </button>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+<section class="reveal" style="margin-top: 40px;">
+  <div class="pd-grid">
 
-        <div class="pd-info card">
-        <h2 class="pd-title">{{ p.title }}</h2>
-        <div class="pd-price">{{ p.price_display }}</div>
-        {% if p.inventory > 0 %}
-            <div class="p-stock in">In stock</div>
+    <div class="pd-gallery">
+      <div class="pd-main">
+        {% if images %}
+          <img id="pdMainImg" src="{{ images.0.url }}" alt="{{ images.0.alt|default:product.title }}">
         {% else %}
-            <div class="p-stock out">Sold out</div>
+          <div class="img-ph">TJA</div>
         {% endif %}
-        {% if p.description %}
-            <p class="pd-desc">{{ p.description }}</p>
-        {% endif %}
-
-        <div class="p-ctas" style="margin-top:12px">
-            <div class="qty">
-            <button class="qty-btn" data-dec>−</button>
-            <input class="qty-in" type="number" value="1" min="1">
-            <button class="qty-btn" data-inc>+</button>
-            </div>
-            <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %} data-id="{{ p.id }}">Add to Cart</button>
+      </div>
+      {% if images|length > 1 %}
+        <div class="pd-thumbs">
+          {% for img in images %}
+            <button class="pd-thumb{% if forloop.first %} is-active{% endif %}" data-src="{{ img.url }}" aria-label="Image {{ forloop.counter }}">
+              <img src="{{ img.url }}" alt="{{ img.alt|default:product.title }}">
+            </button>
+          {% endfor %}
         </div>
-        </div>
+      {% endif %}
     </div>
+
+    <div class="pd-info card">
+      <h2 class="pd-title">{{ product.title }}</h2>
+      <div class="pd-price">
+        {% if product.has_variants %}
+          from {{ product.min_variant_price_cents|money }}
+        {% else %}
+          {{ product.price_cents|money }}
+        {% endif %}
+      </div>
+
+      {% if product.has_variants %}
+        {# Size picker + qty + Add #}
+        <form id="addForm" method="post" action="{% url 'shop_add_to_cart' product.slug %}">
+          {% csrf_token %}
+
+          <div class="label">Select size</div>
+          <div class="size-grid">
+            {% for v in variants %}
+              <label class="size-pill{% if v.inventory <= 0 %} is-out{% endif %}">
+                <input type="radio" name="variant_id" value="{{ v.id }}" {% if v.inventory <= 0 %}disabled{% endif %}>
+                <span class="sz">{{ v.size }}</span>
+                <span class="price">{{ v.price_cents|money }}</span>
+                {% if v.inventory <= 0 %}<span class="oos">Out of stock</span>{% endif %}
+              </label>
+            {% empty %}
+              <div class="muted">No sizes configured yet.</div>
+            {% endfor %}
+          </div>
+
+          <div class="qty">
+            <button type="button" class="qbtn" data-d="-1">−</button>
+            <input type="number" min="1" value="1" name="qty" id="qtyInput">
+            <button type="button" class="qbtn" data-d="1">+</button>
+          </div>
+
+          <button class="btn add" type="submit">Add to cart</button>
+          <div id="msg" class="msg"></div>
+        </form>
+
+      {% else %}
+        <p class="pd-desc">{{ product.description }}</p>
+        {% if product.inventory > 0 %}
+          <form id="addForm" method="post" action="{% url 'shop_add_to_cart' product.slug %}">
+            {% csrf_token %}
+            <div class="qty">
+              <button type="button" class="qbtn" data-d="-1">−</button>
+              <input type="number" min="1" value="1" name="qty" id="qtyInput">
+              <button type="button" class="qbtn" data-d="1">+</button>
+            </div>
+            <button class="btn add" type="submit">Add to cart</button>
+            <div id="msg" class="msg"></div>
+          </form>
+        {% else %}
+          <div class="oos-banner">Out of stock</div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
 </section>
 
 {% if related %}
 <section class="reveal">
-  <h3>Related</h3>
-  <div class="shop-grid">
-    {% for r in related %}
-      <article class="product-card">
-        <a href="{% url 'product_detail' slug=r.slug %}" class="p-media">
-          {% if r.image_url %}<img loading="lazy" src="{{ r.image_url }}" alt="{{ r.title }}">{% else %}<div class="img-ph">TJA</div>{% endif %}
-        </a>
-        <div class="p-body">
-          <h4 class="p-title"><a href="{% url 'product_detail' slug=r.slug %}">{{ r.title }}</a></h4>
-          <div class="p-price">{{ r.price_display }}</div>
-        </div>
-        <div class="p-ctas">
-          <a class="btn ghost" href="{% url 'product_detail' slug=r.slug %}">View</a>
-        </div>
-      </article>
-    {% endfor %}
-  </div>
+    <h3>Related</h3>
+    <div class="shop-grid" style="display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr));">
+        {% for r in related %}
+            <article class="product-card" style="border: 1px solid #2c2c2c; border-radius: 14px; overflow: hidden; background: #111; box-shadow: 0 4px 14px rgba(0, 0, 0, .5);">
+                <a href="{% url 'product_detail' slug=r.slug %}" class="p-media">
+                    <div id="extra_items_show">
+                        {% if r.image_url %}
+                            <img loading="lazy" src="{{ r.image_url }}" alt="{{ r.title }}">
+                        {% elif r.image %}
+                            <img loading="lazy" src="{{ r.image.url }}" alt="{{ r.title }}">
+                        {% else %}
+                            <div class="img-ph">TJA</div>
+                        {% endif %}
+                    </div>
+                </a>
+                <div class="p-body" style="padding: 0px 20px;">
+                    <h4 class="p-title">
+                        <a href="{% url 'product_detail' slug=r.slug %}">{{ r.title }}</a>
+                    </h4>
+                    <div class="p-price">
+                        {% if r.has_variants %}
+                            from {{ r.min_variant_price_cents|money }}
+                        {% else %}
+                            {{ r.price_cents|money }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="p-ctas" style="padding: 20px;">
+                    <a class="btn ghost" href="{% url 'product_detail' slug=r.slug %}">View</a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
 </section>
 {% endif %}
 

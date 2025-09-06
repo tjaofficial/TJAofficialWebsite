@@ -47,3 +47,66 @@
     });
   }
 })();
+
+(function(){
+  const form = document.getElementById('addForm');
+  if(!form) return;
+
+  const msg = document.getElementById('msg');
+  const qtyInput = document.getElementById('qtyInput');
+
+  // qty controls
+  document.querySelectorAll('.qbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const d = parseInt(btn.dataset.d || '0', 10);
+      const v = Math.max(1, parseInt(qtyInput.value || '1', 10) + d);
+      qtyInput.value = v;
+    });
+  });
+
+  // CSRF helper (ensures header always present)
+  function getCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (msg) { msg.textContent = ''; msg.className = 'msg'; }
+
+    const fd = new FormData(form);
+
+    try {
+      const r = await fetch(form.action, {
+        method: 'POST',
+        body: fd,
+        headers: {
+          'X-Requested-With':'fetch',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        credentials: 'same-origin'
+      });
+
+      let data = null;
+      const ct = r.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        data = await r.json();
+      } else {
+        const text = await r.text();
+        throw new Error(`Non-JSON response (${r.status}): ${text.slice(0, 200)}`);
+      }
+
+      if (!data.ok) {
+        if (msg) { msg.textContent = data.error || 'Could not add to cart.'; msg.className = 'msg err'; }
+        return;
+      }
+
+      document.dispatchEvent(new CustomEvent('cart:updated', {detail: {count: data.cart_count || 0}}));
+      if (msg) { msg.textContent = 'Added to cart!'; msg.className = 'msg ok'; }
+
+    } catch (err) {
+      console.error('Add to cart failed:', err);
+      if (msg) { msg.textContent = 'Something went wrong. Please try again.'; msg.className = 'msg err'; }
+    }
+  });
+})();

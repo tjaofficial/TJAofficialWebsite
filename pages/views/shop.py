@@ -4,8 +4,8 @@ from django.views.decorators.http import require_POST
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.db.models import Q
-from ..models import Product, Order, OrderItem, StripeEvent
+from django.db.models import Q, Sum
+from ..models import Product, Order, OrderItem, StripeEvent, CartItem, ProductVariant, Cart
 from django.shortcuts import render, get_object_or_404
 from ..cart_utils import (
     cart_add, cart_update_qty, cart_remove, cart_clear, cart_count as cart_count_val, cart_iter_items
@@ -27,12 +27,65 @@ def shop(request):
     get_token(request)
     return render(request, "pages/shop.html", {"products": products, "query": q})
 
-@require_POST
-def add_to_cart(request):
-    pid = request.POST.get("product_id"); qty = int(request.POST.get("qty", "1"))
-    product = Product.objects.get(pk=pid, is_active=True)
-    count = cart_add(request, product, qty)
-    return JsonResponse({"ok": True, "product": {"id": product.id, "title": product.title}, "cart_count": count})
+@transaction.atomic
+def add_to_cart(request, slug):
+    if request.method != 'POST':
+        return redirect('product_detail', slug=slug)
+
+    product = get_object_or_404(Product, slug=slug, is_active=True)
+    try:
+        qty = max(1, int(request.POST.get('qty', 1)))
+    except Exception:
+        qty = 1
+
+    # Resolve variant (if required)
+    variant = None
+    if product.has_variants:
+        variant_id = request.POST.get('variant_id')
+        if not variant_id:
+            # Optional convenience: auto-pick if exactly one in-stock variant exists
+            qs = product.variants.filter(is_active=True, inventory__gt=0)
+            if qs.count() == 1:
+                variant = qs.first()
+            else:
+                return JsonResponse({'ok': False, 'error': 'Please choose a size'}, status=400)
+        else:
+            variant = get_object_or_404(ProductVariant, pk=variant_id, product=product, is_active=True)
+        if variant.inventory <= 0:
+            return JsonResponse({'ok': False, 'error': 'That size is out of stock'}, status=400)
+        unit_price = variant.price_cents
+    else:
+        if product.inventory <= 0:
+            return JsonResponse({'ok': False, 'error': 'Out of stock'}, status=400)
+        unit_price = product.price_cents
+
+    cart = get_or_create_cart(request)
+
+    # IMPORTANT: merge by (cart, product, variant). This avoids unique-constraint IntegrityError.
+    item, created = CartItem.objects.get_or_create(
+        cart=cart, product=product, variant=variant,
+        defaults={'qty': 0, 'unit_price_cents': unit_price},
+    )
+
+    # Keep the first captured unit price; or, if you prefer, update to current price:
+    if created and item.unit_price_cents == 0:
+        item.unit_price_cents = unit_price
+
+    # Atomic increment
+    CartItem.objects.filter(pk=item.pk).update(qty=F('qty') + qty)
+    item.refresh_from_db(fields=['qty'])
+
+    count = cart.items.aggregate(Sum('qty'))['qty__sum'] or 0
+    return JsonResponse({'ok': True, 'cart_count': count})
+
+def get_or_create_cart(request):
+    if request.user.is_authenticated:
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+    else:
+        if not request.session.session_key:
+            request.session.save()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+    return cart
 
 def cart_count(request):
     return JsonResponse({"count": cart_count_val(request)})
@@ -70,24 +123,52 @@ def _cart_items_and_subtotal(request):
     return items, subtotal
 
 def cart(request):
-    items, subtotal = _cart_items_and_subtotal(request)
+    cart = get_or_create_cart(request)
+    items = (cart.items
+             .select_related('product','variant')
+             .order_by('added_at'))
+
+    # subtotal in cents using the snapshot price
+    subtotal = items.aggregate(
+        c=Sum(F('unit_price_cents') * F('qty'))
+    )['c'] or 0
+
     return render(request, "pages/cart.html", {
-        "items": items, "subtotal_cents": subtotal, "subtotal_display": f"${subtotal/100:.2f}",
+        "items": items,
+        "subtotal_cents": subtotal,
+        "subtotal_display": f"${subtotal/100:.2f}",
     })
 
-@require_POST
 def cart_update(request):
-    pid = int(request.POST.get("product_id")); qty = int(request.POST.get("qty", "1"))
-    cart_update_qty(request, pid, qty)
-    _, subtotal = _cart_items_and_subtotal(request)
-    return JsonResponse({"ok": True, "count": cart_count_val(request), "subtotal": f"${subtotal/100:.2f}"})
+    try:
+        item_id = int(request.POST.get("item_id"))
+        qty = max(1, int(request.POST.get("qty", "1")))
+    except Exception:
+        return HttpResponseBadRequest("bad params")
+
+    cart = get_or_create_cart(request)
+    # Only allow touching items in this cart
+    updated = (cart.items.filter(pk=item_id)
+              .update(qty=qty))
+    if not updated:
+        return HttpResponseBadRequest("not found")
+
+    subtotal = cart.items.aggregate(c=Sum(F('unit_price_cents') * F('qty')))['c'] or 0
+    count = cart.items.aggregate(c=Sum('qty'))['c'] or 0
+    return JsonResponse({"ok": True, "count": count, "subtotal": f"${subtotal/100:.2f}"})
 
 @require_POST
 def cart_remove(request):
-    pid = int(request.POST.get("product_id"))
-    cart_remove(request, pid)
-    _, subtotal = _cart_items_and_subtotal(request)
-    return JsonResponse({"ok": True, "count": cart_count_val(request), "subtotal": f"${subtotal/100:.2f}"})
+    try:
+        item_id = int(request.POST.get("item_id"))
+    except Exception:
+        return HttpResponseBadRequest("bad params")
+
+    cart = get_or_create_cart(request)
+    cart.items.filter(pk=item_id).delete()
+    subtotal = cart.items.aggregate(c=Sum(F('unit_price_cents') * F('qty')))['c'] or 0
+    count = cart.items.aggregate(c=Sum('qty'))['c'] or 0
+    return JsonResponse({"ok": True, "count": count, "subtotal": f"${subtotal/100:.2f}"})
 
 @require_POST
 def cart_clear(request):
@@ -96,15 +177,30 @@ def cart_clear(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
-    images = list(product.images.all())
-    if not images and product.image_url:
-        # fallback to primary image as a pseudo gallery slot
-        images = [{"url": product.image_url, "alt": product.title}]
-    related = product.related()
+
+    # normalize images -> list of {"url","alt"}
+    imgs = []
+    for im in product.images.all():
+        try:
+            url = im.image.url
+        except Exception:
+            url = ""
+        if url:
+            imgs.append({"url": url, "alt": getattr(im, "alt", "") or product.title})
+    if not imgs and product.image_url:
+        imgs = [{"url": product.image_url, "alt": product.title}]
+
+    variants = []
+    if product.has_variants:
+        variants = product.variants.filter(is_active=True).order_by("size")
+
+    related = product.related() if hasattr(product, "related") else []
+
     return render(request, "pages/product_detail.html", {
-        "p": product, 
-        "images": images, 
-        "related": related
+        "product": product,
+        "images": imgs,
+        "variants": variants,
+        "related": related,
     })
 
 # Simple shipping table (cents)
@@ -147,6 +243,27 @@ def cart_quote(request):
 
 def checkout(request):
     items, subtotal = _cart_items_and_subtotal(request)
+    order = Order.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        email="tjaofficial@gmail.com",  # set as appropriate
+        total_cents=0,
+    )
+
+    total = 0
+    for it in cart.items.select_related('product', 'variant'):
+        OrderItem.objects.create(
+            order=order,
+            product=it.product,
+            variant=it.variant,
+            title=it.product.title,
+            size=(it.variant.size if it.variant else ""),
+            qty=it.qty,
+            unit_price_cents=it.unit_price_cents,
+        )
+        total += it.unit_price_cents * it.qty
+
+    order.total_cents = total
+    order.save()
     return render(request, "pages/checkout.html", {
         "items": items,
         "subtotal_cents": subtotal,

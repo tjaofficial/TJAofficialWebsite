@@ -1,10 +1,14 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% load static %}
+{% load shop_extras %} {# for |money #}
+
 {% block title %}Cart{% endblock %}
+
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
-    <script defer src="{% static 'js/cart.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+  <script defer src="{% static 'js/cart.js' %}"></script>
 {% endblock  %}
+
 {% block hero %}
 <section class="hero reveal">
   <div class="container">
@@ -22,7 +26,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="reveal">
+<section class="reveal" style="margin-top: 40px;">
   {% if not items %}
     <p class="card">Your cart is empty. <a href="/shop/">Find something you love</a>.</p>
   {% else %}
@@ -30,21 +34,36 @@
       <div class="cart-items">
         {% for it in items %}
           {% with p=it.product %}
-          <article class="cart-row" data-id="{{ p.id }}" data-title="{{ p.title }}">
+          <article class="cart-row"
+                   data-item-id="{{ it.id }}"
+                   data-title="{{ p.title }}">
             <div class="c-media">
-              {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.title }}">{% else %}<div class="img-ph">TJA</div>{% endif %}
+              {% if p.image_url %}
+                <img src="{{ p.image_url }}" alt="{{ p.title }}">
+              {% else %}
+                <div class="img-ph">TJA</div>
+              {% endif %}
             </div>
+
             <div class="c-main">
               <h3 class="c-title">{{ p.title }}</h3>
-              <div class="c-price">{{ p.price_display }}</div>
+
+              {% if it.variant %}
+                <div class="meta">Size: {{ it.variant.size }}</div>
+              {% endif %}
+
+              <div class="c-price">{{ it.unit_price_cents|money }}</div>
+
               <div class="c-qty">
                 <button class="qty-btn" data-dec aria-label="Decrease">−</button>
-                <input class="qty-in" type="number" min="1" value="{{ it.qty }}" inputmode="numeric" aria-label="Quantity">
+                <input class="qty-in" type="number" min="1" value="{{ it.qty }}"
+                       inputmode="numeric" aria-label="Quantity">
                 <button class="qty-btn" data-inc aria-label="Increase">+</button>
               </div>
             </div>
+
             <div class="c-side">
-              <div class="c-line">${{ it.line_cents|floatformat:-2|divisibleby:100 }}</div>
+              <div class="c-line">{{ it.line_total_cents|money }}</div>
               <button class="btn ghost c-remove">Remove</button>
             </div>
           </article>

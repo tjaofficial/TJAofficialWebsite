@@ -12,7 +12,12 @@
   const fmt = (cents) => `$${(cents/100).toFixed(2)}`;
 
   const toast = document.getElementById('toast');
-  const showToast = (msg) => { if (!toast) return; toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1200); };
+  const showToast = (msg) => {
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1200);
+  };
 
   const sumEl = document.getElementById('sumSubtotal');
 
@@ -25,43 +30,70 @@
   };
 
   const updateQty = async (row, qty) => {
-    const id = row.dataset.id;
-    if (!id) return;
-    const body = new URLSearchParams({ product_id: id, qty: String(qty) });
-    const res = await fetch('/cart/update/', { method:'POST', headers:{'X-CSRFToken': csrf,'Content-Type':'application/x-www-form-urlencoded'}, body });
+    const itemId = row.dataset.itemId;            // <-- use item id
+    if (!itemId) return;
+
+    const body = new URLSearchParams({ item_id: itemId, qty: String(qty) });  // <-- item_id
+    const res = await fetch('/cart/update/', {
+      method:'POST',
+      headers:{
+        'X-CSRFToken': csrf,
+        'Content-Type':'application/x-www-form-urlencoded',
+        'X-Requested-With':'fetch'
+      },
+      body
+    });
     if (!res.ok) throw new Error('update failed');
     const data = await res.json();
 
     // Update line total
     const lineCents = unitPrice(row) * qty;
-    row.querySelector('.c-line').textContent = fmt(lineCents);
+    const lineEl = row.querySelector('.c-line');
+    if (lineEl) lineEl.textContent = fmt(lineCents);
 
-    // Update subtotal
-    if (sumEl) sumEl.textContent = data.subtotal;
+    // Update subtotal from server truth
+    if (sumEl && data.subtotal) sumEl.textContent = data.subtotal;
 
     // Raise header badge event
-    document.dispatchEvent(new CustomEvent('cart:updated', { detail: { count: data.count }}));
+    if (typeof data.count === 'number') {
+      document.dispatchEvent(new CustomEvent('cart:updated', { detail: { count: data.count }}));
+    }
 
     showToast('Updated quantity');
   };
 
   const removeItem = async (row) => {
-    const id = row.dataset.id;
-    if (!id) return;
-    const body = new URLSearchParams({ product_id: id });
-    const res = await fetch('/cart/remove/', { method:'POST', headers:{'X-CSRFToken': csrf,'Content-Type':'application/x-www-form-urlencoded'}, body });
+    const itemId = row.dataset.itemId;            // <-- use item id
+    if (!itemId) return;
+
+    const body = new URLSearchParams({ item_id: itemId });                   // <-- item_id
+    const res = await fetch('/cart/remove/', {
+      method:'POST',
+      headers:{
+        'X-CSRFToken': csrf,
+        'Content-Type':'application/x-www-form-urlencoded',
+        'X-Requested-With':'fetch'
+      },
+      body
+    });
     if (!res.ok) throw new Error('remove failed');
     const data = await res.json();
+
     row.remove();
-    if (sumEl) sumEl.textContent = data.subtotal;
-    document.dispatchEvent(new CustomEvent('cart:updated', { detail: { count: data.count }}));
+
+    if (sumEl && data.subtotal) sumEl.textContent = data.subtotal;
+    if (typeof data.count === 'number') {
+      document.dispatchEvent(new CustomEvent('cart:updated', { detail: { count: data.count }}));
+    }
     showToast('Removed item');
+
     // If no rows left, reload to show empty state
     if (!document.querySelector('.cart-row')) location.reload();
   };
 
   grid.addEventListener('click', async (e) => {
     const row = e.target.closest('.cart-row');
+    if (!row) return;
 
     if (e.target.closest('[data-inc]') || e.target.closest('[data-dec]')) {
       const input = row.querySelector('.qty-in');
@@ -82,6 +114,8 @@
   grid.addEventListener('change', async (e) => {
     if (!e.target.classList.contains('qty-in')) return;
     const row = e.target.closest('.cart-row');
+    if (!row) return;
+
     let v = parseInt(e.target.value || '1', 10);
     if (Number.isNaN(v) || v < 1) v = 1;
     e.target.value = String(v);
@@ -93,7 +127,10 @@
     clearForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
-        const res = await fetch('/cart/clear/', { method:'POST', headers:{'X-CSRFToken': csrf} });
+        const res = await fetch('/cart/clear/', {
+          method:'POST',
+          headers:{ 'X-CSRFToken': csrf, 'X-Requested-With':'fetch' }
+        });
         if (!res.ok) throw new Error();
         document.dispatchEvent(new CustomEvent('cart:updated', { detail: { count: 0 }}));
         location.reload();
