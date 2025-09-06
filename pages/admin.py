@@ -11,7 +11,7 @@ class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
     extra = 1
     fields = ('size', 'price_cents', 'inventory', 'is_active', 'sku')
-    
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'has_variants', 'price_cents', 'inventory')
@@ -56,6 +56,7 @@ class VideoAdmin(admin.ModelAdmin):
     list_filter = ("is_public",)
     search_fields = ("title", "youtube_url")
 
+@admin.register(Subscriber)
 class SubscriberAdmin(admin.ModelAdmin):
     list_display = ("email", "name", "source", "created_at", "confirmed_at")
     search_fields = ("email", "name", "source")
