@@ -20,48 +20,48 @@
 
 {% block content %}
 <section class="reveal">
-  <div class="pd-grid">
-    <div class="pd-gallery">
-      <div class="pd-main">
-        {% if images %}
-          <img id="pdMainImg" src="{{ images.0.url }}" alt="{{ images.0.alt|default:p.title }}">
-        {% else %}
-          <div class="img-ph">TJA</div>
-        {% endif %}
-      </div>
-      {% if images|length > 1 %}
-      <div class="pd-thumbs">
-        {% for img in images %}
-          <button class="pd-thumb{% if forloop.first %} is-active{% endif %}" data-src="{{ img.url }}" aria-label="Image {{ forloop.counter }}">
-            <img src="{{ img.url }}" alt="{{ img.alt|default:p.title }}">
-          </button>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-
-    <div class="pd-info card">
-      <h2 class="pd-title">{{ p.title }}</h2>
-      <div class="pd-price">{{ p.price_display }}</div>
-      {% if p.inventory > 0 %}
-        <div class="p-stock in">In stock</div>
-      {% else %}
-        <div class="p-stock out">Sold out</div>
-      {% endif %}
-      {% if p.description %}
-        <p class="pd-desc">{{ p.description }}</p>
-      {% endif %}
-
-      <div class="p-ctas" style="margin-top:12px">
-        <div class="qty">
-          <button class="qty-btn" data-dec>−</button>
-          <input class="qty-in" type="number" value="1" min="1">
-          <button class="qty-btn" data-inc>+</button>
+    <div class="pd-grid">
+        <div class="pd-gallery">
+            <div class="pd-main">
+                {% if images %}
+                    <img id="pdMainImg" src="{{ images.0.image.url }}" alt="{{ images.0.alt|default:p.title }}">
+                {% else %}
+                    <div class="img-ph">TJA</div>
+                {% endif %}
+            </div>
+            {% if images|length > 1 %}
+                <div class="pd-thumbs">
+                    {% for img in images %}
+                        <button class="pd-thumb{% if forloop.first %} is-active{% endif %}" data-src="{{ img.image.url }}" aria-label="Image {{ forloop.counter }}">
+                            <img src="{{ img.image.url }}" alt="{{ img.alt|default:p.title }}">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %} data-id="{{ p.id }}">Add to Cart</button>
-      </div>
+
+        <div class="pd-info card">
+        <h2 class="pd-title">{{ p.title }}</h2>
+        <div class="pd-price">{{ p.price_display }}</div>
+        {% if p.inventory > 0 %}
+            <div class="p-stock in">In stock</div>
+        {% else %}
+            <div class="p-stock out">Sold out</div>
+        {% endif %}
+        {% if p.description %}
+            <p class="pd-desc">{{ p.description }}</p>
+        {% endif %}
+
+        <div class="p-ctas" style="margin-top:12px">
+            <div class="qty">
+            <button class="qty-btn" data-dec>−</button>
+            <input class="qty-in" type="number" value="1" min="1">
+            <button class="qty-btn" data-inc>+</button>
+            </div>
+            <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %} data-id="{{ p.id }}">Add to Cart</button>
+        </div>
+        </div>
     </div>
-  </div>
 </section>
 
 {% if related %}

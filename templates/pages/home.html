@@ -40,21 +40,33 @@
 {# ===== Music / Latest Releases ===== #}
 {% if releases %}
 <section class="home-slab reveal">
-  <h2 class="slab-title">Latest Releases</h2>
-  <div class="cards-grid cards-4" id="releasesStrip">
-    {% for r in releases %}
-      <article class="card-tile hoverlift">
-        <a href="{% url 'music' %}#release-{{ r.slug }}">
-          <div class="tile-art">{% if r.cover_url %}<img src="{{ r.cover_url }}" alt="{{ r.title }}">{% endif %}</div>
-          <div class="tile-body">
-            <h3>{{ r.title }}</h3>
-            <div class="muted">{{ r.release_type|default:"Single" }} • {{ r.release_date|date:"Y" }}</div>
-          </div>
+    <h2 class="slab-title">Latest Releases</h2>
+    <div class="cards-grid cards-4" id="releasesStrip">
+        {% for r in releases %}
+        <article class="card-tile hoverlift">
+            <a href="{% url 'music' %}#release-{{ r.slug }}">
+            <div class="tile-art">
+                {% if r.cover_url %}
+                    <img src="{{ r.cover_url }}" alt="{{ r.title }}">\
+                {% elif r.cover %}
+                    <img src="{{ r.cover.url }}" alt="{{ r.title }}">
+                {% else %}
+                    <img src="{% static 'img/no-photo.jpg' %}" alt="{{ p.title }}">
+                {% endif %}
+            </div>
+            <div class="tile-body">
+                <h3>{{ r.title }}</h3>
+                <div class="muted">{{ r.release_type|default:"Single" }} • {{ r.release_date|date:"Y" }}</div>
+            </div>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+    <div class="slab-actions">
+        <a class="btn ghost" href="{% url 'music' %}">
+            View Discography
         </a>
-      </article>
-    {% endfor %}
-  </div>
-  <div class="slab-actions"><a class="btn ghost" href="{% url 'music' %}">View Discography</a></div>
+    </div>
 </section>
 {% endif %}
 
@@ -107,21 +119,29 @@
 {# ===== Shop ===== #}
 {% if products %}
 <section class="home-slab reveal">
-  <h2 class="slab-title">Shop</h2>
-  <div class="cards-grid cards-4">
-    {% for p in products %}
-      <article class="card-product hoverlift">
-        <a href="{% url 'product_detail' slug=p.slug %}">
-          <div class="prod-photo">{% if p.image_main %}<img src="{{ p.image_main.url }}" alt="{{ p.title }}">{% endif %}</div>
-          <div class="tile-body">
-            <h3>{{ p.title }}</h3>
-            <div class="muted">${{ p.price }}</div>
-          </div>
-        </a>
-      </article>
-    {% endfor %}
-  </div>
-  <div class="slab-actions"><a class="btn ghost" href="{% url 'shop' %}">Visit Shop</a></div>
+    <h2 class="slab-title">Shop</h2>
+    <div class="cards-grid cards-4">
+        {% for p in products %}
+        <article class="card-product hoverlift">
+            <a href="{% url 'product_detail' slug=p.slug %}">
+            <div class="prod-photo">
+                {% if p.image_url %}
+                    <img src="{{ p.image_url }}" alt="{{ p.title }}">
+                {% elif p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.title }}">
+                {% else %}
+                    <img src="{% static 'img/no-photo.jpg' %}" alt="{{ p.title }}">
+                {% endif %}
+            </div>
+            <div class="tile-body">
+                <h3>{{ p.title }}</h3>
+                <div class="muted">${{ p.price }}</div>
+            </div>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+    <div class="slab-actions"><a class="btn ghost" href="{% url 'shop' %}">Visit Shop</a></div>
 </section>
 {% endif %}
 

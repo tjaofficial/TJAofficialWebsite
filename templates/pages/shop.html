@@ -33,9 +33,11 @@
             <div class="p-media">
                 <a class="p-media" href="{% url 'product_detail' slug=p.slug %}">
                     {% if p.image_url %}
-                    <img loading="lazy" src="{{ p.image_url }}" alt="{{ p.title }}">
+                        <img loading="lazy" src="{{ p.image_url }}" alt="{{ p.title }}">
+                    {% elif p.image %}
+                        <img loading="lazy" src="{{ p.image.url }}" alt="{{ p.title }}">
                     {% else %}
-                    <div class="img-ph">TJA</div>
+                        <img src="{% static 'img/no-photo.jpg' %}" alt="{{ p.title }}">
                     {% endif %}
                 </a>
             </div>

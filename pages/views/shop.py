@@ -102,7 +102,9 @@ def product_detail(request, slug):
         images = [{"url": product.image_url, "alt": product.title}]
     related = product.related()
     return render(request, "pages/product_detail.html", {
-        "p": product, "images": images, "related": related
+        "p": product, 
+        "images": images, 
+        "related": related
     })
 
 # Simple shipping table (cents)

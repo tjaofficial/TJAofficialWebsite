@@ -79,13 +79,29 @@ class Product(models.Model):
         return qs[:limit]
     
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
-    url = models.URLField()
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        related_name="images"
+    )
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
     alt = models.CharField(max_length=200, blank=True)
     sort = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        return f"{self.product} - {self.sort}"
+
     class Meta:
         ordering = ["sort", "id"]
+    
+    def image_src(self):
+        if self.image:
+            return self.image.url
+
+    def clean(self):
+        super().clean()
+        if not self.image:
+            raise ValidationError("Upload an image.")
 
     def __str__(self):
         return f"{self.product.title} img"

@@ -105,7 +105,7 @@
               <a href="{{ v.url }}" target="_blank" rel="noopener">{{ v.url }}</a>
             {% endif %}
             <div class="muted">{{ v.title|default:"" }}</div>
-            <form method="post" action="{% url 'tour_video_delete' pk=v.pk %}">
+            <form method="post" action="#">
               {% csrf_token %}
               <button class="btn ghost" type="submit">Delete</button>
             </form>

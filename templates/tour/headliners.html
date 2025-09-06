@@ -15,11 +15,11 @@
         <a href="{% url 'tour_epk_detail' slug=a.slug %}">
           <div class="ac-media">
             {% if a.avatar %}
-              <img src="{{ a.avatar.url }}" alt="{{ a.name }}">
+                <img src="{{ a.avatar.url }}" alt="{{ a.name }}">
             {% elif a.hero_image %}
-              <img src="{{ a.hero_image.url }}" alt="{{ a.name }}">
+                <img src="{{ a.hero_image.url }}" alt="{{ a.name }}">
             {% else %}
-              <div class="img-ph">TJA</div>
+                <img src="{% static 'img/no-photo.jpg' %}" alt="{{ p.title }}">
             {% endif %}
           </div>
           <div class="ac-body">
