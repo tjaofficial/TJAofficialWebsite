@@ -1,0 +1,29 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Ticket Type{% endblock %}
+{% block content %}
+<h1>{{ mode|capfirst }} Ticket Type</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <select class="input" name="event" required>
+      {% for ev in form.fields.event.queryset %}
+        <option value="{{ ev.id }}" {% if form.event.value == ev.id|stringformat:'s' %}selected{% endif %}>{{ ev.name|default:"(unnamed)" }}</option>
+      {% endfor %}
+    </select>
+    <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+  </div>
+  <div class="form-row">
+    <input class="input" type="number" name="price_cents" placeholder="Price (cents)" value="{{ form.price_cents.value|default:'' }}" required>
+    <input class="input" type="number" name="quantity" placeholder="Quantity" value="{{ form.quantity.value|default:'' }}" required>
+  </div>
+  <div class="form-row">
+    <input class="input" type="datetime-local" name="sales_start" value="{{ form.sales_start.value|default:'' }}">
+    <input class="input" type="datetime-local" name="sales_end" value="{{ form.sales_end.value|default:'' }}">
+    <label><input type="checkbox" name="active" {% if form.active.value or mode == 'add' %}checked{% endif %}> Active</label>
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:tickets:list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

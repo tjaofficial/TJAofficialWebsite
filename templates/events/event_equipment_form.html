@@ -1,0 +1,25 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Add Equipment — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Add Equipment — {{ event.name }}</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <select class="input" name="equipment">
+      {% for e in form.fields.equipment.queryset %}
+        <option value="{{ e.id }}" {% if form.equipment.value == e.id|stringformat:'s' %}selected{% endif %}>
+          {{ e.name }} — {{ e.get_category_display }}
+        </option>
+      {% endfor %}
+    </select>
+    <input class="input" type="number" name="qty" placeholder="Qty" min="1" value="{{ form.qty.value|default:'1' }}">
+  </div>
+  <div class="form-row">
+    <input class="input" name="notes" placeholder="Notes">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:equipment:event_equipment' event.id %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Coupons{% endblock %}
+{% block content %}
+<h1>Coupons</h1>
+<p>
+  <a class="btn primary" href="{% url 'control:shop:coupon_new' %}">New Coupon</a>
+  <a class="btn" href="{% url 'control:shop:issue_token' %}">Issue Token</a>
+</p>
+<table class="table">
+  <thead><tr><th>Code</th><th>Type</th><th>Live?</th><th>%</th><th>Amt</th><th>Start</th><th>End</th><th></th></tr></thead>
+  <tbody>
+  {% for c in coupons %}
+    <tr>
+      <td>{{ c.code }}</td>
+      <td>{{ c.get_use_type_display }}</td>
+      <td>{% if c.is_live %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+      <td>{% if c.percent_off %}{{ c.percent_off }}%{% endif %}</td>
+      <td>{% if c.amount_off_cents %}${{ c.amount_off_cents|floatformat:-2 }}{% endif %}</td>
+      <td>{{ c.starts_at }}</td>
+      <td>{{ c.ends_at }}</td>
+      <td><a class="btn" href="{% url 'control:shop:coupon_edit' c.id %}">Edit</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="muted">No coupons.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

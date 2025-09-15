@@ -47,6 +47,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pages',
+    'controlpanel',
+    'subscribers',
+    'shop',
+    "events",
+    "tickets",
+    'equipment',
+    'bookingstack',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -192,11 +200,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/tour/headliners/me/"
-LOGOUT_REDIRECT_URL = "/tour/"
+# LOGIN_URL = "/accounts/login/"
+#LOGIN_REDIRECT_URL = "/control/events/venues/"
+LOGOUT_REDIRECT_URL = "/"
 
 # If running behind Nginx / proxy
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE')
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE')
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "tickets@example.com")
+SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://127.0.0.1:8000")
+
+VENUE_MODEL = "events.Venue"
+LOGIN_URL = f"{SITE_BASE_URL}/accounts/login/"
+
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
+IG_ACCESS_TOKEN = os.getenv("IG_ACCESS_TOKEN", "")         # Business/Graph API token (optional)
+TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", "") # optional

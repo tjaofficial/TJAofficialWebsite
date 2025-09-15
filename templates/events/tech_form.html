@@ -1,0 +1,33 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Tech{% endblock %}
+{% block content %}
+<h1>{{ mode|capfirst }} Tech</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+    <select class="input" name="role">
+      {% for v,l in form.fields.role.choices %}
+        <option value="{{ v }}" {% if form.role.value == v %}selected{% endif %}>{{ l }}</option>
+      {% endfor %}
+    </select>
+    <input class="input" name="rate_cents" type="number" placeholder="Rate (cents)" value="{{ form.rate_cents.value|default:0 }}">
+  </div>
+  <div class="form-row">
+    <input class="input" name="city" placeholder="City" value="{{ form.city.value|default:'' }}">
+    <input class="input" name="state" placeholder="State" value="{{ form.state.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <input class="input" name="email" type="email" placeholder="Email" value="{{ form.email.value|default:'' }}">
+    <input class="input" name="phone" placeholder="Phone" value="{{ form.phone.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <textarea class="input" name="notes" rows="2" placeholder="Notes">{{ form.notes.value|default:'' }}</textarea>
+    <label><input type="checkbox" name="active" {% if form.active.value or mode == 'add' %}checked{% endif %}> Active</label>
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:events:tech_list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

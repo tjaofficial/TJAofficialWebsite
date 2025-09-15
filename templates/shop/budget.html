@@ -1,0 +1,91 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Budget / Sales{% endblock %}
+{% block content %}
+<h1>Budget / Sales</h1>
+
+<form method="get" class="card">
+  <div class="form-row">
+    <input class="input" type="date" name="from" value="{{ q.from }}">
+    <input class="input" type="date" name="to" value="{{ q.to }}">
+    <input class="input" name="state" placeholder="State (e.g., MI)" value="{{ q.state }}">
+    <button class="btn primary">Apply</button>
+    <a class="btn" href="{% url 'control:shop:budget_export' %}?from={{ q.from }}&to={{ q.to }}&state={{ q.state }}">Export CSV</a>
+  </div>
+</form>
+
+<div class="kpi">
+  <div class="card">
+    <h2>Revenue</h2>
+    <div>${{ totals.revenue|default:0|floatformat:-2 }}</div>
+  </div>
+  <div class="card">
+    <h2>Shipping</h2>
+    <div>${{ totals.shipping|default:0|floatformat:-2 }}</div>
+  </div>
+  <div class="card">
+    <h2>Tax</h2>
+    <div>${{ totals.tax|default:0|floatformat:-2 }}</div>
+  </div>
+  <div class="card">
+    <h2>Discounts</h2>
+    <div>${{ totals.discount|default:0|floatformat:-2 }}</div>
+  </div>
+    <div class="card">
+        <h2>Net</h2>
+        <div>${{ net|floatformat:-2 }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>By Product</h3>
+  <table class="table">
+    <thead><tr><th>Title</th><th>Qty</th><th>Revenue</th></tr></thead>
+    <tbody>
+      {% for row in by_product %}
+        <tr>
+          <td>{{ row.title_snapshot }}</td>
+          <td>{{ row.qty }}</td>
+          <td>${{ row.revenue|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3" class="muted">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>By State</h3>
+  <table class="table">
+    <thead><tr><th>State</th><th>Revenue</th></tr></thead>
+    <tbody>
+      {% for row in by_state %}
+        <tr>
+          <td>{{ row.ship_to_state|default:"—" }}</td>
+          <td>${{ row.revenue|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>By Day</h3>
+  <table class="table">
+    <thead><tr><th>Date</th><th>Revenue</th></tr></thead>
+    <tbody>
+      {% for row in by_day %}
+        <tr>
+          <td>{{ row.created_at__date }}</td>
+          <td>${{ row.revenue|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

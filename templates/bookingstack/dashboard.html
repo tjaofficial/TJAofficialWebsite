@@ -1,0 +1,25 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block header %}Booking Dashboard</h1>{% endblock %}
+{% block content %}
+    <section>
+    <h3>Follow-ups due</h3>
+    <ul>
+    {% for o in pending_outreach %}
+        <li>{{ o.venue.name }} — {{ o.kind }} sent {{ o.sent_at|date:"M d" }} {% if o.next_followup_at %}(follow-up {{ o.next_followup_at|date:"M d" }}){% endif %}</li>
+    {% empty %}<li>No pending outreach.</li>{% endfor %}
+    </ul>
+    </section>
+
+    <section>
+        <h3>Recent EPK visits</h3>
+        <ul>
+            {% for v in recent_epk %}
+                {% if v.venue %}
+                    <li>{{ v.venue.name }} — {{ v.opened_at|date:"M d H:i" }} ({{ v.referrer|default:"direct" }})</li>
+                {% endif %}
+            {% empty %}
+                <li>No recent visits.</li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

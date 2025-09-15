@@ -1,0 +1,14 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Artist Link — {{ slot.artist.name }}{% endblock %}
+{% block content %}
+<h1>Artist Link — {{ slot.artist.name }} / {{ event.name }}</h1>
+
+<div class="card">
+  <p><b>Purchase URL:</b> <a href="{{ purchase_url }}" target="_blank">{{ purchase_url }}</a></p>
+  <p><b>QR:</b></p>
+  <img src="{% url 'control:events:artist_link_qr' event.id link.token %}" alt="QR" style="height:240px;">
+</div>
+<p class="muted">Share this URL or QR with the artist. All sales through this link will be credited to them.</p>
+
+<a class="btn" href="{% url 'control:events:event_artists' event.id %}">Back</a>
+{% endblock %}

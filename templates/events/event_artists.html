@@ -1,0 +1,38 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Artists — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Artists — {{ event.name }}</h1>
+<p>
+  <a class="btn primary" href="{% url 'control:events:event_artist_assign' event.id %}">Assign Artist</a>
+  <a class="btn" href="{% url 'control:events:dashboard' event.id %}">Back to Dashboard</a>
+</p>
+
+<div class="card">
+  <table class="table">
+    <thead><tr>
+      <th>Order</th><th>Name</th><th>Role</th>
+      <th>Total Sold</th><th>Card</th><th>Cash</th>
+      <th>Link</th><th>QR</th><th>Cash Sale</th><th></th>
+    </tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.slot.set_order }}</td>
+          <td>{{ row.slot.artist.name }}</td>
+          <td>{{ row.slot.get_role_display }}</td>
+          <td>{{ row.total }}</td>
+          <td>{{ row.card }}</td>
+          <td>{{ row.cash }}</td>
+          <td><a class="btn" href="{% url 'control:events:event_artist_link' event.id row.slot.id %}">Get Link</a></td>
+          <td><a class="btn" href="{% url 'control:events:event_artist_link' event.id row.slot.id %}">QR</a></td>
+          <td><a class="btn" href="{% url 'control:events:artist_cash_sale' event.id row.slot.artist.id %}">Cash</a></td>
+          <td><a class="btn" href="{% url 'control:events:event_artist_remove' event.id row.slot.id %}">Remove</a></td>
+          <td><a class="btn" href="{% url 'control:pages:artist_dashboard' row.slot.artist.id %}">Artist Dashboard</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10" class="muted">No artists assigned.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

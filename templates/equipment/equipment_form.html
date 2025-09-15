@@ -1,0 +1,31 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Equipment{% endblock %}
+
+{% block content %}
+<h1>{{ mode|capfirst }} Equipment{% if obj %}: {{ obj.name }}{% endif %}</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+    <select class="input" name="category">
+      {% for v,l in form.fields.category.choices %}
+        <option value="{{ v }}" {% if form.category.value == v %}selected{% endif %}>{{ l }}</option>
+      {% endfor %}
+    </select>
+    <input class="input" name="serial" placeholder="Serial (optional)" value="{{ form.serial.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <input class="input" type="number" name="qty_total" placeholder="Total Quantity" min="1" value="{{ form.qty_total.value|default:1 }}">
+    <label style="display:flex;align-items:center;gap:6px;">
+      <input type="checkbox" name="active" {% if form.active.value or form.active.value is None %}checked{% endif %}> Active
+    </label>
+  </div>
+  <div class="form-row">
+    <textarea class="input" name="notes" rows="2" placeholder="Notes">{{ form.notes.value|default:'' }}</textarea>
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:equipment:list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

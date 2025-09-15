@@ -1,0 +1,30 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Order {{ order.number }}{% endblock %}
+{% block content %}
+<h1>Order {{ order.number }}</h1>
+
+<div class="card">
+  <div><b>Status:</b> {{ order.get_status_display }}</div>
+  <div><b>Email:</b> {{ order.email|default:order.user.email }}</div>
+  <div><b>Total:</b> ${{ order.total_cents|floatformat:-2 }}</div>
+  <div><b>Ship To:</b> {{ order.ship_to_name }} — {{ order.ship_to_addr1 }}, {{ order.ship_to_city }}, {{ order.ship_to_state }} {{ order.ship_to_postal }}</div>
+</div>
+
+<div class="card">
+  <h3>Items</h3>
+  <table class="table">
+    <thead><tr><th>Title</th><th>Size</th><th>Qty</th><th>Unit</th><th>Line</th></tr></thead>
+    <tbody>
+      {% for it in order.items.all %}
+        <tr>
+          <td>{{ it.title_snapshot }}</td>
+          <td>{{ it.size }}</td>
+          <td>{{ it.qty }}</td>
+          <td>${{ it.price_cents_snapshot|floatformat:-2 }}</td>
+          <td>${{ it.line_cents|floatformat:-2 }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

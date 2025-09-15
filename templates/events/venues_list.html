@@ -1,0 +1,65 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Venues{% endblock %}
+{% block content %}
+<h1>Venues</h1>
+<p><a class="btn primary" href="{% url 'control:events:venue_add' %}">Add Venue</a></p>
+{% if request.user.is_staff %}
+  <section style="padding:12px; border:1px solid #ddd; margin-bottom:12px">
+    <h3>Ops</h3>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center">
+      <form action="{% url 'control:bookingstack:ops_refresh_metrics' %}" method="post" style="display:flex; gap:6px; align-items:center">
+        {% csrf_token %}
+        <input type="text" name="city" placeholder="City (optional)" />
+        <input type="number" name="radius" placeholder="Radius km" min="10" step="10" value="80" style="width:110px" />
+        <button type="submit">Refresh Social Metrics</button>
+      </form>
+
+      <form action="{% url 'control:bookingstack:ops_scrape_lineups' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Scrape Lineups</button>
+      </form>
+
+      <form action="{% url 'control:bookingstack:ops_remind_followups' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Remind Followups</button>
+      </form>
+
+      <form action="{% url 'control:bookingstack:ops_backfill_profiles' %}" method="post" onsubmit="return confirm('Run backfill? Usually only needed after imports.')">
+        {% csrf_token %}
+        <button type="submit">Backfill Venue Profiles</button>
+      </form>
+    </div>
+  </section>
+{% endif %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in venues %}
+            <tr>
+                <td>{{ v.name }}</td>
+                <td>{{ v.city }}</td>
+                <td>{{ v.state }}</td>
+                <td>{{ v.capacity }}</td>
+                <td>
+                    <a href="{% url 'control:bookingstack:public_epk' v.id %}">EPK</a>
+                    <a href="{% url 'control:bookingstack:compose_pitch' v.id %}">Email</a>
+                    <a href="{% url 'control:bookingstack:venue_openers' v.id %}">Openers</a>
+                    <a href="{% url 'control:bookingstack:venue_detail' v.id %}">Details</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" class="muted">No venues.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

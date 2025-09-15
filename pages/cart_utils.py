@@ -1,92 +1,96 @@
-from typing import Iterator, List, Tuple
-from django.db.models import Sum
-from .models import Cart, CartItem, Product
+# cart_utils.py
+from typing import Optional
+from django.db.models import Sum, F
+from django.utils.crypto import get_random_string
 
-def _get_or_create_user_cart(user) -> Cart:
-    cart, _ = Cart.objects.get_or_create(user=user, active=True)
+from shop.models import Cart, CartItem, Product, ProductVariant
+
+
+def get_or_create_cart(request) -> Cart:
+    """
+    One canonical cart for everyone:
+      - Auth users: Cart.user=<user>
+      - Guests:     Cart.session_key=<request.session.session_key>
+    """
+    if request.user.is_authenticated:
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        return cart
+
+    # ensure session exists
+    if not request.session.session_key:
+        request.session.save()
+    cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
     return cart
 
+def cart_count(request) -> int:
+    cart = get_or_create_cart(request)
+    return cart.items.aggregate(n=Sum("qty"))["n"] or 0
+
+def cart_items_qs(request):
+    """Convenience: returns a queryset of CartItem with product/variant joined."""
+    cart = get_or_create_cart(request)
+    return cart.items.select_related("product", "variant").order_by("added_at")
+
+def cart_subtotal_cents(request) -> int:
+    """
+    Subtotal should always use the snapshot price on the CartItem line.
+    """
+    cart = get_or_create_cart(request)
+    return (
+        cart.items.aggregate(
+            c=Sum(F("unit_price_cents") * F("qty"))
+        )["c"] or 0
+    )
+
+def cart_update_qty(request, *, item_id: int, qty: int) -> int:
+    """
+    Update a specific CartItem.id quantity and return new total count.
+    """
+    qty = max(1, int(qty))
+    cart = get_or_create_cart(request)
+    updated = cart.items.filter(pk=item_id).update(qty=qty)
+    # if the item wasn't found, we silently ignore; caller can handle 0 updated
+    return cart.items.aggregate(n=Sum("qty"))["n"] or 0
+
+def cart_remove(request, *, item_id: int) -> int:
+    """
+    Remove a specific CartItem.id and return new total count.
+    """
+    cart = get_or_create_cart(request)
+    cart.items.filter(pk=item_id).delete()
+    return cart.items.aggregate(n=Sum("qty"))["n"] or 0
+
+def cart_clear(request) -> None:
+    """
+    Clear the entire cart (this cart only).
+    """
+    cart = get_or_create_cart(request)
+    cart.items.all().delete()
+
+# --- Optional: legacy session merge (if you ever had session dict carts) ---
+
 def merge_session_into_user_cart(request, user):
+    """
+    If you previously stored a session dict cart like {"<product_id>": qty},
+    merge those into the user's DB cart and clear the session dict.
+    """
     sess = request.session.get("cart", {})
     if not sess:
         return
-    cart = _get_or_create_user_cart(user)
+    cart, _ = Cart.objects.get_or_create(user=user)
+
     for pid, qty in sess.items():
         try:
             p = Product.objects.get(pk=int(pid), is_active=True)
         except Product.DoesNotExist:
             continue
-        item, _ = CartItem.objects.get_or_create(cart=cart, product=p, defaults={"qty": 0})
+
+        # No-variant legacy lines: merge into (product, variant=None)
+        item, _ = CartItem.objects.get_or_create(
+            cart=cart, product=p, variant=None, defaults={"qty": 0, "unit_price_cents": p.price_cents}
+        )
         item.qty += max(1, int(qty))
         item.save()
+
     request.session["cart"] = {}
     request.session.modified = True
-
-def cart_add(request, product: Product, qty: int) -> int:
-    qty = max(1, int(qty))
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        item, _ = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"qty": 0})
-        item.qty += qty
-        item.save()
-        return CartItem.objects.filter(cart=cart).aggregate(n=Sum("qty"))["n"] or 0
-    # guests -> session
-    sess = request.session.get("cart", {})
-    k = str(product.id)
-    sess[k] = int(sess.get(k, 0)) + qty
-    request.session["cart"] = sess
-    request.session.modified = True
-    return sum(sess.values())
-
-def cart_update_qty(request, product_id: int, qty: int) -> int:
-    qty = max(1, int(qty))
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        item, _ = CartItem.objects.get_or_create(cart=cart, product_id=product_id, defaults={"qty": 0})
-        item.qty = qty
-        item.save()
-        return CartItem.objects.filter(cart=cart).aggregate(n=Sum("qty"))["n"] or 0
-    sess = request.session.get("cart", {})
-    sess[str(product_id)] = qty
-    request.session["cart"] = sess
-    request.session.modified = True
-    return sum(sess.values())
-
-def cart_remove(request, product_id: int) -> int:
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        CartItem.objects.filter(cart=cart, product_id=product_id).delete()
-        return CartItem.objects.filter(cart=cart).aggregate(n=Sum("qty"))["n"] or 0
-    sess = request.session.get("cart", {})
-    sess.pop(str(product_id), None)
-    request.session["cart"] = sess
-    request.session.modified = True
-    return sum(sess.values())
-
-def cart_clear(request):
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        cart.items.all().delete()
-    request.session["cart"] = {}
-    request.session.modified = True
-
-def cart_count(request) -> int:
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        return CartItem.objects.filter(cart=cart).aggregate(n=Sum("qty"))["n"] or 0
-    return sum(request.session.get("cart", {}).values())
-
-def cart_iter_items(request) -> Iterator[Tuple[Product, int]]:
-    if request.user.is_authenticated:
-        cart = _get_or_create_user_cart(request.user)
-        for it in cart.items.select_related("product"):
-            if it.product.is_active:
-                yield it.product, int(it.qty)
-    else:
-        sess = request.session.get("cart", {})
-        ids = [int(k) for k in sess.keys()]
-        prods = {p.id: p for p in Product.objects.filter(id__in=ids, is_active=True)}
-        for k, q in sess.items():
-            p = prods.get(int(k))
-            if p:
-                yield p, int(q)

@@ -1,0 +1,46 @@
+{% extends "controlpanel/dashboard.html" %}
+{% load static %}
+{% block title %}Edit Checklist – {{ event.name }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checklist.css' %}">
+    <script defer src="{% static 'js/checklist_edit.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1 class="hero-title">Edit Checklist</h1>
+    <p class="hero-sub">{{ event.name }}</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="{% url 'control:events:event_checklist' event.id %}">Back to Checklist</a>
+    </div>
+  </div>
+</section>
+<section class="container">
+  <form method="post" id="editForm" class="card">
+    {% csrf_token %}
+    <div id="rows">
+      {% for it in items %}
+        <div class="row" draggable="true">
+          <input type="hidden" name="id[]" value="{{ it.id }}">
+          <input type="hidden" name="order[]" value="{{ it.order }}" class="order-in">
+          <label class="field grow">
+            <span class="label">Title</span>
+            <input type="text" name="title[]" value="{{ it.title }}">
+          </label>
+          <label class="chk">
+            <input type="checkbox" name="required[]" value="1" {% if it.is_required %}checked{% endif %}>
+            <span>Required</span>
+          </label>
+          <button class="btn ghost rm" type="button">Remove</button>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="form-actions">
+      <button class="btn ghost" type="button" id="addRow">Add item</button>
+      <button class="btn" type="submit">Save</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

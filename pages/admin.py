@@ -1,28 +1,11 @@
 from django.contrib import admin
 from .models import *
-from django.http import HttpResponse
-import csv
 
 # Register your models here.
 
 admin.site.register(Show)
 
-class ProductVariantInline(admin.TabularInline):
-    model = ProductVariant
-    extra = 1
-    fields = ('size', 'price_cents', 'inventory', 'is_active', 'sku')
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'is_active', 'has_variants', 'price_cents', 'inventory')
-    list_filter = ('is_active', 'has_variants', 'category')
-    prepopulated_fields = {"slug": ("title",)}
-    inlines = [ProductVariantInline]
-
-admin.site.register(Category)
-admin.site.register(ProductImage)
-admin.site.register(Cart)
-admin.site.register(CartItem)
 class TrackInline(admin.TabularInline):
     model = Track
     extra = 0
@@ -33,45 +16,12 @@ class ReleaseAdmin(admin.ModelAdmin):
     list_filter = ("release_type", "release_date")
     search_fields = ("title",)
     inlines = [TrackInline]
-class OrderItemInline(admin.TabularInline):
-    model = OrderItem
-    extra = 0
-    readonly_fields = ("title_snapshot", "price_cents_snapshot", "qty")
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ("number", "status", "email", "total_cents", "created_at", "paid_at")
-    list_filter = ("status", "created_at")
-    search_fields = ("number", "email", "provider_session_id", "provider_payment_intent")
-    inlines = [OrderItemInline]
-
-@admin.register(StripeEvent)
-class StripeEventAdmin(admin.ModelAdmin):
-    list_display = ("event_id", "type", "created_at")
-    search_fields = ("event_id", "type")
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
     list_display = ("title", "published_at", "is_public", "sort")
     list_filter = ("is_public",)
     search_fields = ("title", "youtube_url")
-
-@admin.register(Subscriber)
-class SubscriberAdmin(admin.ModelAdmin):
-    list_display = ("email", "name", "source", "created_at", "confirmed_at")
-    search_fields = ("email", "name", "source")
-    list_filter = ("source", "created_at", "confirmed_at")
-    actions = ["export_csv"]
-
-    def export_csv(self, request, queryset):
-        resp = HttpResponse(content_type="text/csv")
-        resp["Content-Disposition"] = 'attachment; filename="subscribers.csv"'
-        w = csv.writer(resp)
-        w.writerow(["email","name","source","created_at","confirmed_at"])
-        for s in queryset:
-            w.writerow([s.email, s.name, s.source, s.created_at, s.confirmed_at])
-        return resp
-    export_csv.short_description = "Export selected to CSV"
 
 class ArtistPhotoInline(admin.TabularInline):
     model = ArtistPhoto

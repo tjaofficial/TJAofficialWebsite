@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Buy Tickets — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Buy Tickets — {{ event.name }}</h1>
+
+<form method="post" action="{% url 'control:events:create_checkout' event.id %}" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="purchaser_name" placeholder="Your name (for tickets)" required>
+    <input class="input" type="email" name="email" placeholder="Your email (for delivery)" required>
+  </div>
+  <table class="table">
+    <thead><tr><th>Type</th><th>Price</th><th>Remaining</th><th>Qty</th></tr></thead>
+    <tbody>
+    {% for tt in types %}
+      <tr>
+        <td>{{ tt.name }}</td>
+        <td>${{ tt.price_cents|floatformat:-2 }}</td>
+        <td>{{ tt.remaining_qty }}</td>
+        <td>
+            {% if tt.on_sale and tt.remaining_qty > 0 %}
+                <input class="input" type="number"
+                    min="0"
+                    max="{{ tt.max_per_order|default:tt.remaining_qty }}"
+                    name="qty_{{ tt.id }}" value="0">
+            {% else %}
+                <span class="muted">Not on sale</span>
+            {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="form-row">
+    <button class="btn primary">Checkout</button>
+  </div>
+</form>
+{% endblock %}

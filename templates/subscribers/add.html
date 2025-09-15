@@ -1,0 +1,38 @@
+{% extends 'controlpanel/base.html' %}
+{% block title %}Add Subscriber{% endblock %}
+{% block content %}
+  <h1>Add Subscriber</h1>
+  <form method="post" class="card">
+    {% csrf_token %}
+    <div class="form-row">
+      <label>Email</label>
+      <input class="input" type="email" name="email" required value="{{ form.email.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <input class="input" name="first_name" placeholder="First name" value="{{ form.first_name.value|default:'' }}">
+      <input class="input" name="last_name" placeholder="Last name" value="{{ form.last_name.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <input class="input" name="phone" placeholder="Phone" value="{{ form.phone.value|default:'' }}">
+      <input class="input" name="city" placeholder="City" value="{{ form.city.value|default:'' }}">
+      <input class="input" name="state" placeholder="State" value="{{ form.state.value|default:'' }}">
+      <input class="input" name="country" placeholder="Country" value="{{ form.country.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <label>Birthday</label>
+      <input class="input" type="date" name="birthday" value="{{ form.birthday.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <label>Tags</label>
+      <select class="input" name="tags" multiple>
+        {% for t in form.fields.tags.queryset %}
+          <option value="{{ t.id }}" {% if t.id|stringformat:'s' in form.data.getlist:'tags' %}selected{% endif %}>{{ t.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <button class="btn primary">Save</button>
+      <a class="btn" href="{% url 'subscribers:list' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

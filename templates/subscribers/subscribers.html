@@ -1,0 +1,26 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Subscribers{% endblock %}
+{% block content %}
+  <h1>Subscribers</h1>
+  <form method="get" class="form-row">
+    <input class="input" name="q" value="{{ q }}" placeholder="Search...">
+    <button class="btn primary">Search</button>
+    <a href="{% url 'control:subscribers:add' %}" class="btn">Add Subscriber</a>
+  </form>
+  <table class="table">
+    <thead><tr><th>Email</th><th>Name</th><th>City</th><th>State</th><th>Tags</th></tr></thead>
+    <tbody>
+    {% for s in subs %}
+      <tr>
+        <td><a href="{% url 'control:subscribers:detail' s.id %}">{{ s.email }}</a></td>
+        <td>{{ s.first_name }} {{ s.last_name }}</td>
+        <td>{{ s.city }}</td>
+        <td>{{ s.state }}</td>
+        <td>{% for t in s.tags.all %}<span class="badge">{{ t.label }}</span> {% endfor %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="muted">No subscribers.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

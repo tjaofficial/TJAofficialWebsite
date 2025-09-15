@@ -1,0 +1,25 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Assign Artist — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Assign Artist — {{ event.name }}</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <select class="input" name="artist">
+      {% for a in artists %}
+        <option value="{{ a.id }}">{{ a.name }} — default: {{ a.get_default_role_display }}</option>
+      {% endfor %}
+    </select>
+    <select class="input" name="role">
+      <option value="headliner">Headliner</option>
+      <option value="opener">Opener</option>
+      <option value="guest">Guest</option>
+    </select>
+    <input class="input" type="number" name="set_order" placeholder="Order" value="0" min="0">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:events:event_artists' event.id %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

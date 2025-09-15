@@ -1,0 +1,33 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Add Venue{% endblock %}
+{% block content %}
+<h1>Add Venue</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="name" placeholder="Venue name" required>
+    <input class="input" name="capacity" type="number" placeholder="Capacity">
+  </div>
+  <div class="form-row">
+    <input class="input" name="address" placeholder="Address">
+    <input class="input" name="city" placeholder="City">
+    <input class="input" name="state" placeholder="State">
+    <input class="input" name="country" placeholder="Country">
+  </div>
+  <div class="form-row">
+    <input class="input" name="owner_name" placeholder="Owner name">
+    <input class="input" name="owner_email" type="email" placeholder="Owner email">
+  </div>
+  <div class="form-row">
+    <input class="input" name="entertainment_manager" placeholder="Entertainment manager">
+    <input class="input" name="entertainment_email" type="email" placeholder="Entertainment email">
+  </div>
+  <div class="form-row">
+    <input class="input" name="hours" placeholder="Hours">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:events:venues' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Equipment — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Equipment — {{ event.name }}</h1>
+<p><a class="btn primary" href="{% url 'control:equipment:event_equipment_add' event.id %}">Add Equipment</a>
+   <a class="btn" href="{% url 'control:events:list' %}">Back to Events</a></p>
+
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Category</th><th>Qty</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.equipment.name }}</td>
+          <td>{{ r.equipment.get_category_display }}</td>
+          <td>{{ r.qty }}</td>
+          <td>{{ r.notes }}</td>
+          <td><a class="btn" href="{% url 'control:equipment:event_equipment_remove' event.id r.id %}">Remove</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="muted">No equipment reserved.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Event Media — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Event Media — {{ event.name }}</h1>
+<p><a class="btn primary" href="{% url 'control:events:event_media_add' event.id %}">Add Media</a>
+   <a class="btn" href="{% url 'control:events:list' %}">Back to Events</a></p>
+
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Kind</th><th>Preview</th><th>Caption</th><th>When</th><th></th></tr></thead>
+    <tbody>
+      {% for m in media %}
+        <tr>
+          <td>{{ m.get_kind_display }}</td>
+          <td>
+            {% if m.kind == "image" and m.image %}
+              <img src="{{ m.image.url }}" alt="" style="height:60px;border-radius:6px;">
+            {% elif m.kind == "video" %}
+              <a class="btn" href="{{ m.video_url }}" target="_blank">Open Video</a>
+            {% endif %}
+          </td>
+          <td>{{ m.caption }}</td>
+          <td>{{ m.uploaded_at|date:"Y-m-d H:i" }}</td>
+          <td><a class="btn" href="{% url 'control:events:event_media_delete' event.id m.id %}">Delete</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="muted">No media.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

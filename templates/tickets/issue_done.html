@@ -1,0 +1,10 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Tickets Issued{% endblock %}
+{% block content %}
+<h1>Issued {{ created|length }} Tickets</h1>
+<ul>
+{% for t in created %}
+  <li><a href="{% url 'control:tickets:ticket_detail' t.qr_token %}">{{ t.qr_token }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

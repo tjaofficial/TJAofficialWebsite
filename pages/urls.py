@@ -36,4 +36,7 @@ urlpatterns = [
     path("tour/passport/redeem/", views.tour_passport_redeem, name="tour_passport_redeem"),
     path("tour/passport/rules/", views.tour_passport_rules, name="tour_passport_rules"),
     path('links/', views.links, name='links'),
+
+    #control panel
+    
 ]

@@ -1,0 +1,33 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Event{% endblock %}
+{% block content %}
+<h1>{{ mode|capfirst }} Event</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="name" placeholder="Event name" value="{{ form.name.value|default:'' }}">
+    <label><input type="checkbox" name="is_tour_stop" {% if form.is_tour_stop.value %}checked{% endif %}> Tour Stop</label>
+  </div>
+  <div class="form-row">
+    <input class="input" type="datetime-local" name="start" value="{{ form.start.value|default:'' }}" required>
+    <input class="input" type="datetime-local" name="end" value="{{ form.end.value|default:'' }}">
+    <select class="input" name="venue">
+      <option value="">— Venue —</option>
+      {% for v in form.fields.venue.queryset %}
+        <option value="{{ v.id }}" {% if form.venue.value == v.id|stringformat:'s' %}selected{% endif %}>{{ v.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <textarea class="input" name="afterparty_info" rows="2" placeholder="After party info">{{ form.afterparty_info.value|default:'' }}</textarea>
+    <textarea class="input" name="meet_greet_info" rows="2" placeholder="Meet & greet info">{{ form.meet_greet_info.value|default:'' }}</textarea>
+  </div>
+  <div class="form-row">
+    <label><input type="checkbox" name="published" {% if form.published.value %}checked{% endif %}> Published</label>
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:events:list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -5,10 +5,10 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.db.models import Q, Sum
-from ..models import Product, Order, OrderItem, StripeEvent, CartItem, ProductVariant, Cart
+from shop.models import Product, Order, OrderItem, StripeEvent, CartItem, ProductVariant, Cart
 from django.shortcuts import render, get_object_or_404
 from ..cart_utils import (
-    cart_add, cart_update_qty, cart_remove, cart_clear, cart_count as cart_count_val, cart_iter_items
+    cart_items_qs, cart_subtotal_cents, cart_remove, cart_clear, cart_count as cart_count_val
 )
 from decimal import Decimal, ROUND_HALF_UP
 from ..order_utils import create_order_from_cart, mark_order_paid
@@ -115,11 +115,23 @@ def _cart_items(request):
     return items, subtotal
 
 def _cart_items_and_subtotal(request):
-    items, subtotal = [], 0
-    for p, q in cart_iter_items(request):
-        line = p.price_cents * q
+    """
+    Return a list of dicts:
+      {product, variant, qty, unit_cents, line_cents}
+    plus subtotal in cents.
+    """
+    items = []
+    subtotal = 0
+    for it in cart_items_qs(request):
+        line = it.unit_price_cents * it.qty
         subtotal += line
-        items.append({"product": p, "qty": q, "line_cents": line})
+        items.append({
+            "product": it.product,
+            "variant": it.variant,
+            "qty": it.qty,
+            "unit_cents": it.unit_price_cents,
+            "line_cents": line,
+        })
     return items, subtotal
 
 def cart(request):
@@ -250,15 +262,16 @@ def checkout(request):
     )
 
     total = 0
+    cart = get_or_create_cart(request)
     for it in cart.items.select_related('product', 'variant'):
         OrderItem.objects.create(
             order=order,
             product=it.product,
             variant=it.variant,
-            title=it.product.title,
+            title_snapshot=it.product.title,
             size=(it.variant.size if it.variant else ""),
             qty=it.qty,
-            unit_price_cents=it.unit_price_cents,
+            price_cents_snapshot=it.unit_price_cents,
         )
         total += it.unit_price_cents * it.qty
 
@@ -280,15 +293,18 @@ def checkout_start(request):
     if method not in SHIPPING_METHODS:
         return redirect("checkout")
 
-    # compute totals
-    items, subtotal = _cart_items_and_subtotal(request)
-    if not items:
+    # --- Cart snapshot (variant-aware) ---
+    lines = list(cart_items_qs(request))  # CartItem objects
+    if not lines:
         return redirect("cart")
+
+    subtotal = cart_subtotal_cents(request)
     ship_cents = SHIPPING_METHODS[method]["amount_cents"]
     tax_rate = _tax_rate_for_state(state)
     tax_cents = int((Decimal(subtotal + ship_cents) * tax_rate).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    total_cents = subtotal + ship_cents + tax_cents
 
-    # create Order (pending)
+    # --- Create Order from cart lines (captures unit_price + size) ---
     order = create_order_from_cart(
         request,
         email=email,
@@ -299,30 +315,66 @@ def checkout_start(request):
         tax_cents=tax_cents,
     )
 
-    # ---- Stripe: uncomment when ready ----
-    import stripe, os
+    # --- Build Stripe line_items from CartItem.unit_price_cents ---
+    import os, stripe
     stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
-    line_items = [
-      {"price_data": {"currency": "usd",
-                      "product_data": {"name": it["product"].title},
-                      "unit_amount": it["product"].price_cents},
-       "quantity": it["qty"]} for it in items
-    ]
-    # Add shipping + tax as extra line items (or use Stripe's tax/shipping features)
+    if not stripe.api_key:
+        return HttpResponseBadRequest("Stripe not configured")
+
+    line_items = []
+    for it in lines:
+        name = it.product.title
+        if it.variant and getattr(it.variant, "size", ""):
+            name = f"{name} — {it.variant.size}"
+        line_items.append({
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": name},
+                "unit_amount": int(it.unit_price_cents),
+            },
+            "quantity": int(it.qty),
+        })
+
+    # Add shipping + tax as separate line items (simple path; or use Stripe Tax & Shipping Options)
     if ship_cents:
-        line_items.append({"price_data":{"currency":"usd","product_data":{"name":f"Shipping: {SHIPPING_METHODS[method]['label']}"},"unit_amount": ship_cents},"quantity":1})
+        line_items.append({
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": f"Shipping: {SHIPPING_METHODS[method]['label']}"},
+                "unit_amount": int(ship_cents),
+            },
+            "quantity": 1,
+        })
     if tax_cents:
-        line_items.append({"price_data":{"currency":"usd","product_data":{"name":"Estimated tax"},"unit_amount": tax_cents},"quantity":1})
+        line_items.append({
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": "Estimated tax"},
+                "unit_amount": int(tax_cents),
+            },
+            "quantity": 1,
+        })
+
+    # Attach metadata so webhook can find the order
     session = stripe.checkout.Session.create(
         mode="payment",
         line_items=line_items,
         success_url=request.build_absolute_uri("/checkout/success/"),
         cancel_url=request.build_absolute_uri("/checkout/"),
+        metadata={"order_id": str(order.id)},
     )
-    return redirect(session.url)
 
-    # #Placeholder redirect (fake success)
-    # return redirect("checkout")
+    # Persist provider session id on the order (optional but handy)
+    try:
+        from ..models import Order
+        order.provider = "stripe"
+        order.provider_session_id = session.id
+        order.total_cents = total_cents
+        order.save(update_fields=["provider", "provider_session_id", "total_cents"])
+    except Exception:
+        pass
+
+    return redirect(session.url)
 
 def checkout_success(request):
     cart_clear(request)

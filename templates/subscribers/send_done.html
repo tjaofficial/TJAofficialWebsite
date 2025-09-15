@@ -1,0 +1,10 @@
+{% extends 'controlpanel/base.html' %}
+{% block title %}Sent{% endblock %}
+{% block content %}
+  <h1>Emails Sent</h1>
+  <div class="card">
+    <p>Queued/sent to <b>{{ count }}</b> recipient{{ count|pluralize }}.</p>
+  </div>
+  <a class="btn" href="{% url 'subscribers:send' %}">Send another</a>
+  <a class="btn" href="{% url 'subscribers:list' %}">Back to subscribers</a>
+{% endblock %}

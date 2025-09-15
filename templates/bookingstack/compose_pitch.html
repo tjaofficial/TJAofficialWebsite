@@ -1,0 +1,16 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block header %}Compose Pitch → {{ venue.name }}{% endblock %}
+{% block content %}
+<form action="{% url 'control:bookingstack:refine_pitch' venue.id %}" method="post">{% csrf_token %}
+  <label>Subject</label>
+  <input style="width:100%" name="subject" value="{{ subject }}" />
+
+  <label>Body</label>
+  <textarea style="width:100%;height:320px" name="body">{{ body }}</textarea>
+
+  <button type="submit">Refine copy</button>
+  {% if refined %}<span style="margin-left:8px;color:green">refined</span>{% endif %}
+</form>
+
+<p>Copy, personalize, then send from your email client.</p>
+{% endblock %}

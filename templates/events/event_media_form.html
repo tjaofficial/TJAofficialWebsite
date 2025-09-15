@@ -1,0 +1,23 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Add Media — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Add Media — {{ event.name }}</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <select class="input" name="kind">
+      <option value="image" {% if form.kind.value == 'image' %}selected{% endif %}>Image</option>
+      <option value="video" {% if form.kind.value == 'video' %}selected{% endif %}>Video (link)</option>
+    </select>
+    <input class="input" type="file" name="image" accept="image/*">
+    <input class="input" name="video_url" placeholder="https://...">
+  </div>
+  <div class="form-row">
+    <input class="input" name="caption" placeholder="Caption">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:events:event_media' event.id %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

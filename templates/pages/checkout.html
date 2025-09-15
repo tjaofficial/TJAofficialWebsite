@@ -1,10 +1,14 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% load static %}
+{% load shop_extras %}
+
 {% block title %}Checkout{% endblock %}
+
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
-    <script defer src="{% static 'js/checkout.js' %}"></script>
-{% endblock  %}
+  <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+  <script defer src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}
+
 {% block hero %}
 <section class="hero reveal">
   <div class="container">
@@ -28,6 +32,7 @@
         <h3>Shipping & Tax</h3>
         <form id="quoteForm" class="quote-form" method="post" action="{% url 'checkout_start' %}">
           {% csrf_token %}
+
           <label class="field">
             <span class="label">Shipping method</span>
             <select name="method" id="shipMethod">
@@ -36,13 +41,14 @@
               {% endfor %}
             </select>
           </label>
+
           <div class="field">
             <span class="label">State (for tax)</span>
-            <input type="text" name="state" id="taxState" placeholder="e.g., MI" maxlength="2">
+            <input type="text" name="state" id="taxState" placeholder="e.g., MI" maxlength="2" autocomplete="address-level1">
             <small class="hint">Currently estimating 6% tax for MI only.</small>
           </div>
 
-          <!-- Totals (updated by JS) -->
+          <!-- Totals (JS will update) -->
           <div class="summary card" style="margin-top:12px">
             <div class="sum-line"><span>Subtotal</span><strong id="qSubtotal">{{ subtotal_display }}</strong></div>
             <div class="sum-line"><span>Shipping</span><strong id="qShip">$0.00</strong></div>
@@ -50,10 +56,10 @@
             <div class="sum-line total"><span>Total</span><strong id="qTotal">{{ subtotal_display }}</strong></div>
           </div>
 
-        <div class="field">
+          <div class="field">
             <span class="label">Email for receipt</span>
-            <input type="email" name="email" id="emailReceipt" placeholder="you@example.com" required>
-        </div>
+            <input type="email" name="email" id="emailReceipt" placeholder="you@example.com" required autocomplete="email">
+          </div>
 
           <button class="btn" type="submit" style="margin-top:12px">Proceed to Payment</button>
         </form>
@@ -62,12 +68,17 @@
       <aside class="card">
         <h3>Items</h3>
         <ul class="mini-items">
-          {% for it in items %}
-            <li>
-              <span>{{ it.qty }} × {{ it.product.title }}</span>
-              <strong>${{ it.line_cents|floatformat:-2|divisibleby:100 }}</strong>
-            </li>
-          {% endfor %}
+            {% for it in items %}
+                <li>
+                    <span>
+                        {{ it.qty }} × {{ it.product.title }}
+                        {% if it.variant %} 
+                            <small class="muted">(Size: {{ it.variant.size }})</small>
+                        {% endif %}
+                    </span>
+                    <strong>{{ it.line_cents|money }}</strong>
+                </li>
+            {% endfor %}
         </ul>
       </aside>
     </div>

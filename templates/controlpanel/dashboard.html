@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Control Panel{% endblock %}</title>
+    {% load static %}
+	<link rel="stylesheet" href="{% static 'css/control.css' %}">
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="cp-shell">
+		<aside class="cp-sidebar">
+			<div class="cp-brand"><a href="{% url 'control:home' %}">TJA Control</a></div>
+			<nav class="cp-nav">
+				<a href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Dashboard</a>
+				{% if request.user.is_superuser %}
+					<a href="#">Shop</a>
+					<ul>
+						<li><a href="{% url 'control:shop:orders_list' %}">Orders</a></li>
+						<li><a href="{% url 'control:shop:product_add' %}">Add Product</a></li>
+						<li><a href="{% url 'control:shop:inventory' %}">Inventory</a></li>
+						<li><a href="{% url 'control:shop:coupons' %}">Coupons</a></li>
+						<li><a href="{% url 'control:shop:budget' %}">Budget / Sales</a></li>
+					</ul>
+					<a href="{% url 'control:subscribers:list' %}">Subscribers</a>
+					<a href="#">Artists</a>
+					<ul>
+						<li><a href="{% url 'control:pages:artist_list' %}">Artist List</a></li>
+					</ul>
+				{% endif %}
+				<a href="#">Events</a>
+				<ul>
+					<li><a href="{% url 'control:events:list' %}">Events</a></li>
+					<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
+					<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
+					{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
+				</ul>
+				<a href="#">Equipment</a>
+				<ul>
+					<li><a href="{% url 'control:equipment:list' %}">List</a></li>
+				</ul>
+				<a href="#">Tickets</a>
+				<ul>
+					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
+					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
+					<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
+					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
+				</ul>
+				<a href="#">Booking</a>
+				<ul>
+					<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
+				</ul>
+				<form action="{% url 'control:accounts:logout' %}" method="post" style="display:inline">
+					{% csrf_token %}
+					<button type="submit">Logout</button>
+				</form>
+				{% comment %} <a href="{% url 'musiclib:list' %}">Music</a>
+				<a href="{% url 'equipment:list' %}">Equipment</a> {% endcomment %}
+			</nav>
+		</aside>
+      <main class="cp-main">
+			<header class="cp-topbar" style="align-items: center;justify-content: space-between;">
+				<h3 style="margin: 0px;">{% block header %}{% endblock %}</h3>
+				<form method="get" action="" class="cp-quicksearch">
+					<input type="search" name="q" placeholder="Quick search...">
+				</form>
+			</header>
+			<section class="cp-content">
+				{% if messages %}
+					<ul class="messages">
+						{% for message in messages %}
+							<li class="{{ message.tags }}">{{ message }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+				{% block content %}{% endblock %}
+			</section>
+      </main>
+    </div>
+    <script src="{% static 'js/control.js' %}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

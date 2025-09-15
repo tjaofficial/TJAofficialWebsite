@@ -1,0 +1,27 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Tech — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Tech — {{ event.name }}</h1>
+<p><a class="btn primary" href="{% url 'control:events:event_tech_assign' event.id %}">Assign Tech</a>
+   <a class="btn" href="{% url 'control:events:list' %}">Back to Events</a></p>
+
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Role</th><th>Rate</th><th>Confirmed</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+      {% for a in assigns %}
+        <tr>
+          <td>{{ a.person.name }}</td>
+          <td>{{ a.role|default:a.person.get_role_display }}</td>
+          <td>${{ a.rate_cents|floatformat:-2 }}</td>
+          <td>{% if a.confirmed %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+          <td>{{ a.notes|default:"" }}</td>
+          <td><a class="btn" href="{% url 'control:events:event_tech_remove' event.id a.id %}">Remove</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No one assigned yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

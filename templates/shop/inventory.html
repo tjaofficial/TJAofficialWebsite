@@ -1,0 +1,58 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Inventory / Sales{% endblock %}
+{% block content %}
+<h1>Inventory / Sales</h1>
+
+<form method="get" class="card">
+  <div class="form-row">
+    <input class="input" name="title" placeholder="Title contains…" value="{{ q.title }}">
+    <input class="input" name="size" placeholder="Size contains…" value="{{ q.size }}">
+    <input class="input" name="buyer" placeholder="Buyer name" value="{{ q.buyer }}">
+    <input class="input" name="state" placeholder="State (e.g., MI)" value="{{ q.state }}">
+  </div>
+  <div class="form-row">
+    <input class="input" type="date" name="from" value="{{ q.from }}">
+    <input class="input" type="date" name="to" value="{{ q.to }}">
+    <button class="btn primary">Filter</button>
+  </div>
+</form>
+
+<div class="card">
+  <h3>By Product</h3>
+  <table class="table">
+    <thead><tr><th>Title</th><th>Qty</th><th>Revenue</th></tr></thead>
+    <tbody>
+      {% for row in by_product %}
+        <tr>
+          <td>{{ row.title_snapshot }}</td>
+          <td>{{ row.qty }}</td>
+          <td>${{ row.revenue|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3" class="muted">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Recent Items</h3>
+  <table class="table">
+    <thead><tr><th>Date</th><th>Order #</th><th>Title</th><th>Size</th><th>Qty</th><th>Unit</th></tr></thead>
+    <tbody>
+      {% for it in items %}
+        <tr>
+          <td>{{ it.order.created_at|date:"Y-m-d H:i" }}</td>
+          <td><a href="{% url 'control:shop:order_detail' it.order.number %}">{{ it.order.number }}</a></td>
+          <td>{{ it.title_snapshot }}</td>
+          <td>{{ it.size }}</td>
+          <td>{{ it.qty }}</td>
+          <td>${{ it.price_cents_snapshot|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No items.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

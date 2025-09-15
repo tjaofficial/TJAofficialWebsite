@@ -1,0 +1,31 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Coupon{% endblock %}
+{% block content %}
+<h1>{{ mode|capfirst }} Coupon</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="code" placeholder="CODE" value="{{ form.code.value|default:'' }}" required>
+    <select class="input" name="use_type">
+      {% for v,l in form.fields.use_type.choices %}
+        <option value="{{ v }}" {% if form.use_type.value == v %}selected{% endif %}>{{ l }}</option>
+      {% endfor %}
+    </select>
+    <label><input type="checkbox" name="active" {% if form.active.value or mode == 'new' %}checked{% endif %}> Active</label>
+  </div>
+  <div class="form-row">
+    <input class="input" type="number" step="0.01" name="percent_off" placeholder="Percent off" value="{{ form.percent_off.value|default:'' }}">
+    <input class="input" type="number" name="amount_off_cents" placeholder="Amount off (cents)" value="{{ form.amount_off_cents.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <input class="input" type="datetime-local" name="starts_at" value="{{ form.starts_at.value|default:'' }}">
+    <input class="input" type="datetime-local" name="ends_at" value="{{ form.ends_at.value|default:'' }}">
+    <input class="input" type="number" name="max_uses" placeholder="Max uses" value="{{ form.max_uses.value|default:'' }}">
+    <input class="input" type="number" name="token_ttl_days" placeholder="Token TTL (days)" value="{{ form.token_ttl_days.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:shop:coupons' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

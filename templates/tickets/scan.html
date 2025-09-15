@@ -1,0 +1,28 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Scan Tickets{% endblock %}
+{% block content %}
+<h1>Scan Tickets</h1>
+
+<form method="post" action="{% url 'control:tickets:scan_check' %}" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="code" placeholder="Scan QR or paste code here">
+    <button class="btn primary">Check</button>
+  </div>
+</form>
+
+{% if error %}
+  <div class="card">{{ error }}</div>
+{% endif %}
+
+{% if ticket %}
+  <div class="card">
+    <h3>Ticket</h3>
+    <p>Event: {{ ticket.ticket_type.event.name }}</p>
+    <p>Type: {{ ticket.ticket_type.name }}</p>
+    <p>Email: {{ ticket.purchaser_email }}</p>
+    <p>Status: {% if ticket.is_checked_in %}✅ Checked In{% else %}❌ Not Checked In{% endif %}</p>
+    <a class="btn" href="{% url 'control:tickets:ticket_detail' ticket.qr_token %}">View Detail</a>
+  </div>
+{% endif %}
+{% endblock %}

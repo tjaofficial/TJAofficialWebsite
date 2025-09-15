@@ -1,0 +1,30 @@
+{% extends 'controlpanel/base.html' %}
+{% block title %}Send Email{% endblock %}
+{% block content %}
+  <h1>Send Email</h1>
+  <form method="post" class="card">
+    {% csrf_token %}
+    <div class="form-row">
+      <input class="input" name="state" placeholder="Filter: State (e.g., MI)" value="{{ form.state.value|default:'' }}">
+      <input class="input" name="birthday_month" type="number" min="1" max="12" placeholder="Birthday month (1–12)" value="{{ form.birthday_month.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <label>Tags</label>
+      <select class="input" name="tags" multiple>
+        {% for t in form.fields.tags.queryset %}
+          <option value="{{ t.id }}" {% if t.id|stringformat:'s' in form.data.getlist:'tags' %}selected{% endif %}>{{ t.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <input class="input" name="subject" placeholder="Subject" required value="{{ form.subject.value|default:'' }}">
+    </div>
+    <div class="form-row">
+      <textarea class="input" name="body" rows="8" placeholder="Write your email..." required>{{ form.body.value|default:'' }}</textarea>
+    </div>
+    <div class="form-row">
+      <button class="btn primary">Send</button>
+      <a class="btn" href="{% url 'subscribers:list' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

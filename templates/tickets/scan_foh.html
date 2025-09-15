@@ -1,0 +1,166 @@
+{% extends 'controlpanel/dashboard.html' %}{% load static %}
+{% block title %}FOH Scanner{% endblock %}
+{% block head %}
+  <style>
+    .foh-wrap {min-height: calc(100vh - 60px);}
+    .foh-stage {display:flex;align-items:center;justify-content:center;min-height:60vh;border:1px solid #1a1f27;border-radius:16px;background:#0f1318;position:relative;overflow:hidden}
+    .foh-big {font-size:64px;font-weight:800;margin:0;text-align:center}
+    .foh-sub {font-size:18px;color:#9eb0c2;margin-top:8px;text-align:center}
+    .foh-green {background:rgba(20,120,60,.7)}
+    .foh-red {background:rgba(160,20,30,.7)}
+    .foh-flash {position:absolute;inset:0;opacity:0;transition:opacity .15s ease}
+    .foh-flash.show {opacity:1}
+    .foh-hide {display:none}
+    .foh-input {width:100%;padding:14px;border-radius:8px;border:1px solid #1a1f27;background:#0f1318;color:#e7edf3}
+    .foh-row {display:flex;gap:12px;margin-top:12px}
+    .foh-card {padding:16px;border:1px solid #1a1f27;border-radius:12px;background:#0f1318;margin-top:16px}
+    .foh-kv {display:grid;grid-template-columns:140px 1fr;gap:8px}
+    .foh-kv div{padding:2px 0}
+  </style>
+{% endblock %}
+{% block content %}
+<div class="foh-wrap">
+  <h1>Front-of-House Scanner{% if autocheck %} (Auto Check-In){% endif %}</h1>
+
+  <div class="foh-card">
+    <div class="foh-row">
+      <input id="scanInput" class="foh-input" placeholder="Scan QR or paste code..." autocomplete="off" autofocus>
+      <button id="scanBtn" class="btn primary">Scan</button>
+      <label style="display:flex;align-items:center;gap:6px;">
+        <input type="checkbox" id="autocheck" {% if autocheck %}checked{% endif %}> Auto check-in
+      </label>
+    </div>
+    <div class="foh-sub">Tip: Most USB scanners act like a keyboard and ‘type’ the code, then press Enter.</div>
+  </div>
+
+  <div class="foh-stage" id="stage">
+    <div id="flash" class="foh-flash"></div>
+    <div id="idle">
+      <p class="foh-big">Ready to scan</p>
+      <p class="foh-sub">Focus the input and scan a ticket.</p>
+    </div>
+    <div id="ok" class="foh-hide">
+      <p class="foh-big">VALID ✅</p>
+      <div class="foh-kv">
+        <div>Purchaser:</div><div id="ok_name"></div>
+        <div>Event:</div><div id="ok_event"></div>
+        <div>Type:</div><div id="ok_type"></div>
+        <div>Email:</div><div id="ok_email"></div>
+        <div>Checked-in:</div><div id="ok_checkin"></div>
+      </div>
+    </div>
+    <div id="already" class="foh-hide">
+      <p class="foh-big">ALREADY CHECKED-IN ⚠️</p>
+      <div class="foh-kv">
+        <div>Purchaser:</div><div id="al_name"></div>
+        <div>Event:</div><div id="al_event"></div>
+        <div>Type:</div><div id="al_type"></div>
+        <div>Email:</div><div id="al_email"></div>
+        <div>When:</div><div id="al_checkin"></div>
+      </div>
+    </div>
+    <div id="bad" class="foh-hide">
+      <p class="foh-big">INVALID ❌</p>
+      <p class="foh-sub" id="bad_msg"></p>
+    </div>
+  </div>
+</div>
+
+<audio id="snd_ok" src="{% static 'tickets/snd_ok.mp3' %}" preload="auto"></audio>
+<audio id="snd_err" src="{% static 'tickets/snd_err.mp3' %}" preload="auto"></audio>
+
+<script>
+(function(){
+  const input = document.getElementById('scanInput');
+  const btn   = document.getElementById('scanBtn');
+  const stage = document.getElementById('stage');
+  const flash = document.getElementById('flash');
+  const autoc = document.getElementById('autocheck');
+
+  const idle     = document.getElementById('idle');
+  const ok       = document.getElementById('ok');
+  const already  = document.getElementById('already');
+  const bad      = document.getElementById('bad');
+
+  const okSnd  = document.getElementById('snd_ok');
+  const errSnd = document.getElementById('snd_err');
+
+  function show(which){
+    [idle, ok, already, bad].forEach(el => el.classList.add('foh-hide'));
+    which.classList.remove('foh-hide');
+  }
+
+  function flashColor(cls){
+    flash.className = 'foh-flash ' + cls + ' show';
+    setTimeout(()=> flash.classList.remove('show'), 180);
+  }
+
+  function resetSoon(){
+    setTimeout(()=>{
+      input.value = '';
+      show(idle);
+      input.focus();
+    }, 900);
+  }
+
+  async function doScan(raw){
+    if(!raw) return;
+    const body = JSON.stringify({ code: raw, autocheckin: autoc.checked });
+    try{
+      const res = await fetch("{% url 'control:tickets:scan_api' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+      const data = await res.json();
+
+      if(data.status === 'ok'){
+        document.getElementById('ok_name').textContent = data.ticket.name || '';
+        document.getElementById('ok_event').textContent = data.ticket.event || '';
+        document.getElementById('ok_type').textContent  = data.ticket.type || '';
+        document.getElementById('ok_email').textContent = data.ticket.email || '';
+        document.getElementById('ok_checkin').textContent = data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : (autoc.checked ? 'now' : 'not yet');
+        show(ok);
+        flashColor('foh-green');
+        okSnd && okSnd.play().catch(()=>{});
+        resetSoon();
+      }else if(data.status === 'already'){
+        document.getElementById('al_name').textContent = data.ticket.name || '';
+        document.getElementById('al_event').textContent = data.ticket.event || '';
+        document.getElementById('al_type').textContent  = data.ticket.type || '';
+        document.getElementById('al_email').textContent = data.ticket.email || '';
+        document.getElementById('al_checkin').textContent = data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : '';
+        show(already);
+        flashColor('foh-red');
+        errSnd && errSnd.play().catch(()=>{});
+        resetSoon();
+      }else{
+        document.getElementById('bad_msg').textContent = data.message || 'Unknown code';
+        show(bad);
+        flashColor('foh-red');
+        errSnd && errSnd.play().catch(()=>{});
+        resetSoon();
+      }
+    }catch(e){
+      document.getElementById('bad_msg').textContent = 'Network error';
+      show(bad);
+      flashColor('foh-red');
+      errSnd && errSnd.play().catch(()=>{});
+      resetSoon();
+    }
+  }
+
+  btn.addEventListener('click', (e)=>{ e.preventDefault(); doScan(input.value.trim()); });
+  input.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      doScan(input.value.trim());
+    }
+  });
+
+  // keep focus for scanners
+  window.addEventListener('click', ()=> input.focus());
+  input.focus();
+})();
+</script>
+{% endblock %}

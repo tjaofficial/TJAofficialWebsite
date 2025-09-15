@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <body>
+    <h2>Your Tickets</h2>
+    <p>Show this QR at the door.</p>
+    <ul>
+      {% for t in tickets %}
+        <li>
+          {{ t.ticket_type.event.name }} — {{ t.ticket_type.name }}<br>
+          <img src="{{ site_base }}{% url 'control:tickets:qr_png' t.qr_token %}" alt="QR" />
+          <br>
+          Verify: {{ site_base }}{% url 'control:tickets:ticket_detail' t.qr_token %}
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

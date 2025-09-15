@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.utils import timezone
-from ..models import Show, Video, Release, Product  # adjust to your models; omit if not used
+from ..models import Show, Video, Release
+from shop.models import Product
 from django.conf import settings
 
 def home(request):

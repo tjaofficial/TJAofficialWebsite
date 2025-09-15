@@ -1,0 +1,34 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Add Product{% endblock %}
+{% block content %}
+<h1>Add Product</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="title" placeholder="Title" required>
+    <input class="input" name="slug" placeholder="Slug (optional)">
+    <input class="input" name="sku" placeholder="SKU" required>
+  </div>
+  <div class="form-row">
+    <textarea class="input" name="description" rows="4" placeholder="Description"></textarea>
+  </div>
+  <div class="form-row">
+    <input class="input" type="number" name="price_cents" placeholder="Price (cents)" required>
+    <label><input type="checkbox" name="is_active" checked> Active</label>
+    <input class="input" type="number" name="inventory" placeholder="Inventory" value="0">
+    <label><input type="checkbox" name="has_variants"> Has variants</label>
+  </div>
+  <div class="form-row">
+    <label>Main Image (upload): <input class="input" type="file" name="image"></label>
+    <input class="input" name="image_url" placeholder="OR Image URL">
+  </div>
+  <h3>Extra Images</h3>
+  <div class="form-row">
+    <input class="input" type="file" name="extra_images" multiple>
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    <a class="btn" href="{% url 'control:shop:inventory' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

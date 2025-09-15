@@ -1,0 +1,27 @@
+/* static/controlpanel/css/control.css */
+:root { --bg:#0b0d11; --panel:#11151b; --ink:#e7edf3; --muted:#9eb0c2; --accent:#4fd1c5; }
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto}
+.a{color:var(--accent)} a{color:var(--ink);text-decoration:none}
+.cp-shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.cp-sidebar{background:var(--panel);padding:16px;position:sticky;top:0;height:100vh}
+.cp-brand{font-weight:700;margin-bottom:16px}
+.cp-nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--muted)}
+.cp-nav a:hover{background:#1a1f27;color:var(--ink)}
+.cp-main{display:flex;flex-direction:column}
+.cp-topbar{display:flex;justify-content:flex-end;padding:12px 16px;border-bottom:1px solid #1a1f27}
+.cp-quicksearch input{background:#0f1318;border:1px solid #1a1f27;color:var(--ink);padding:8px 10px;border-radius:8px}
+.cp-content{padding:20px}
+.table{width:100%;border-collapse:collapse;background:#0f1318;border:1px solid #1a1f27;border-radius:8px;overflow:hidden}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid #1a1f27}
+.table th{text-align:left;color:var(--muted);font-weight:600}
+.btn{display:inline-block;padding:8px 12px;border:1px solid #1a1f27;background:#11151b;color:var(--ink);border-radius:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0b0d11;font-weight:700}
+.input, select{background:#0f1318;border:1px solid #1a1f27;color:var(--ink);padding:8px 10px;border-radius:8px}
+.form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:#0f1318;border:1px solid #1a1f27;border-radius:12px;padding:16px;margin-bottom:16px}
+.kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.kpi .card h2{margin:0;font-size:20px}
+
+.badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#1a1f27; color:#c9d6e2; font-size:12px; margin-right:6px; }
+.muted { color:#9eb0c2; }

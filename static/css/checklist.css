@@ -1,0 +1,23 @@
+.container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.progress { position: relative; background: rgba(255,255,255,0.08); border-radius: 999px; height: 12px; margin: 12px 0 8px; }
+.progress .bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #4ade80, #22d3ee); width: 0%; transition: width .2s ease; }
+.progress .meta { font-size: 13px; color: #bbb; margin-bottom: 10px; }
+
+.ck-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ck-item { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.ck-item.is-done { opacity: .7; }
+.ck-toggle { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #7ee787; background: transparent; margin-top: 2px; cursor: pointer; }
+.ck-item.is-done .ck-toggle { background: #7ee787; }
+.ck-title { font-weight: 600; }
+.ck-meta .tag { font-size: 12px; color:#bbb; margin-right: 8px; }
+.ck-notes { font-size: 14px; color:#ccc; margin-top: 6px; }
+
+.card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 12px; }
+
+#editForm .row { display: flex; gap: 10px; align-items: center; border: 1px dashed var(--border); border-radius: 12px; padding: 8px; margin-bottom: 8px; }
+#editForm .row .grow { flex: 1; }
+#editForm .rm { border-color: #ffb4b4; }
+.form-actions { display:flex; gap:10px; margin-top: 10px; }
+
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); padding: 8px 12px; background: rgba(0,0,0,0.8); color: #fff; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.toast.show { opacity: 1; }

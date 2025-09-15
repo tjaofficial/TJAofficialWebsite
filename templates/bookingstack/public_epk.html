@@ -1,0 +1,57 @@
+{% extends 'controlpanel/dashboard.html' %}{% load static %}
+{% block content %}
+<h1>{{ artist.name }} – Booking for {{ venue.name }}</h1>
+<p>Genre: {{ artist.genre }} • Hometown: {{ artist.hometown }}</p>
+
+<h2>Audience Proof</h2>
+<form method="get" style="margin:8px 0">
+  <label>City / Metro:</label>
+  <select name="city" onchange="this.form.submit()">
+    <option value="">(Auto: {{ venue.city|default:'—' }})</option>
+    {% for c in cities %}
+      <option value="{{ c }}" {% if c|lower == city|lower %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if snapshot %}
+  <ul>
+    <li>Spotify monthly listeners (local est.): <strong>{{ snapshot.spotify_monthly_listeners }}</strong></li>
+    <li>Instagram local followers (est.): <strong>{{ snapshot.instagram_local_followers }}</strong></li>
+    <li>TikTok local followers (est.): <strong>{{ snapshot.tiktok_local_followers }}</strong></li>
+  </ul>
+{% else %}
+  <p>No snapshot yet for this city. (Ask us for data, or choose a city in the menu.)</p>
+{% endif %}
+
+<p style="margin-top:8px"><strong>{{ fan_votes }}</strong> fans in your area want this show.</p>
+
+<h3>Live Video</h3>
+<p><a href="#">YouTube link</a></p>
+
+<h3>Assets</h3>
+<ul>
+  {% for a in assets %}
+    <li><a href="{{ a.file.url }}">{{ a.get_kind_display }}</a></li>
+  {% empty %}<li>No tech assets yet.</li>{% endfor %}
+</ul>
+
+<h3>Hold a Date</h3>
+<form action="{% url 'control:bookingstack:create_inquiry' venue.id %}" method="post">{% csrf_token %}
+  <label>Preferred date (optional):</label>
+  <input type="date" name="hard_date" />
+  <label>or Date window:</label>
+  <input type="date" name="target_start" /> – <input type="date" name="target_end" />
+  <label>Expected draw:</label>
+  <input type="number" name="expected_draw" min="0" step="1" />
+  <button type="submit">Place soft hold</button>
+</form>
+
+<h3>Fan Support</h3>
+<form action="{% url 'control:bookingstack:fan_vote' venue.id %}" method="post">{% csrf_token %}
+  <input name="name" placeholder="Name" required />
+  <input name="email" placeholder="Email" required />
+  <input name="postal_code" placeholder="ZIP/Postal Code" />
+  <button type="submit">I want this show here</button>
+</form>
+{% endblock %}

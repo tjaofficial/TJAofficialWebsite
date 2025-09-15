@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Thanks — {{ event.name }}{% endblock %}
+{% block content %}
+    <main class="cp-content" style="max-width:800px;margin:40px auto;">
+        <h1>Thanks!</h1>
+        <p>Your purchase for <b>{{ event.name }}</b> is complete. Check your email for tickets.</p>
+    </main>
+{% endblock %}

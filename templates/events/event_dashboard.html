@@ -1,0 +1,82 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Event Dashboard — {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Event Dashboard — {{ event.name }}</h1>
+<div class="kpi">
+  <div class="card"><h2>Capacity</h2><div>{{ stats.capacity }}</div></div>
+  <div class="card"><h2>Sold</h2><div>{{ stats.sold }}</div></div>
+  <div class="card"><h2>Remaining</h2><div>{{ stats.remaining }}</div></div>
+  <div class="card"><h2>Checked In</h2><div>{{ stats.checked_in }}</div></div>
+</div>
+
+<div class="card">
+  <h3>Quick Actions</h3>
+  <div class="form-row">
+    {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:edit' event.id %}">Edit Event</a>{% endif %}
+    <a class="btn" href="{% url 'control:events:event_tech_list' event.id %}">Manage Tech</a>
+    <a class="btn" href="{% url 'control:equipment:event_equipment' event.id %}">Manage Equipment</a>
+    <a class="btn" href="{% url 'control:events:event_media' event.id %}">Manage Media</a>
+    {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:tickets:sales' %}?event={{ event.id }}">View Tickets Sold</a>{% endif %}
+    {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:tickets' event.id %}">Sell Card Tickets</a>{% endif %}
+    {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:event_artists' event.id %}">Artists</a>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>Assigned Tech</h3>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Role</th><th>Rate</th><th>Confirmed</th></tr></thead>
+    <tbody>
+      {% for a in tech %}
+        <tr>
+          <td>{{ a.person.name }}</td>
+          <td>{{ a.role|default:a.person.get_role_display }}</td>
+          <td>${{ a.rate_cents|floatformat:-2 }}</td>
+          <td>{% if a.confirmed %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">No tech assigned.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Equipment</h3>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Category</th><th>Qty</th><th>Notes</th></tr></thead>
+    <tbody>
+      {% for r in gear %}
+        <tr>
+          <td>{{ r.equipment.name }}</td>
+          <td>{{ r.equipment.get_category_display }}</td>
+          <td>{{ r.qty }}</td>
+          <td>{{ r.notes }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">No equipment reserved.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Recent Media</h3>
+  {% if media %}
+    <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;">
+      {% for m in media %}
+        <div class="card" style="padding:8px;">
+          {% if m.kind == "image" and m.image %}
+            <img src="{{ m.image.url }}" alt="{{ m.caption }}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;">
+          {% else %}
+            <a class="btn" href="{{ m.video_url }}" target="_blank">Open Video</a>
+          {% endif %}
+          <div class="muted" style="margin-top:6px;">{{ m.caption }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="muted">No media yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

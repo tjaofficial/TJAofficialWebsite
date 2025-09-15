@@ -1,0 +1,59 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Equipment Inventory{% endblock %}
+{% block content %}
+<h1>Equipment Inventory</h1>
+
+<form method="get" class="card">
+  <div class="form-row">
+    <input class="input" name="q" placeholder="Search name or serial…" value="{{ q.q }}">
+    <select class="input" name="category">
+      <option value="">Category: Any</option>
+      {% for val,label in categories %}
+        <option value="{{ val }}" {% if q.category == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select class="input" name="active">
+      <option value="">Status: Any</option>
+      <option value="yes" {% if q.active == 'yes' %}selected{% endif %}>Active</option>
+      <option value="no"  {% if q.active == 'no' %}selected{% endif %}>Inactive</option>
+    </select>
+    <input class="input" type="number" name="min_qty" placeholder="Min Qty" value="{{ q.min_qty }}">
+    <button class="btn primary">Filter</button>
+    <a class="btn" href="{% url 'control:equipment:add' %}">Add Equipment</a>
+  </div>
+</form>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Serial</th>
+        <th>Qty Total</th>
+        <th>Status</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in rows %}
+        <tr>
+          <td>{{ e.name }}</td>
+          <td>{{ e.get_category_display }}</td>
+          <td>{{ e.serial|default:"—" }}</td>
+          <td>{{ e.qty_total }}</td>
+          <td>{% if e.active %}Active{% else %}<span class="muted">Inactive</span>{% endif %}</td>
+          <td>{{ e.notes|default:"" }}</td>
+          <td>
+                <a class="btn" href="{% url 'control:equipment:edit' e.id %}">Edit</a>
+                <a class="btn" href="{% url 'control:equipment:delete' e.id %}">Delete</a>
+            </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No equipment found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

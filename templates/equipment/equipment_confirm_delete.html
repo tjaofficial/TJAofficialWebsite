@@ -1,0 +1,13 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Delete Equipment{% endblock %}
+{% block content %}
+<h1>Delete Equipment</h1>
+<div class="card">
+  <p>Are you sure you want to delete <b>{{ obj.name }}</b> ({{ obj.get_category_display }})?</p>
+  <form method="post" class="form-row">
+    {% csrf_token %}
+    <button class="btn primary">Yes, delete</button>
+    <a class="btn" href="{% url 'control:equipment:list' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

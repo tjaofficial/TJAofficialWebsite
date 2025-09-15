@@ -1,0 +1,15 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block header %}Artists to DM for swaps – {{ venue.name }}{% endblock %}
+{% block content %}
+<ul>
+  {% for o in openers %}
+    <li>
+      {{ o.artist_name }}
+      {% if o.contact_url %} — <a href="{{ o.contact_url }}" target="_blank">contact</a>{% endif %}
+      {% if o.last_seen %} (seen {{ o.last_seen }}){% endif %}
+    </li>
+  {% empty %}
+    <li>No openers mapped yet. Run the scraper.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Issue Coupon Token{% endblock %}
+{% block content %}
+<h1>Issue Coupon Token</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <label>Coupon</label>
+    <select class="input" name="coupon" required>
+      {% for c in form.fields.coupon.queryset %}
+        <option value="{{ c.id }}" {% if form.coupon.value == c.id|stringformat:'s' %}selected{% endif %}>{{ c.code }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label>Subscriber (optional)</label>
+    <select class="input" name="subscriber">
+      <option value="">— None —</option>
+      {% for s in form.fields.subscriber.queryset %}
+        <option value="{{ s.id }}" {% if form.subscriber.value == s.id|stringformat:'s' %}selected{% endif %}>{{ s.email }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <input class="input" type="number" name="expire_in_days" placeholder="Expire in N days">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Issue</button>
+    <a class="btn" href="{% url 'control:shop:coupons' %}">Back</a>
+  </div>
+</form>
+
+{% if token %}
+  <div class="card">
+    <h3>Token created</h3>
+    <p><b>Token:</b> {{ token.token }}</p>
+    <p class="muted">Attach this token to a redemption URL (e.g., <code>/apply-coupon?t={{ token.token }}</code>) when you wire checkout.</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Artists (Pages){% endblock %}
+{% block content %}
+<h1>Artists</h1>
+<form method="get" class="card">
+  <div class="form-row">
+    <input class="input" name="q" placeholder="Search name/genre/hometown/email" value="{{ q.q }}">
+    <select class="input" name="public">
+      <option value="">Public: Any</option>
+      <option value="yes" {% if q.public == 'yes' %}selected{% endif %}>Public</option>
+      <option value="no"  {% if q.public == 'no' %}selected{% endif %}>Hidden</option>
+    </select>
+    <button class="btn primary">Filter</button>
+    <a class="btn" href="{% url 'control:artist_add' %}">Add Artist</a>
+  </div>
+</form>
+
+<div class="card">
+	<table class="table">
+		<thead><tr><th>Name</th><th>Genre</th><th>Hometown</th><th>Public</th><th>Links</th><th></th></tr></thead>
+		<tbody>
+			{% for a in rows %}
+				<tr>
+					<td>{{ a.name }}</td>
+					<td>{{ a.genre }}</td>
+					<td>{{ a.hometown }}</td>
+					<td>{% if a.is_public %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+					<td>
+						{% if a.website_url %}<a href="{{ a.website_url }}" target="_blank">Web</a>{% endif %}
+						{% if a.instagram_url %} | <a href="{{ a.instagram_url }}" target="_blank">IG</a>{% endif %}
+						{% if a.tiktok_url %} | <a href="{{ a.tiktok_url }}" target="_blank">TikTok</a>{% endif %}
+						{% if a.youtube_url %} | <a href="{{ a.youtube_url }}" target="_blank">YouTube</a>{% endif %}
+						{% if a.spotify_url %} | <a href="{{ a.spotify_url }}" target="_blank">Spotify</a>{% endif %}
+						{% if a.apple_url %} | <a href="{{ a.apple_url }}" target="_blank">Apple</a>{% endif %}
+					</td>
+					<td>
+						<a class="btn" href="{% url 'control:pages:artist_dashboard' a.id %}">Dashboard</a>
+						<a class="btn" href="{% url 'control:pages:artist_edit' a.id %}">Edit</a>
+					</td>
+				</tr>
+			{% empty %}
+				<tr><td colspan="6" class="muted">No artists found.</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

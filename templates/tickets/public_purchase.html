@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Buy Tickets — {{ event.name }}{% endblock %}
+{% block content %}
+    <main class="cp-content" style="max-width:900px;margin:40px auto;">
+      <h1>Buy Tickets — {{ event.name }}</h1>
+      <form method="post" action="{% url 'control:tickets:public_checkout' event.id %}" class="card">
+        {% csrf_token %}
+        {% if artist_token %}
+          <input type="hidden" name="artist_token" value="{{ artist_token }}">
+        {% endif %}
+        <div class="form-row">
+          <input class="input" name="purchaser_name" placeholder="Your name" required>
+          <input class="input" type="email" name="email" placeholder="Your email" required>
+        </div>
+        <table class="table">
+          <thead><tr><th>Type</th><th>Price</th><th>Remaining</th><th>Qty</th></tr></thead>
+          <tbody>
+            {% for tt in types %}
+              <tr>
+                <td>{{ tt.name }}</td>
+                <td>${{ tt.price_cents|floatformat:-2 }}</td>
+                <td>{{ tt.remaining }}</td>
+                <td><input class="input" type="number" min="0" max="{{ tt.remaining }}" name="qty_{{ tt.id }}" value="0"></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="form-row">
+          <button class="btn primary">Continue to Checkout</button>
+        </div>
+      </form>
+    </main>
+{% endblock %}

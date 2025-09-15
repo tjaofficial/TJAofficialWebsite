@@ -1,0 +1,36 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Cash Sale — {{ artist.name }} / {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Cash Sale — {{ artist.name }} / {{ event.name }}</h1>
+
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="purchaser_name" placeholder="Purchaser name">
+    <input class="input" type="email" name="purchaser_email" placeholder="Email (optional)">
+  </div>
+
+  <table class="table">
+    <thead><tr><th>Type</th><th>Price</th><th>Remaining</th><th>Qty (cash)</th></tr></thead>
+    <tbody>
+      {% for tt in types %}
+      <tr>
+        <td>{{ tt.name }}</td>
+        <td>${{ tt.price_cents|floatformat:-2 }}</td>
+        <td>{{ tt.remaining }}</td>
+        <td><input class="input" type="number" min="0" max="{{ tt.remaining }}" name="qty_{{ tt.id }}" value="0"></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="form-row">
+    <button class="btn primary">Issue Cash Tickets</button>
+    {% if request.user.is_superuser %}
+    	<a class="btn" href="{% url 'control:events:event_artists' event.id %}">Cancel</a>
+    {% else %}
+      	<a class="btn" href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Cancel</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

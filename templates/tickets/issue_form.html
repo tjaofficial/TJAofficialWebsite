@@ -1,0 +1,19 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Issue Tickets{% endblock %}
+{% block content %}
+<h1>Issue Tickets</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <select class="input" name="ticket_type" required>
+      {% for tt in types %}
+        <option value="{{ tt.id }}">{{ tt.event.name }} — {{ tt.name }}</option>
+      {% endfor %}
+    </select>
+    <input class="input" type="number" name="qty" placeholder="Quantity">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Issue</button>
+  </div>
+</form>
+{% endblock %}

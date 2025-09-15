@@ -1,0 +1,22 @@
+{% extends 'controlpanel/base.html' %}
+{% block title %}Subscriber — {{ s.email }}{% endblock %}
+{% block content %}
+  <h1>Subscriber</h1>
+  <div class="card">
+    <div><b>Email:</b> {{ s.email }}</div>
+    <div><b>Name:</b> {{ s.first_name }} {{ s.last_name }}</div>
+    <div><b>Phone:</b> {{ s.phone }}</div>
+    <div><b>Location:</b> {{ s.city }}, {{ s.state }}, {{ s.country }}</div>
+    <div><b>Birthday:</b> {{ s.birthday }}</div>
+    <div><b>Tags:</b>
+      {% for t in s.tags.all %}<span class="badge">{{ t.label }}</span> {% empty %}<span class="muted">None</span>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Activity</h3>
+    <p class="muted">Hook in orders, coupons, events attended, etc. once those models are wired.</p>
+  </div>
+
+  <a class="btn" href="{% url 'subscribers:list' %}">Back</a>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Sold Tickets{% endblock %}
+{% block content %}
+<h1>Sold Tickets</h1>
+{% if events_summary %}
+  <div class="card">
+    <h3>Per-Event Totals</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Event</th><th>Capacity</th><th>Sold</th><th>Remaining</th><th>Checked-in</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events_summary %}
+          <tr>
+            <td>{{ e.date|date:"Y-m-d H:i" }}</td>
+            <td>{{ e.name }}</td>
+            <td>{{ e.capacity }}</td>
+            <td>{{ e.sold }}</td>
+            <td>{{ e.remaining }}</td>
+            <td>{{ e.checked_in }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<form method="get" class="card">
+  <div class="form-row">
+    <select class="input" name="event">
+      <option value="">— Any Event —</option>
+      {% for e in events %}
+        <option value="{{ e.id }}" {% if q.event == e.id|stringformat:'s' %}selected{% endif %}>
+          {{ e.start|date:"Y-m-d" }} — {{ e.name|default:"(unnamed)" }}
+        </option>
+      {% endfor %}
+    </select>
+    <input class="input" type="date" name="from" value="{{ q.from }}">
+    <input class="input" type="date" name="to" value="{{ q.to }}">
+    <input class="input" name="name" placeholder="Purchaser name" value="{{ q.name }}">
+    <input class="input" name="email" placeholder="Email" value="{{ q.email }}">
+    <select class="input" name="checked">
+      <option value="">Checked-in: ANY</option>
+      <option value="yes" {% if q.checked == 'yes' %}selected{% endif %}>Yes</option>
+      <option value="no"  {% if q.checked == 'no' %}selected{% endif %}>No</option>
+    </select>
+    <button class="btn primary">Filter</button>
+    <a class="btn" href="{% url 'control:tickets:sales_export' %}?event={{ q.event }}&from={{ q.from }}&to={{ q.to }}&name={{ q.name }}&email={{ q.email }}&checked={{ q.checked }}">Export CSV</a>
+  </div>
+</form>
+
+<div class="kpi">
+  <div class="card">
+    <h2>Total Sold</h2>
+    <div>{{ summary.total }}</div>
+  </div>
+  <div class="card">
+    <h2>Checked-in</h2>
+    <div>{{ summary.checked_in }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Issued</th><th>Event</th><th>Type</th>
+        <th>Name</th><th>Email</th>
+        <th>Checked-in</th><th>QR</th><th>Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tickets %}
+        <tr>
+          <td>{{ t.issued_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ t.ticket_type.event.name }}</td>
+          <td>{{ t.ticket_type.name }}</td>
+          <td>{{ t.purchaser_name }}</td>
+          <td>{{ t.purchaser_email }}</td>
+          <td>{% if t.checked_in_at %}{{ t.checked_in_at|date:"Y-m-d H:i" }}{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td><a class="btn" href="{% url 'control:tickets:ticket_detail' t.qr_token %}">View</a></td>
+          <td>${{ t.ticket_type.price_cents|floatformat:-2 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="muted">No tickets match.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<h1>Events</h1>
+<p>
+  	{% if request.user.is_superuser %}
+		<a class="btn primary" href="{% url 'control:events:add' %}">Add Event</a>
+	{% endif %}
+   	<a class="btn" href="{% url 'control:events:venues' %}">Venues</a>
+</p>
+<table class="table">
+  <thead><tr><th>Start</th><th>Name</th><th>Venue</th><th>Tour</th><th>Published</th><th></th></tr></thead>
+  <tbody>
+  {% for e in events %}
+    <a><tr>
+      <td>{{ e.start|date:"Y-m-d H:i" }}</td>
+      <td>{{ e.name|default:"(unnamed)" }}</td>
+      <td>{{ e.venue }}</td>
+      <td>{% if e.is_tour_stop %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+      <td>{% if e.published %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+      <td>
+        {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:edit' e.id %}">Edit</a>{% endif %}
+        <a class="btn" href="{% url 'control:events:dashboard' e.id %}">View</a>
+        <a class="btn ghost" href="{% url 'control:events:event_checklist' e.id %}">Checklist</a>
+
+    </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="muted">No events.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

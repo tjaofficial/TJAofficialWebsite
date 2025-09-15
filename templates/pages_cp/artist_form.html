@@ -1,0 +1,44 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}{{ mode|capfirst }} Artist{% endblock %}
+{% block content %}
+<h1>{{ mode|capfirst }} Artist{% if artist %}: {{ artist.name }}{% endif %}</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  {% csrf_token %}
+  <div class="form-row">
+    <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+    <input class="input" name="short_tag" placeholder="Short tag" value="{{ form.short_tag.value|default:'' }}">
+    <input class="input" name="genre" placeholder="Genre" value="{{ form.genre.value|default:'' }}">
+    <input class="input" name="hometown" placeholder="Hometown" value="{{ form.hometown.value|default:'' }}">
+    <label style="display:flex;align-items:center;gap:6px;">
+      <input type="checkbox" name="is_public" {% if form.is_public.value or form.is_public.value is None %}checked{% endif %}> Public
+    </label>
+  </div>
+  <div class="form-row">
+    <textarea class="input" name="bio" rows="3" placeholder="Bio">{{ form.bio.value|default:'' }}</textarea>
+  </div>
+  <div class="form-row">
+    <input class="input" type="file" name="avatar" accept="image/*">
+    <input class="input" type="file" name="hero_image" accept="image/*">
+    <input class="input" type="number" name="sort" placeholder="Sort" value="{{ form.sort.value|default:0 }}">
+  </div>
+  <div class="form-row">
+    <input class="input" name="website_url" placeholder="Website" value="{{ form.website_url.value|default:'' }}">
+    <input class="input" name="instagram_url" placeholder="Instagram" value="{{ form.instagram_url.value|default:'' }}">
+    <input class="input" name="tiktok_url" placeholder="TikTok" value="{{ form.tiktok_url.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <input class="input" name="youtube_url" placeholder="YouTube" value="{{ form.youtube_url.value|default:'' }}">
+    <input class="input" name="spotify_url" placeholder="Spotify" value="{{ form.spotify_url.value|default:'' }}">
+    <input class="input" name="apple_url" placeholder="Apple Music" value="{{ form.apple_url.value|default:'' }}">
+    <input class="input" type="email" name="contact_email" placeholder="Contact email" value="{{ form.contact_email.value|default:'' }}">
+  </div>
+  <div class="form-row">
+    <button class="btn primary">Save</button>
+    {% if request.user.is_superuser %}
+      <a class="btn" href="{% url 'control:pages:artist_list' %}">Cancel</a>
+    {% else %}
+      <a class="btn" href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Cancel</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Ticket{% endblock %}
+{% block content %}
+<h1>Ticket</h1>
+<div class="card">
+  <p><b>Event:</b> {{ t.ticket_type.event.name }}</p>
+  <p><b>Type:</b> {{ t.ticket_type.name }}</p>
+  <p><b>Email:</b> {{ t.purchaser_email }}</p>
+  <p><b>Status:</b>
+    {% if t.is_checked_in %}
+      ✅ Checked In at {{ t.checked_in_at }}
+    {% else %}
+      ❌ Not Checked In
+    {% endif %}
+  </p>
+  <img src="{% url 'control:tickets:qr_png' t.qr_token %}" alt="QR Code">
+  {% if t.purchaser_email %}
+  <form method="post" action="{% url 'control:tickets:ticket_resend' t.qr_token %}" style="margin-top:12px;">
+    {% csrf_token %}
+    <button class="btn">Resend Email</button>
+  </form>
+{% endif %}
+
+  {% if not t.is_checked_in %}
+    <form method="post" action="{% url 'control:tickets:ticket_checkin' t.qr_token %}">
+      {% csrf_token %}
+      <button class="btn primary">Check In</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

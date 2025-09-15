@@ -1,0 +1,24 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Ticket Types{% endblock %}
+{% block content %}
+<h1>Ticket Types</h1>
+<p><a class="btn primary" href="{% url 'control:tickets:add' %}">Add Ticket Type</a></p>
+<table class="table">
+  <thead><tr><th>Event</th><th>Name</th><th>Price</th><th>Qty</th><th>Active</th><th>Window</th><th></th></tr></thead>
+  <tbody>
+  {% for t in types %}
+    <tr>
+      <td>{{ t.event.name|default:"(unnamed event)" }}</td>
+      <td>{{ t.name }}</td>
+      <td>${{ t.price_cents|floatformat:-2 }}</td>
+      <td>{{ t.quantity }}</td>
+      <td>{% if t.active %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
+      <td>{{ t.sales_start }} → {{ t.sales_end }}</td>
+      <td><a class="btn" href="{% url 'control:tickets:edit' t.id %}">Edit</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="muted">No ticket types.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

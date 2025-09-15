@@ -1,0 +1,42 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block content %}
+<h1>{{ venue.name }}</h1>
+<p>{{ venue.city }}, {{ venue.state }}</p>
+
+<h3>Contacts</h3>
+<ul>
+  {% for c in contacts %}
+    <li>{{ c.name }} — {{ c.role }} — {{ c.email }} {{ c.phone }}</li>
+  {% empty %}<li>No contacts yet.</li>{% endfor %}
+</ul>
+
+<form action="{% url 'control:bookingstack:add_contact' venue.id %}" method="post" style="margin:8px 0">{% csrf_token %}
+  <input name="name" placeholder="Name" required>
+  <input name="role" placeholder="Role">
+  <input name="email" placeholder="Email">
+  <input name="phone" placeholder="Phone">
+  <label><input type="checkbox" name="is_primary"> Primary</label>
+  <button type="submit">Add contact</button>
+</form>
+
+<h3>Outreach</h3>
+<ul>
+  {% for o in outreach %}
+    <li>
+      {{ o.kind }} — {{ o.subject|default:"(no subject)" }} — sent {{ o.sent_at|date:"M d" }}
+      {% if not o.reply_received %}
+        <form action="{% url 'control:bookingstack:mark_reply_received' o.id %}" method="post" style="display:inline">{% csrf_token %}
+          <button type="submit">Mark reply received</button>
+        </form>
+      {% else %}<em>replied</em>{% endif %}
+    </li>
+  {% empty %}<li>No outreach recorded.</li>{% endfor %}
+</ul>
+
+<h4>Set follow-up</h4>
+<form action="{% url 'control:bookingstack:bump_followup' venue.id %}" method="post">{% csrf_token %}
+  <button name="weeks" value="2">+2 weeks</button>
+  <button name="weeks" value="4">+4 weeks</button>
+  <button name="weeks" value="6">+6 weeks</button>
+</form>
+{% endblock %}

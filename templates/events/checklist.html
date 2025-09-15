@@ -1,0 +1,48 @@
+{% extends "controlpanel/dashboard.html" %}
+{% load static %}
+
+{% block title %}Checklist – {{ event.name }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checklist.css' %}">
+    <script defer src="{% static 'js/checklist.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1 class="hero-title">Checklist</h1>
+    <p class="hero-sub">{{ event.name }} @ {{ event.venue }} — {{ event.date }}</p>
+    <div class="hero-actions">
+      <a class="btn ghost" href="{% url 'control:events:event_checklist_edit' event.id %}">Edit Items</a>
+      <a class="btn ghost" href="/control/events/">Back to Events</a>
+    </div>
+  </div>
+</section>
+<section class="container">
+  <div class="progress">
+    <div class="bar" style="width: {{ pct }}%"></div>
+    <div class="meta"><strong id="doneCount">{{ done }}</strong> / <span id="totalCount">{{ total }}</span> done</div>
+  </div>
+
+  <ul class="ck-list">
+    {% for it in items %}
+      <li class="ck-item{% if it.is_done %} is-done{% endif %}" data-id="{{ it.id }}" data-toggle-url="{% url 'control:events:event_checklist_toggle' it.id %}">
+        <button class="ck-toggle" aria-pressed="{{ it.is_done|yesno:'true,false' }}"></button>
+        <div class="ck-main">
+          <div class="ck-title">{{ it.title }}</div>
+          {% if it.due_date or it.assignee or it.notes %}
+            <div class="ck-meta">
+              {% if it.due_date %}<span class="tag">Due: {{ it.due_date }}</span>{% endif %}
+              {% if it.assignee %}<span class="tag">Assigned: {{ it.assignee.get_username }}</span>{% endif %}
+            </div>
+            {% if it.notes %}<div class="ck-notes">{{ it.notes|linebreaksbr }}</div>{% endif %}
+          {% endif %}
+        </div>
+      </li>
+    {% empty %}
+      <p class="card">No items yet.</p>
+    {% endfor %}
+  </ul>
+  <div id="toast" class="toast"></div>
+</section>
+{% endblock %}
