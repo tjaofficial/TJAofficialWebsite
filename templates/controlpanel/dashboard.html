@@ -13,8 +13,8 @@
 		<aside class="cp-sidebar">
 			<div class="cp-brand"><a href="{% url 'control:home' %}">TJA Control</a></div>
 			<nav class="cp-nav">
-				<a href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Dashboard</a>
 				{% if request.user.is_superuser %}
+					<a href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Dashboard</a>
 					<a href="#">Shop</a>
 					<ul>
 						<li><a href="{% url 'control:shop:orders_list' %}">Orders</a></li>
