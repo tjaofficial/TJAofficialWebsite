@@ -219,3 +219,8 @@ SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
 IG_ACCESS_TOKEN = os.getenv("IG_ACCESS_TOKEN", "")         # Business/Graph API token (optional)
 TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", "") # optional
+
+
+EPK_IMAGE_WIDTHS = [320, 640, 1024, 1600]  # tweak if you like
+EPK_WEBP_QUALITY = 82
+EPK_AVIF_QUALITY = 45  # AVIF is more efficient; lower number is fine

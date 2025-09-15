@@ -4,6 +4,9 @@ from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 import re
 from django.core.exceptions import ValidationError
+from coreutils.images import generate_derivatives
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 User = get_user_model()
 
@@ -182,8 +185,36 @@ class ArtistPhoto(models.Model):
     caption = models.CharField(max_length=200, blank=True)
     sort = models.PositiveIntegerField(default=0)
 
+    def sources(self):
+        """
+        Return dict ready for template: {
+          "avif": "w url, w url, ...",
+          "webp": "...",
+          "fallback": original_url
+        }
+        """
+        gen = generate_derivatives(self.image)
+        avif = ", ".join([f"{u} {w}w" for (w, u) in gen["avif"]])
+        webp = ", ".join([f"{u} {w}w" for (w, u) in gen["webp"]])
+        return {
+            "avif": avif,
+            "webp": webp,
+            "fallback": self.image.url if self.image else "",
+        }
+
     class Meta:
         ordering = ["sort", "id"]
+
+@receiver(post_save, sender=ArtistPhoto)
+def _artistphoto_make_derivatives(sender, instance, created, **kwargs):
+    # Generate in-request for simplicity. If you expect lots of uploads,
+    # move this to Celery to avoid slowing the HTTP response.
+    try:
+      if instance.image:
+          generate_derivatives(instance.image)
+    except Exception:
+      # Don’t crash saves if Pillow can’t process a file
+      pass
 
 class ArtistVideo(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE, related_name="videos")
