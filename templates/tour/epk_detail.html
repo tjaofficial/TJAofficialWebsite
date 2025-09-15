@@ -33,7 +33,14 @@
       {% for v in a.videos.all %}
         <div class="video-embed">
           {% if v.embed_src %}
-            <iframe src="{{ v.embed_src }}" title="{{ v.title|default:a.name }}" loading="lazy" frameborder="0" allowfullscreen></iframe>
+            <iframe
+              src="{{ v.embed_src }}"
+              title="{{ v.title|default:a.name }}"
+              loading="lazy"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
           {% else %}
             <a class="btn" href="{{ v.url }}" target="_blank" rel="noopener">{{ v.title|default:"Watch" }}</a>
           {% endif %}
@@ -43,15 +50,25 @@
   {% endif %}
 
   {% if a.photos.all %}
-    <h2>Photos</h2>
-    <div class="epk-photos">
-      {% for p in a.photos.all %}
-        <figure>
-          <img src="{{ p.image.url }}" alt="{{ p.caption|default:a.name }}">
-          {% if p.caption %}<figcaption class="muted">{{ p.caption }}</figcaption>{% endif %}
-        </figure>
-      {% endfor %}
-    </div>
-  {% endif %}
+  <h2>Photos</h2>
+  <div class="epk-photos" id="epk-photos">
+    {% for p in a.photos.all %}
+      <figure class="epk-photo">
+        <a href="{{ p.image.url }}"
+           data-full="{{ p.image.url }}"
+           data-caption="{{ p.caption|default:a.name }}">
+          <img
+            src="{{ p.image.url }}"
+            alt="{{ p.caption|default:a.name }}"
+            loading="lazy"
+            decoding="async"
+            width="1600" height="1067"  {# harmless hints; adjust if you know typical ratio #}
+          >
+        </a>
+        {% if p.caption %}<figcaption class="muted">{{ p.caption }}</figcaption>{% endif %}
+      </figure>
+    {% endfor %}
+  </div>
+{% endif %}
 </section>
 {% endblock %}
