@@ -187,7 +187,8 @@ class ArtistPhoto(models.Model):
     sort = models.PositiveIntegerField(default=0)
 
     def sources(self):
-        return sources_for(self.image)
+        # Read-only; won’t generate during request
+        return sources_for(self.image, check_exists=True)
 
     class Meta:
         ordering = ["sort", "id"]

@@ -74,11 +74,38 @@ def generate_derivatives(dj_file, widths=None):
 
     return {"avif": avif_out, "webp": webp_out}
 
-def sources_for(dj_file):
-    """Helper to build srcset strings for templates from a File/ImageField."""
-    gen = generate_derivatives(dj_file)
+def sources_for(dj_file, widths=None, check_exists=True):
+    """
+    Build srcset lists for existing derivatives only. Does NOT generate files.
+    Safe for S3/GCS/local. Returns {
+      "avif": "url 320w, url 640w, ...",
+      "webp": "url 320w, ...",
+      "fallback": original_url
+    }
+    """
+    if not dj_file:
+        return {"avif": "", "webp": "", "fallback": ""}
+
+    widths = widths or getattr(settings, "EPK_IMAGE_WIDTHS", [320, 640, 1024, 1600])
+    storage = dj_file.storage
+    name = dj_file.name  # storage-relative (e.g., "artists/photos/abc.jpg")
+    dir_rel, stem, _ext = _split_name(name)
+
+    avif_pairs, webp_pairs = [], []
+    for w in widths:
+        avif_name = os.path.join(dir_rel, f"{stem}_w{w}.avif")
+        webp_name = os.path.join(dir_rel, f"{stem}_w{w}.webp")
+        # Only include files that exist (skip network checks if you prefer)
+        if not check_exists or storage.exists(avif_name):
+            avif_pairs.append((w, storage.url(avif_name)))
+        if not check_exists or storage.exists(webp_name):
+            webp_pairs.append((w, storage.url(webp_name)))
+
+    def _pairs_to_srcset(pairs):
+        return ", ".join([f"{u} {w}w" for (w, u) in pairs])
+
     return {
-        "avif": _urls_to_srcset(gen["avif"]) if gen["avif"] else "",
-        "webp": _urls_to_srcset(gen["webp"]) if gen["webp"] else "",
-        "fallback": dj_file.url if dj_file else "",
+        "avif": _pairs_to_srcset(sorted(avif_pairs)),
+        "webp": _pairs_to_srcset(sorted(webp_pairs)),
+        "fallback": dj_file.url,
     }
