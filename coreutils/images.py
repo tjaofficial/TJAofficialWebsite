@@ -5,58 +5,80 @@ from PIL import Image
 from django.conf import settings
 from django.core.files.base import ContentFile
 
-def _ext(path): return os.path.splitext(path)[1].lower()
+def _split_name(name: str):
+    """Return (dir, base_without_ext, ext) for a storage-relative name."""
+    d = os.path.dirname(name)
+    base = os.path.basename(name)
+    stem, ext = os.path.splitext(base)
+    return d, stem, ext.lower()
+
+def _urls_to_srcset(pairs):
+    # pairs is list[(width:int, url:str)]
+    # produce "url1 320w, url2 640w, ..."
+    return ", ".join([f"{u} {w}w" for (w, u) in pairs])
 
 def generate_derivatives(dj_file, widths=None):
     """
-    Given a Django File/ImageField file, generate resized AVIF+WebP
-    next to the original. Returns dict: {"avif": [(w, path), ...], "webp": [...]}.
+    Storage-agnostic generator of AVIF/WebP derivatives.
+    Returns dict:
+      {
+        "avif": [(w, url), ...],     # may be []
+        "webp": [(w, url), ...],
+      }
     """
+    if not dj_file:
+        return {"avif": [], "webp": []}
+
     widths = widths or getattr(settings, "EPK_IMAGE_WIDTHS", [320, 640, 1024, 1600])
-    if not dj_file: return {"avif": [], "webp": []}
+    storage = dj_file.storage
+    name = dj_file.name  # storage-relative path, e.g. "artists/photos/abc.jpg"
 
-    orig_path = dj_file.path
-    base_dir  = os.path.dirname(orig_path)
-    base_name = os.path.splitext(os.path.basename(orig_path))[0]
+    dir_rel, stem, _ext = _split_name(name)
 
-    out = {"avif": [], "webp": []}
+    # Load original via storage API (works for S3, GCS, filesystem, etc.)
+    with storage.open(name, "rb") as f:
+        buf = BytesIO(f.read())
+    im = Image.open(buf)
+    im.load()
+    if im.mode not in ("RGB", "RGBA"):
+        im = im.convert("RGB")
 
-    with Image.open(orig_path) as im:
-        im.load()
-        # Convert to RGB for consistent saving
-        if im.mode not in ("RGB", "RGBA"):
-            im = im.convert("RGB")
-        w0, h0 = im.size
+    w0, h0 = im.size
+    avif_out, webp_out = [], []
 
-        for w in widths:
-            if w >= w0:
-                # No need to upscale; cap at original
-                w = w0
-            h = int(h0 * (w / w0))
-            im_resized = im.copy()
-            im_resized.thumbnail((w, h), Image.LANCZOS)
+    for w in widths:
+        if w >= w0:  # don't upscale
+            w2 = w0
+        else:
+            w2 = w
+        h2 = int(h0 * (w2 / w0))
 
-            # AVIF
-            avif_name = f"{base_name}_w{w}.avif"
-            avif_path = os.path.join(base_dir, avif_name)
-            if not os.path.exists(avif_path):
-                buf = BytesIO()
-                im_resized.save(buf, format="AVIF", quality=getattr(settings, "EPK_AVIF_QUALITY", 45))
-                with open(avif_path, "wb") as f:
-                    f.write(buf.getvalue())
-            out["avif"].append((w, dj_file.storage.url(os.path.join(os.path.dirname(dj_file.name), avif_name))))
+        im_resized = im.copy()
+        im_resized.thumbnail((w2, h2), Image.LANCZOS)
 
-            # WebP
-            webp_name = f"{base_name}_w{w}.webp"
-            webp_path = os.path.join(base_dir, webp_name)
-            if not os.path.exists(webp_path):
-                buf = BytesIO()
-                im_resized.save(buf, format="WEBP", quality=getattr(settings, "EPK_WEBP_QUALITY", 82), method=6)
-                with open(webp_path, "wb") as f:
-                    f.write(buf.getvalue())
-            out["webp"].append((w, dj_file.storage.url(os.path.join(os.path.dirname(dj_file.name), webp_name))))
+        # Build storage-relative names
+        avif_name = os.path.join(dir_rel, f"{stem}_w{w2}.avif")
+        webp_name = os.path.join(dir_rel, f"{stem}_w{w2}.webp")
 
-    # dedupe in case of non-upscaled duplicates
-    out["avif"] = sorted(set(out["avif"]))
-    out["webp"] = sorted(set(out["webp"]))
-    return out
+        # Save WebP
+        if not storage.exists(webp_name):
+            webp_q = getattr(settings, "EPK_WEBP_QUALITY", 82)
+            out = BytesIO()
+            im_resized.save(out, format="WEBP", quality=webp_q, method=6)
+            storage.save(webp_name, ContentFile(out.getvalue()))
+        webp_out.append((w2, storage.url(webp_name)))
+
+    # De-dup & sort by width
+    avif_out = sorted(set(avif_out))
+    webp_out = sorted(set(webp_out))
+
+    return {"avif": avif_out, "webp": webp_out}
+
+def sources_for(dj_file):
+    """Helper to build srcset strings for templates from a File/ImageField."""
+    gen = generate_derivatives(dj_file)
+    return {
+        "avif": _urls_to_srcset(gen["avif"]) if gen["avif"] else "",
+        "webp": _urls_to_srcset(gen["webp"]) if gen["webp"] else "",
+        "fallback": dj_file.url if dj_file else "",
+    }

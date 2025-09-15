@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from coreutils.images import generate_derivatives
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from coreutils.images import sources_for
 
 User = get_user_model()
 
@@ -186,21 +187,7 @@ class ArtistPhoto(models.Model):
     sort = models.PositiveIntegerField(default=0)
 
     def sources(self):
-        """
-        Return dict ready for template: {
-          "avif": "w url, w url, ...",
-          "webp": "...",
-          "fallback": original_url
-        }
-        """
-        gen = generate_derivatives(self.image)
-        avif = ", ".join([f"{u} {w}w" for (w, u) in gen["avif"]])
-        webp = ", ".join([f"{u} {w}w" for (w, u) in gen["webp"]])
-        return {
-            "avif": avif,
-            "webp": webp,
-            "fallback": self.image.url if self.image else "",
-        }
+        return sources_for(self.image)
 
     class Meta:
         ordering = ["sort", "id"]
