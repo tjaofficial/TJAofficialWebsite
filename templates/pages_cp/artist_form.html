@@ -2,13 +2,13 @@
 {% block title %}{{ mode|capfirst }} Artist{% endblock %}
 {% block content %}
 <h1>{{ mode|capfirst }} Artist{% if artist %}: {{ artist.name }}{% endif %}</h1>
-<form method="post" enctype="multipart/form-data" class="card">
+<form method="post" enctype="multipart/form-data" class="card" style="width: 600px;">
   {% csrf_token %}
   <div class="form-row">
-    <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
-    <input class="input" name="short_tag" placeholder="Short tag" value="{{ form.short_tag.value|default:'' }}">
-    <input class="input" name="genre" placeholder="Genre" value="{{ form.genre.value|default:'' }}">
-    <input class="input" name="hometown" placeholder="Hometown" value="{{ form.hometown.value|default:'' }}">
+    Artist Name: <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+    Short Tag(optional): <input class="input" name="short_tag" placeholder="Short tag" value="{{ form.short_tag.value|default:'' }}">
+    Genre: <input class="input" name="genre" placeholder="Genre" value="{{ form.genre.value|default:'' }}">
+    Hometown: <input class="input" name="hometown" placeholder="Hometown" value="{{ form.hometown.value|default:'' }}">
     <label style="display:flex;align-items:center;gap:6px;">
       <input type="checkbox" name="is_public" {% if form.is_public.value or form.is_public.value is None %}checked{% endif %}> Public
     </label>
@@ -17,20 +17,21 @@
     <textarea class="input" name="bio" rows="3" placeholder="Bio">{{ form.bio.value|default:'' }}</textarea>
   </div>
   <div class="form-row">
-    <input class="input" type="file" name="avatar" accept="image/*">
-    <input class="input" type="file" name="hero_image" accept="image/*">
-    <input class="input" type="number" name="sort" placeholder="Sort" value="{{ form.sort.value|default:0 }}">
+    Main Image: <input class="input" type="file" name="avatar" accept="image/*">
+    Cover Image: <input class="input" type="file" name="hero_image" accept="image/*">
+    Dont Change This: <input class="input" type="number" name="sort" placeholder="Sort" value="{{ form.sort.value|default:0 }}">
+  </div><br><br>
+  <h3>Links</h3>
+  <div class="form-row">
+    Website: <input class="input" name="website_url" placeholder="Website" value="{{ form.website_url.value|default:'' }}">
+    Instagram: <input class="input" name="instagram_url" placeholder="Instagram" value="{{ form.instagram_url.value|default:'' }}">
+    TikTok:<input class="input" name="tiktok_url" placeholder="TikTok" value="{{ form.tiktok_url.value|default:'' }}">
   </div>
   <div class="form-row">
-    <input class="input" name="website_url" placeholder="Website" value="{{ form.website_url.value|default:'' }}">
-    <input class="input" name="instagram_url" placeholder="Instagram" value="{{ form.instagram_url.value|default:'' }}">
-    <input class="input" name="tiktok_url" placeholder="TikTok" value="{{ form.tiktok_url.value|default:'' }}">
-  </div>
-  <div class="form-row">
-    <input class="input" name="youtube_url" placeholder="YouTube" value="{{ form.youtube_url.value|default:'' }}">
-    <input class="input" name="spotify_url" placeholder="Spotify" value="{{ form.spotify_url.value|default:'' }}">
-    <input class="input" name="apple_url" placeholder="Apple Music" value="{{ form.apple_url.value|default:'' }}">
-    <input class="input" type="email" name="contact_email" placeholder="Contact email" value="{{ form.contact_email.value|default:'' }}">
+    YouTube: <input class="input" name="youtube_url" placeholder="YouTube" value="{{ form.youtube_url.value|default:'' }}">
+    Spotify: <input class="input" name="spotify_url" placeholder="Spotify" value="{{ form.spotify_url.value|default:'' }}">
+    Apple Music: <input class="input" name="apple_url" placeholder="Apple Music" value="{{ form.apple_url.value|default:'' }}">
+    Music Email: <input class="input" type="email" name="contact_email" placeholder="Contact email" value="{{ form.contact_email.value|default:'' }}">
   </div>
   <div class="form-row">
     <button class="btn primary">Save</button>
