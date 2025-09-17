@@ -1,16 +1,18 @@
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
+from django.utils import timezone
 from .utils import ensure_event_checklist
 from .forms import EventForm, VenueForm, Event, TechPersonForm, EventTechAssignForm, EventMediaForm
 from tickets.models import TicketType, TicketReservation, Ticket
 from pages.models import Artist
 from django.db import transaction
 import stripe
+from datetime import timedelta
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.db.models import Q, Sum
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
+from django.db.models import Q, Sum, Exists, OuterRef
 from django.contrib import messages
 from django.urls import reverse
 from io import BytesIO
@@ -19,10 +21,62 @@ import qrcode
 stripe.api_key = settings.STRIPE_SECRET_KEY
 is_super = user_passes_test(lambda u: u.is_superuser)
 
-@login_required
 def events_list(request):
-    qs = Event.objects.select_related("venue").order_by("-start")
-    return render(request, "events/list.html", {"events": qs})
+    # --- Filters ---
+    city  = (request.GET.get("city") or "").strip()
+    state = (request.GET.get("state") or "").strip()
+    venue = (request.GET.get("venue") or "").strip()
+    show_past = (request.GET.get("past") in ("1", "true", "yes"))
+
+    now = timezone.now()
+
+    base = (Event.objects
+            .filter(published=True)
+            .select_related("venue")
+            .annotate(has_tickets=Exists(
+                TicketType.objects.filter(event_id=OuterRef("pk"), active=True)
+            )))
+
+    # Filter by related Venue fields
+    if city:
+        base = base.filter(venue__city__icontains=city)
+    if state:
+        base = base.filter(venue__state__icontains=state)
+    if venue:
+        base = base.filter(venue__name__icontains=venue)
+
+    # Upcoming only (default) vs include past
+    if not show_past:
+        base = base.filter(start__gte=now)
+
+    # Order: soonest first
+    events = list(base.order_by("start"))
+
+    # Hero: nearest future if available, else first available
+    hero = None
+    for e in events:
+        if e.start and e.start >= now:
+            hero = e
+            break
+    if not hero and events:
+        hero = events[0]
+
+    # Distinct filter options from Venues that have published events
+    vqs = Venue.objects.filter(event__published=True)
+    cities = (vqs.exclude(city="").exclude(city__isnull=True)
+                  .values_list("city", flat=True).distinct().order_by("city"))
+    states = (vqs.exclude(state="").exclude(state__isnull=True)
+                  .values_list("state", flat=True).distinct().order_by("state"))
+    venues = (vqs.exclude(name="").exclude(name__isnull=True)
+                  .values_list("name", flat=True).distinct().order_by("name"))
+
+    ctx = {
+        "hero": hero,
+        "events": events,
+        "filters": {"city": city, "state": state, "venue": venue, "past": "1" if show_past else ""},
+        "cities": cities, "states": states, "venues": venues,
+    }
+    return render(request, "events/public_events.html", ctx)
 
 @is_super
 def event_add(request):
@@ -462,3 +516,51 @@ def checklist_reorder(request, event_id):
             EventChecklistItem.objects.filter(pk=_id, checklist=cl).update(order=order)
     return JsonResponse({"ok": True})
 
+def event_ics(request, pk):
+    e = get_object_or_404(Event.objects.select_related("venue"), pk=pk, published=True)
+    if not e.start:
+        return redirect("events_public:list")
+
+    title = e.name or "Event"
+    # Build a friendly location from Venue
+    loc_parts = []
+    if e.venue:
+        if e.venue.name:  loc_parts.append(e.venue.name)
+        if e.venue.city:  loc_parts.append(e.venue.city)
+        if e.venue.state: loc_parts.append(e.venue.state)
+    loc = ", ".join(loc_parts)
+
+    desc = (getattr(e, "afterparty_info", "") or "")
+    if getattr(e, "meet_greet_info", ""):
+        desc = (desc + "\n\n" + e.meet_greet_info).strip()
+    desc = desc.replace("\n", "\\n")
+
+    dt    = e.start.strftime("%Y%m%dT%H%M%S")
+    dt_end = e.end.strftime("%Y%m%dT%H%M%S") if e.end else ""
+
+    ics = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//TJA//Events//EN",
+        "BEGIN:VEVENT",
+        f"UID:event-{e.pk}@tjaofficial.com",
+        f"DTSTAMP:{timezone.now().strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTSTART:{dt}",
+    ]
+    if dt_end:
+        ics.append(f"DTEND:{dt_end}")
+    ics.append(f"SUMMARY:{title}")
+    if loc:
+        ics.append(f"LOCATION:{loc}")
+    if desc:
+        ics.append(f"DESCRIPTION:{desc}")
+    ics += ["END:VEVENT", "END:VCALENDAR"]
+
+    resp = HttpResponse("\r\n".join(ics), content_type="text/calendar; charset=utf-8")
+    resp["Content-Disposition"] = f'attachment; filename="event-{e.pk}.ics"'
+    return resp
+
+
+def event_detail(request, pk):
+    e = get_object_or_404(Event, pk=pk, published=True)
+    return render(request, "events/public_event_detail.html", {"e": e})

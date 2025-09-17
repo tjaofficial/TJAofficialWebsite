@@ -18,6 +18,7 @@
     </div>
 
     <nav class="tour-nav">
+      <a href="{% url 'home' %}">Back to Main</a>
       <a href="{% url 'tour_home' %}" class="{% if request.path == '/tour/' %}active{% endif %}">The Stage</a>
       <a href="{% url 'tour_headliners' %}" class="{% if '/headliners' in request.path %}active{% endif %}">Headliners</a>
       <a href="{% url 'tour_media' %}" class="{% if '/media' in request.path %}active{% endif %}">Media</a>

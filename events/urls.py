@@ -44,4 +44,7 @@ urlpatterns = [
     path("events/<int:event_id>/checklist/edit/", views.checklist_edit, name="event_checklist_edit"),
     path("events/checklist/toggle/<int:item_id>/", views.checklist_toggle, name="event_checklist_toggle"),
     path("events/<int:event_id>/checklist/reorder/", views.checklist_reorder, name="event_checklist_reorder"),
+    path("<int:pk>/ics/", views.event_ics, name="ics"),
+    # optional details page if you don't have one yet:
+    path("<int:pk>/", views.event_detail, name="detail"),
 ]

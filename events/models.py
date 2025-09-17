@@ -30,8 +30,17 @@ class Event(models.Model):
     venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.SET_NULL)
     afterparty_info = models.TextField(blank=True)
     meet_greet_info = models.TextField(blank=True)
+    cover_image = models.ImageField(upload_to="events/cover/", blank=True, null=True,
+                                    help_text="Wide hero image for the Events page.")
+    flyer       = models.ImageField(upload_to="events/flyer/", blank=True, null=True,
+                                    help_text="Portrait flyer used on cards if no cover.")
     published = models.BooleanField(default=False)
 
+    @property
+    def hero_src(self):
+        return (self.cover_image.url if self.cover_image
+                else (self.flyer.url if self.flyer else ""))
+    
     def __str__(self):
         return self.name or f"Event {self.pk}"
     
