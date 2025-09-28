@@ -374,7 +374,14 @@ def ticket_resend_email(request, token):
 def public_purchase(request, event_id):
     ev = get_object_or_404(Event, pk=event_id, published=True)  # or your flag
     types = TicketType.objects.filter(event=ev, active=True).order_by("price_cents")
+
+    # Compute derived attributes for template usage
+    for tt in types:
+        tt.remaining = tt.remaining()          # int
+        tt.is_on_sale = tt.is_on_sale()           # bool
+    
     artist_token = request.GET.get("artist")  # may be None
+
     return render(request, "tickets/public_purchase.html", {
         "event": ev, "types": types, "artist_token": artist_token
     })

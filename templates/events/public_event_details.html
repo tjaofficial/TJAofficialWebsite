@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static shop_extras %}
+{% block title %}{{ event.name|default:"Event" }} — Event Details{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/event_details.css' %}">
+    <script defer src="{% static 'js/event_details.js' %}"></script>
+{% endblock %}
+{% block content %}
+<section class="event-hero">
+  {% if hero_src %}
+    <div class="hero-media" style="width: 30%; height: unset;">
+      <img src="{{ hero_src }}" alt="{{ event.name|default:'Event' }}">
+      <div class="hero-vignette"></div>
+    </div>
+  {% endif %}
+
+  <div class="sticky-buy" data-sticky>
+    <div class="sticky-inner">
+      <div class="sticky-whenwhere">
+        {% if event.start %}
+          <strong>{{ event.start|date:"M j" }}</strong>
+          <span>• {{ event.name }}</span>
+        {% else %}
+          <strong>TBD</strong>
+          <span>• {{ event.name }}</span>
+        {% endif %}
+      </div>
+      <div class="sticky-actions">
+        {% if anyis_on_sale %}
+          <a class="btn primary" href="{% url 'control:tickets:public_purchase' event.id %}">Get Tickets</a>
+        {% elif types and types|length > 0 %}
+          <span class="btn soldout" aria-disabled="true">Sold Out</span>
+        {% else %}
+          <a class="btn ghost" href="/email-signup/?tag=event_rsvp_{{ event.id }}">RSVP</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="event-body container">
+  <div class="event-columns">
+    <div class="event-main">
+      {% if event.afterparty_info or event.meet_greet_info %}
+      <div class="event-info-cards">
+        {% if event.afterparty_info %}
+        <article class="info-card">
+          <h3>Afterparty</h3>
+          <p>{{ event.afterparty_info|linebreaksbr }}</p>
+        </article>
+        {% endif %}
+        {% if event.meet_greet_info %}
+        <article class="info-card">
+          <h3>Meet & Greet</h3>
+          <p>{{ event.meet_greet_info|linebreaksbr }}</p>
+        </article>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if types %}
+      <div class="ticket-types">
+        <h2>Tickets</h2>
+        <div class="tt-grid">
+          {% for t in types %}
+          <div class="tt-card {% if not t.is_on_sale or t.remaining <= 0 %}is-disabled{% endif %}">
+            <div class="tt-head">
+              <h3>{{ t.name }}</h3>
+              <div class="tt-price">{{ t.price_cents|money }}</div>
+            </div>
+            <div class="tt-meta">
+              {% if t.remaining > 0 %}
+                <span class="badge">Remaining: {{ t.remaining }}</span>
+              {% else %}
+                <span class="badge danger">Sold Out</span>
+              {% endif %}
+              {% if t.sales_start or t.sales_end %}
+                <div class="sale-window">
+                  {% if t.sales_start %}<span>From: {{ t.sales_start|date:"M j, g:ia" }}</span>{% endif %}
+                  {% if t.sales_end %}<span>Until: {{ t.sales_end|date:"M j, g:ia" }}</span>{% endif %}
+                </div>
+              {% endif %}
+            </div>
+            <div class="tt-actions">
+              {% if t.is_on_sale and t.remaining > 0 %}
+                <a class="btn small primary" href="{% url 'control:tickets:public_purchase' event.id %}">Select</a>
+              {% else %}
+                <button class="btn small" disabled>Unavailable</button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <aside class="event-side">
+      <div class="panel">
+        <h3>Venue</h3>
+        {% if event.venue %}
+          <div class="venue-name">{{ event.venue.name }}</div>
+          {% if event.venue.address %}<div class="muted">{{ event.venue.address }}</div>{% endif %}
+          <div class="muted">
+            {% if event.venue.city %}{{ event.venue.city }}{% endif %}
+            {% if event.venue.state %}, {{ event.venue.state }}{% endif %}
+            {% if event.venue.country %}, {{ event.venue.country }}{% endif %}
+          </div>
+          {% if event.venue.capacity %}
+            <div class="muted">Capacity: {{ event.venue.capacity }}</div>
+          {% endif %}
+          {% if event.start %}
+            <a class="btn outline full" target="_blank" rel="noopener"
+               href="https://www.google.com/maps/search/?api=1&query={{ event.venue.name|urlencode }}{% if event.venue.city %}+{{ event.venue.city|urlencode }}{% endif %}{% if event.venue.state %}+{{ event.venue.state|urlencode }}{% endif %}">
+              Open in Maps
+            </a>
+          {% endif %}
+        {% else %}
+          <div class="muted">Venue TBA</div>
+        {% endif %}
+      </div>
+
+      <div class="panel">
+        <h3>Share</h3>
+        <div class="share-row">
+          <button class="btn small" data-copy-url>Copy Link</button>
+          <a class="btn small outline" target="_blank" rel="noopener"
+             href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}&text={{ event.name|urlencode }}">X/Twitter</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

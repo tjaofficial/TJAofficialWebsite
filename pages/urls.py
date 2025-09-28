@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from events.views import public_events, event_details
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -36,6 +37,9 @@ urlpatterns = [
     path("tour/passport/redeem/", views.tour_passport_redeem, name="tour_passport_redeem"),
     path("tour/passport/rules/", views.tour_passport_rules, name="tour_passport_rules"),
     path('links/', views.links, name='links'),
+    path("events/", public_events, name="public_events"),
+    path("events/<int:event_id>/<slug:slug>/", event_details, name="detail_slug"),
+    path("events/<int:event_id>/", event_details, name="detail"),
 
     #control panel
     

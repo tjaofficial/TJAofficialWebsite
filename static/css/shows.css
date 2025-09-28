@@ -66,12 +66,12 @@
 @media (max-width: 900px){ .hero-split { grid-template-columns: 1fr; } }
 
 .next-show {
-  display:grid; grid-template-columns: 120px 1fr; gap:14px; align-items:center;
+  align-items:center;
 }
 .date-badge.big { width: 120px; height: 120px; }
 .date-badge.big .day { font-size: 36px; }
 
-.countdown { display:flex; gap:16px; margin-top:8px; }
+.countdown { display:flex; gap:16px; margin-top:8px; justify-content: center;}
 .countdown div { display:grid; place-items:center; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.04); }
 .countdown strong { font-size:20px; font-variant-numeric: tabular-nums; }
 .countdown span { font-size:11px; color: var(--muted); }
@@ -79,3 +79,6 @@
 .hero-art { position: relative; min-height: 220px; }
 .hero-art #orb { position:absolute; inset:0; }
 
+.hero-actions {
+  justify-content: center;
+}

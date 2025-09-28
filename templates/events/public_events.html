@@ -1,132 +1,157 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Events{% endblock %}
-
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/events.css' %}">
-<script defer src="{% static 'js/events.js' %}"></script>
+  	<link rel="stylesheet" href="{% static 'css/events.css' %}">
+	<link rel="stylesheet" href="{% static 'css/shows.css' %}">
+  	<script defer src="{% static 'js/events.js' %}"></script>
+	<script defer src="{% static 'js/shows.js' %}"></script>
 {% endblock %}
+{% block hero %}
+	<section class="hero hero--shows reveal">
+		<div class="container hero-split">
+			<div class="hero-copy">
+				<h1 class="hero-title">Shows</h1>
+				<p class="hero-sub">Catch TJA live — dates updated regularly.</p>
 
+				{% if next_show %}
+					<div class="next-show card">
+						<div class="ns-main">
+							<h1 class="events-hero__title" style="text-align: center;">{{ next_show.name|default:"Upcoming Event" }}</h1>
+							<div class="events-hero__line">
+								<span class="events-hero__date">
+									{% if next_show.start %}{{ next_show.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}
+								</span>
+								{% if next_show.venue.name %}
+									<span class="events-hero__dot">•</span>
+									<span class="events-hero__venue">{{ next_show.venue.name }}</span>
+								{% endif %}
+								{% if next_show.venue.city or next_show.venue.state %}
+									<span class="events-hero__citystate">
+										{% if next_show.venue.city %}{{ next_show.venue.city }}{% endif %}{% if next_show.venue.state %}{% if next_show.venue.city %}, {% endif %}{{ next_show.venue.state }}{% endif %}
+									</span>
+								{% endif %}
+							</div>
+
+							<div class="countdown"
+								data-dt="{{ next_show.start|date:'c' }}">
+								<div><strong data-dd>--</strong><span>Days</span></div>
+								<div><strong data-hh>--</strong><span>Hours</span></div>
+								<div><strong data-mm>--</strong><span>Mins</span></div>
+								<div><strong data-ss>--</strong><span>Secs</span></div>
+							</div>
+
+							<div class="hero-actions" style="margin-top:10px">
+								{% if next_tt.sales_end < now %}
+									<a class="btn" style="border-color: #18181c; color: red; background: #18181c;">Sold Out</a>
+									<a class="btn ghost" href="{% url 'detail' next_show.id %}">View</a>
+								{% elif next_show.has_tickets %}
+									<a class="btn" href="{% url 'control:tickets:public_purchase' next_show.id %}" target="_blank" rel="noopener">Tickets</a>
+									<a class="btn ghost" href="{% url 'detail' next_show.id %}">View</a>
+									{% if next_show.start %}
+										<a class="btn ghost" href="{% url 'control:events:ics' next_show.id %}">Add to calendar</a>
+									{% endif %}
+								{% else %}
+									<a class="btn" href="/email-signup/?source=event_rsvp&event={{ next_show.id }}">RSVP</a>
+									<a class="btn ghost" href="{% url 'detail' next_show.id %}">View</a>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<div class="card">No upcoming dates yet — join the list for alerts.</div>
+				{% endif %}
+			</div>
+			<div class="events-hero__img" style="height: 100%;">
+				{% if next_show.hero_src %}
+					<img src="{{ next_show.hero_src }}" alt="{{ next_show.name|default:'Upcoming Event' }}">
+				{% else %}
+					<div class="events-hero__placeholder">Upcoming Event</div>
+				{% endif %}
+			</div>
+		</div>
+	</section>
+{% endblock %}
 {% block content %}
-<section class="events">
-  <!-- HERO -->
-  <div class="events-hero">
-    {% if hero %}
-      <div class="events-hero__img">
-        {% if hero.hero_src %}
-          <img src="{{ hero.hero_src }}" alt="{{ hero.name|default:'Upcoming Event' }}">
-        {% else %}
-          <div class="events-hero__placeholder">Upcoming Event</div>
-        {% endif %}
-      </div>
-      <div class="events-hero__meta">
-        <h1 class="events-hero__title">{{ hero.name|default:"Upcoming Event" }}</h1>
-        <div class="events-hero__line">
-          <span class="events-hero__date">
-            {% if hero.start %}{{ hero.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}
-          </span>
-          {% if hero.venue_name %}
-          <span class="events-hero__dot">•</span>
-          <span class="events-hero__venue">{{ hero.venue_name }}</span>
-          {% endif %}
-          {% if hero.city or hero.state %}
-          <span class="events-hero__citystate">
-            {% if hero.city %}{{ hero.city }}{% endif %}{% if hero.state %}{% if hero.city %}, {% endif %}{{ hero.state }}{% endif %}
-          </span>
-          {% endif %}
-        </div>
-        <div class="events-hero__actions">
-          {% if hero.has_tickets %}
-            <a class="btn" href="{% url 'control:tickets:public_purchase' hero.id %}">Tickets</a>
-            <a class="btn ghost" href="{% url 'control:events:detail' hero.id %}">View</a>
-            {% if hero.start %}<a class="btn ghost" href="{% url 'control:events:ics' hero.id %}">Add to calendar</a>{% endif %}
-          {% else %}
-            <a class="btn" href="/email-signup/?source=event_rsvp&event={{ hero.id }}">RSVP</a>
-            <a class="btn ghost" href="{% url 'control:events:detail' hero.id %}">View</a>
-          {% endif %}
-        </div>
-      </div>
-    {% else %}
-      <div class="events-hero__empty">
-        <h1>No upcoming events… yet.</h1>
-      </div>
-    {% endif %}
-  </div>
+	<section class="events">
+		<!-- FILTERS -->
+		<div class="events-filter" data-filterbar>
+			<form method="get" id="evtFilterForm">
+				<select name="city" class="events-filter__select">
+					<option value="">All cities</option>
+					{% for c in cities %}
+						<option value="{{ c }}" {% if filters.city == c %}selected{% endif %}>{{ c }}</option>
+					{% endfor %}
+				</select>
+				<select name="state" class="events-filter__select">
+					<option value="">All states</option>
+					{% for s in states %}
+						<option value="{{ s }}" {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
+					{% endfor %}
+				</select>
+				<select name="venue" class="events-filter__select">
+					<option value="">All venues</option>
+					{% for v in venues %}
+						<option value="{{ v }}" {% if filters.venue == v %}selected{% endif %}>{{ v }}</option>
+					{% endfor %}
+				</select>
 
-  <!-- FILTERS -->
-  <div class="events-filter" data-filterbar>
-    <form method="get" id="evtFilterForm">
-      <select name="city" class="events-filter__select">
-        <option value="">All cities</option>
-        {% for c in cities %}
-          <option value="{{ c }}" {% if filters.city == c %}selected{% endif %}>{{ c }}</option>
-        {% endfor %}
-      </select>
-      <select name="state" class="events-filter__select">
-        <option value="">All states</option>
-        {% for s in states %}
-          <option value="{{ s }}" {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-      </select>
-      <select name="venue" class="events-filter__select">
-        <option value="">All venues</option>
-        {% for v in venues %}
-          <option value="{{ v }}" {% if filters.venue == v %}selected{% endif %}>{{ v }}</option>
-        {% endfor %}
-      </select>
+				<label class="events-filter__checkbox">
+					<input type="checkbox" name="past" value="1" {% if filters.past %}checked{% endif %}>
+					Show past
+				</label>
 
-      <label class="events-filter__checkbox">
-        <input type="checkbox" name="past" value="1" {% if filters.past %}checked{% endif %}>
-        Show past
-      </label>
+				<button class="btn ghost" type="submit">Apply</button>
+				<a class="btn ghost" href="{% url 'control:events:list' %}">Reset</a>
+			</form>
+		</div>
 
-      <button class="btn ghost" type="submit">Apply</button>
-      <a class="btn ghost" href="{% url 'control:events:list' %}">Reset</a>
-    </form>
-  </div>
-
-  <!-- LIST -->
-  <div class="events-list">
-    {% for e in events %}
-      <article class="evt-card" data-evt>
-        <div class="evt-card__media">
-          {% if e.hero_src %}
-            <img src="{{ e.hero_src }}" alt="{{ e.name|default:'Event' }}">
-          {% else %}
-            <div class="evt-card__placeholder">Event</div>
-          {% endif %}
-          {% if not e.start %}
-            <div class="evt-card__badge">TBD</div>
-          {% endif %}
-        </div>
-        <div class="evt-card__body">
-          <h3 class="evt-card__title">{{ e.name|default:"Event" }}</h3>
-          <div class="evt-card__meta">
-            <span class="evt-card__date">{% if e.start %}{{ e.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}</span>
-            {% if e.venue_name %}
-              <span class="sep">•</span> <span>{{ e.venue_name }}</span>
-            {% endif %}
-            {% if e.city or e.state %}
-              <span class="sep">•</span>
-              <span>
-                {% if e.city %}{{ e.city }}{% endif %}{% if e.state %}{% if e.city %}, {% endif %}{{ e.state }}{% endif %}
-              </span>
-            {% endif %}
-          </div>
-          <div class="evt-card__actions">
-            {% if e.has_tickets %}
-              <a class="btn sm" href="{% url 'control:tickets:public_purchase' e.id %}">Tickets</a>
-              {% if e.start %}<a class="btn sm ghost" href="{% url 'control:events:ics' e.id %}">Add to calendar</a>{% endif %}
-            {% else %}
-              <a class="btn sm" href="/email-signup/?source=event_rsvp&event={{ e.id }}">RSVP</a>
-            {% endif %}
-            <a class="btn sm ghost" href="{% url 'control:events:detail' e.id %}">View</a>
-          </div>
-        </div>
-      </article>
-    {% empty %}
-      <p class="muted">No events found with these filters.</p>
-    {% endfor %}
-  </div>
-</section>
+		<!-- LIST -->
+		<div class="events-list">
+			{% for e in events %}
+				<article class="evt-card" data-evt>
+					<div class="evt-card__media">
+						{% if e.hero_src %}
+							<img src="{{ e.hero_src }}" alt="{{ e.name|default:'Event' }}">
+						{% else %}
+							<div class="evt-card__placeholder">Event</div>
+						{% endif %}
+						{% if not e.start %}
+							<div class="evt-card__badge">TBD</div>
+						{% endif %}
+					</div>
+					<div class="evt-card__body">
+						<h3 class="evt-card__title">{{ e.name|default:"Event" }}</h3>
+						<div class="evt-card__meta">
+							<span class="evt-card__date">{% if e.start %}{{ e.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}</span>
+							{% if e.venue_name %}
+								<span class="sep">•</span> <span>{{ e.venue_name }}</span>
+							{% endif %}
+							{% if e.city or e.state %}
+								<span class="sep">•</span>
+								<span>
+									{% if e.city %}{{ e.city }}{% endif %}{% if e.state %}{% if e.city %}, {% endif %}{{ e.state }}{% endif %}
+								</span>
+							{% endif %}
+						</div>
+						<div class="evt-card__actions">
+							{% for tt in e.prefetched_types %}
+								{% if tt.name == "General Admission" and tt.sales_end < now %}
+									<a class="btn sm" style="border-color: #0f0f0f; color: red; background: #0f0f0f;">Sold Out</a>
+								{% elif e.has_tickets %}
+									<a class="btn sm" href="{% url 'control:tickets:public_purchase' e.id %}">Tickets</a>
+									{% if e.start %}<a class="btn sm ghost" href="{% url 'control:events:ics' e.id %}">Add to calendar</a>{% endif %}
+								{% else %}
+									<a class="btn sm" href="/email-signup/?source=event_rsvp&event={{ e.id }}">RSVP</a>
+								{% endif %}
+							{% endfor %}
+							<a class="btn sm ghost" href="{% url 'detail' e.id %}">View</a>
+						</div>
+					</div>
+				</article>
+			{% empty %}
+				<p class="muted">No events found with these filters.</p>
+			{% endfor %}
+		</div>
+	</section>
 {% endblock %}

@@ -118,7 +118,7 @@ class TicketReservation(models.Model):
             for sel in selections:
                 tt = ttype_by_id[sel["tt"].id]
                 if not tt.is_on_sale():
-                    raise ValueError(f"{tt.name} not on sale.")
+                    raise ValueError(f"{tt.name} not on sale.") 
                 if tt.max_per_order and sel["qty"] > tt.max_per_order:
                     raise ValueError(f"Max {tt.max_per_order} per order for {tt.name}.")
                 if sel["qty"] <= 0 or sel["qty"] > tt.remaining():

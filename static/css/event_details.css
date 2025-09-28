@@ -1,0 +1,77 @@
+/* Container helpers */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+/* Hero */
+.event-hero { position: relative; margin-bottom: 22px; }
+.hero-media { position: relative; height: clamp(260px, 42vw, 520px); overflow: hidden; border-radius: 14px; }
+.hero-media img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(1.05) contrast(1.02); }
+.hero-vignette { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.55)); }
+
+.hero-meta {
+  position: relative;
+  margin-top: -90px;
+  padding: 16px;
+  color: #fff;
+}
+.event-title { font-size: clamp(24px, 3vw, 42px); margin: 0 0 6px; }
+.event-sub { opacity: 0.95; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.event-when.tbd { opacity: 0.8; font-style: italic; }
+.dot { opacity: 0.7; }
+
+.hero-actions { display:flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid #444; background:#191919; color:#f2f2f2; text-decoration:none; cursor:pointer; }
+.btn:hover { background:#222; }
+.btn.primary { background:#5a7cff; border-color:#5a7cff; color:#fff; }
+.btn.primary:hover { filter: brightness(1.05); }
+.btn.outline { background:transparent; }
+.btn.ghost { background:transparent; border-style:dashed; }
+.btn.soldout { background:#333; border-color:#555; color:#bbb; cursor:default; }
+.btn.small { padding:6px 10px; font-size: 0.95rem; }
+.btn.full { width: 100%; justify-content:center; }
+
+/* Sticky buy bar */
+.sticky-buy { position: sticky; top: 0; z-index: 20; margin-top: 12px; }
+.sticky-inner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid #333; border-radius:14px; background:rgba(18,18,18,0.85); backdrop-filter: blur(6px); }
+.sticky-whenwhere { color:#eee; display:flex; gap:8px; align-items:center; }
+.sticky-actions { display:flex; gap:8px; }
+
+/* Body */
+.event-body { margin: 20px 0 40px; }
+.event-columns { display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }
+@media (max-width: 980px){ .event-columns { grid-template-columns: 1fr; } }
+
+.event-info-cards { display:grid; gap:12px; grid-template-columns: 1fr 1fr; margin-bottom: 14px; }
+@media (max-width: 700px){ .event-info-cards { grid-template-columns: 1fr; } }
+
+.info-card { background:#141414; border:1px solid #2b2b2b; border-radius:12px; padding:12px; color:#ddd; }
+.info-card h3 { margin:0 0 6px; font-size:1.05rem; }
+
+.ticket-types h2 { margin: 8px 0 10px; }
+.tt-grid { display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (max-width: 800px){ .tt-grid { grid-template-columns: 1fr; } }
+
+.tt-card { background:#121212; border:1px solid #2a2a2a; border-radius:12px; padding:12px; }
+.tt-card.is-disabled { opacity:0.6; }
+.tt-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.tt-head h3 { margin:0; font-size:1.1rem; }
+.tt-price { font-weight:700; }
+.tt-meta { margin:8px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.badge { display:inline-block; padding:4px 8px; background:#202020; border:1px solid #3a3a3a; border-radius:999px; font-size:0.9rem; color:#ddd; }
+.badge.danger { background:#2a1717; border-color:#5a2a2a; color:#ffdfdf; }
+.sale-window { display:flex; gap:8px; opacity:0.85; font-size:0.9rem; }
+.tt-actions { display:flex; justify-content:flex-end; }
+
+/* Side panels */
+.panel { background:#151515; border:1px solid #2b2b2b; border-radius:12px; padding:12px; margin-bottom:12px; }
+.panel h3 { margin:0 0 8px; }
+.venue-name { font-weight:700; margin-bottom:4px; }
+.muted { color:#aaa; }
+.share-row { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* Countdown */
+.countdown { margin-top: 10px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:10px; max-width:500px; }
+.cd-label { text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; opacity:.9; margin-bottom:6px; }
+.cd-grid { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; }
+.cd-val { font-size:1.3rem; font-weight:800; display:block; }
+.cd-unit { font-size:.8rem; opacity:.8; }

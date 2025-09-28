@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static %}{% load shop_extras %}
 {% block title %}TJA — Official Site{% endblock %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
@@ -135,7 +135,7 @@
                     </div>
                     <div class="tile-body">
                         <h3>{{ p.title }}</h3>
-                        <div class="muted">${{ p.price_cents }}</div>
+                        <div class="muted">{{ p.price_cents|money }}</div>
                     </div>
                 </a>
             </article>

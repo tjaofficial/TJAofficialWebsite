@@ -12,7 +12,7 @@
 
 .events-hero__meta { padding: 8px 4px; display:flex; flex-direction:column; gap:8px; }
 .events-hero__title { font-size:clamp(22px, 3vw, 36px); margin:0; }
-.events-hero__line { color:#bbb; display:flex; gap:8px; flex-wrap:wrap; }
+.events-hero__line { color:#bbb; display:flex; gap:8px; flex-wrap:wrap; justify-content: center;}
 .events-hero__dot { opacity:.5; }
 .events-hero__actions { display:flex; gap:8px; flex-wrap:wrap; }
 

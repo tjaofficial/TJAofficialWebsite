@@ -6,6 +6,7 @@ app_name = "events"
 urlpatterns = [
     path("<int:event_id>/dashboard/", views.event_dashboard, name="dashboard"),
     path("", views.events_list, name="list"),
+    
     path("add/", views.event_add, name="add"),
     path("<int:pk>/edit/", views.event_edit, name="edit"),
     path("venues/", views.venues_list, name="venues"),
@@ -45,6 +46,4 @@ urlpatterns = [
     path("events/checklist/toggle/<int:item_id>/", views.checklist_toggle, name="event_checklist_toggle"),
     path("events/<int:event_id>/checklist/reorder/", views.checklist_reorder, name="event_checklist_reorder"),
     path("<int:pk>/ics/", views.event_ics, name="ics"),
-    # optional details page if you don't have one yet:
-    path("<int:pk>/", views.event_detail, name="detail"),
 ]

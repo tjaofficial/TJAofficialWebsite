@@ -12,7 +12,7 @@ from datetime import timedelta
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
-from django.db.models import Q, Sum, Exists, OuterRef
+from django.db.models import Q, Sum, Exists, OuterRef, Prefetch, Min
 from django.contrib import messages
 from django.urls import reverse
 from io import BytesIO
@@ -76,7 +76,7 @@ def events_list(request):
         "filters": {"city": city, "state": state, "venue": venue, "past": "1" if show_past else ""},
         "cities": cities, "states": states, "venues": venues,
     }
-    return render(request, "events/public_events.html", ctx)
+    return render(request, "events/list.html", ctx)
 
 @is_super
 def event_add(request):
@@ -561,6 +561,134 @@ def event_ics(request, pk):
     return resp
 
 
-def event_detail(request, pk):
-    e = get_object_or_404(Event, pk=pk, published=True)
-    return render(request, "events/public_event_detail.html", {"e": e})
+def event_details(request, event_id, slug=None):
+    now = timezone.now()
+
+    # Only show published events
+    tt_qs = (TicketType.objects
+             .filter(active=True)
+             .order_by("price_cents", "sales_start"))
+
+    event = (Event.objects
+             .filter(id=event_id, published=True)
+             .select_related("venue")
+             .prefetch_related(Prefetch("ticket_types", queryset=tt_qs, to_attr="types_active"))
+             .first())
+    event = get_object_or_404(Event, id=event_id, published=True)
+
+    # Fetch active ticket types (prefetched if using the queryset above)
+    types = getattr(event, "types_active", None)
+    if types is None:
+        types = tt_qs.filter(event=event)
+
+    # Compute sale state for the primary/general type + any others
+    for t in types:
+        t.is_on_sale = t.is_on_sale()
+        t.remaining = t.remaining()
+
+    any_on_sale = any((t.is_on_sale and t.remaining > 0) for t in types)
+
+    # Pick hero image
+    hero_src = event.cover_image.url if event.cover_image else (event.flyer.url if event.flyer else "")
+
+    # Add-to-calendar: a simple ICS download URL (route below)
+    ics_url = None
+    if event.start:
+        from django.urls import reverse
+        ics_url = reverse("control:events:ics", args=[event.id])
+
+    ctx = {
+        "event": event,
+        "types": types,
+        "any_on_sale": any_on_sale,
+        "hero_src": hero_src,
+        "now": now,
+        "ics_url": ics_url,
+    }
+    return render(request, "events/public_event_details.html", ctx)
+
+def public_events(request):
+    # --- Filters ---
+    city  = (request.GET.get("city") or "").strip()
+    state = (request.GET.get("state") or "").strip()
+    venue = (request.GET.get("venue") or "").strip()
+    show_past = (request.GET.get("past") in ("1", "true", "yes"))
+
+    now = timezone.now()
+
+    # Prefetch only active types to speed up template work
+    active_types = TicketType.objects.filter(active=True, name="General Admission").order_by('price_cents', 'sales_start')
+
+    base = (
+        Event.objects
+        .filter(published=True)
+        .select_related("venue")
+        .prefetch_related(Prefetch("ticket_types", queryset=active_types, to_attr="prefetched_types"))
+        .annotate(
+            has_tickets=Exists(
+                TicketType.objects.filter(event_id=OuterRef("pk"), active=True)
+            ),
+            # Example: the earliest sales_end across all TTs for this event
+            first_sales_end=Min("ticket_types__sales_end")
+        )
+    )
+
+    # Filter by related Venue fields
+    if city:
+        base = base.filter(venue__city__icontains=city)
+    if state:
+        base = base.filter(venue__state__icontains=state)
+    if venue:
+        base = base.filter(venue__name__icontains=venue)
+
+    # Upcoming only (default) vs include past
+    if not show_past:
+        base = base.filter(start__gte=now)
+
+    # Order: soonest first
+    events = list(base.order_by("start"))
+
+    # Hero: nearest future if available, else first available
+    hero = None
+    for e in events:
+        if e.start and e.start >= now:
+            hero = e
+            break
+    if not hero and events:
+        hero = events[0]
+
+    # If you specifically want a single TicketType for hero,
+    # e.g., the first by sales_start:
+    next_show = hero  # keep your naming if you need it elsewhere
+    next_tt = None
+    next_sales_end = None
+    if next_show:
+        # Use the prefetched list (no DB hit), or fall back to manager
+        types_list = getattr(next_show, "prefetched_types", None) or list(next_show.ticket_types.all())
+        if types_list:
+            next_tt = types_list[0]  # because we ordered in Prefetch
+        # Or aggregate to get the earliest sales_end:
+        next_sales_end = next_show.first_sales_end  # annotated above
+
+    # Distinct filter options from Venues that have published events
+    vqs = Venue.objects.filter(event__published=True)
+    cities = (vqs.exclude(city="").exclude(city__isnull=True)
+                  .values_list("city", flat=True).distinct().order_by("city"))
+    states = (vqs.exclude(state="").exclude(state__isnull=True)
+                  .values_list("state", flat=True).distinct().order_by("state"))
+    venues = (vqs.exclude(name="").exclude(name__isnull=True)
+                  .values_list("name", flat=True).distinct().order_by("name"))
+
+    ctx = {
+        "hero": hero,
+        "events": events,
+        "filters": {"city": city, "state": state, "venue": venue, "past": "1" if show_past else ""},
+        "cities": cities,
+        "states": states,
+        "venues": venues,
+        "next_show": next_show,
+        "next_tt": next_tt,                  # a single TicketType (or None)
+        "next_sales_end": next_sales_end,    # a datetime (or None)
+        "now": now,
+    }
+    return render(request, "events/public_events.html", ctx)

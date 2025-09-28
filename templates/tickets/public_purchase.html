@@ -1,34 +1,138 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static %}{% load shop_extras %}
 {% block title %}Buy Tickets — {{ event.name }}{% endblock %}
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/public_purchase.css' %}">
+	<script defer src="{% static 'js/public_purchase.js' %}"></script>
+{% endblock %}
 {% block content %}
-    <main class="cp-content" style="max-width:900px;margin:40px auto;">
-      <h1>Buy Tickets — {{ event.name }}</h1>
-      <form method="post" action="{% url 'control:tickets:public_checkout' event.id %}" class="card">
-        {% csrf_token %}
-        {% if artist_token %}
-          <input type="hidden" name="artist_token" value="{{ artist_token }}">
+<main class="ppx">
+  <header class="ppx-hero">
+    <div class="ppx-hero__text">
+      <h1 class="ppx-title">Buy Tickets</h1>
+      <div class="ppx-subtitle">
+        <span class="ppx-event-name">{{ event.name }}</span>
+        {% if event.start %}
+          <span class="dot">•</span>
+          <time datetime="{{ event.start|date:'c' }}">{{ event.start|date:"D, M j @ g:ia" }}</time>
         {% endif %}
-        <div class="form-row">
-          <input class="input" name="purchaser_name" placeholder="Your name" required>
-          <input class="input" type="email" name="email" placeholder="Your email" required>
-        </div>
-        <table class="table">
-          <thead><tr><th>Type</th><th>Price</th><th>Remaining</th><th>Qty</th></tr></thead>
-          <tbody>
-            {% for tt in types %}
-              <tr>
-                <td>{{ tt.name }}</td>
-                <td>${{ tt.price_cents|floatformat:-2 }}</td>
-                <td>{{ tt.remaining }}</td>
-                <td><input class="input" type="number" min="0" max="{{ tt.remaining }}" name="qty_{{ tt.id }}" value="0"></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <div class="form-row">
-          <button class="btn primary">Continue to Checkout</button>
-        </div>
-      </form>
-    </main>
+        {% if event.venue %}
+          <span class="dot">•</span>
+          <span class="ppx-venue">
+            {{ event.venue.name }}
+            {% if event.venue.city %} — {{ event.venue.city }}{% if event.venue.state %}, {{ event.venue.state }}{% endif %}{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <form id="ppx-form" method="post" action="{% url 'control:tickets:public_checkout' event.id %}" novalidate>
+    {% csrf_token %}
+    {% if artist_token %}
+      <input type="hidden" name="artist_token" value="{{ artist_token }}">
+    {% endif %}
+
+    <!-- Purchaser -->
+    <section class="ppx-card">
+      <h2 class="ppx-h2">Your Info</h2>
+      <div class="ppx-grid-2">
+        <label class="ppx-field">
+          <span>Name</span>
+          <input class="ppx-input" name="purchaser_name" placeholder="Your name" required>
+        </label>
+        <label class="ppx-field">
+          <span>Email</span>
+          <input class="ppx-input" type="email" name="email" placeholder="you@example.com" required>
+        </label>
+      </div>
+    </section>
+
+    <!-- Ticket Types -->
+    <section class="ppx-card">
+      <div class="ppx-card__hdr">
+        <h2 class="ppx-h2">Tickets</h2>
+        <div class="ppx-note">Choose quantities below. Subtotal updates live.</div>
+      </div>
+
+      <div class="ppx-types">
+        {% for tt in types %}
+          {% with rem=tt.remaining|default:0 %}
+          {% with max_order=tt.max_per_order|default_if_none:0 %}
+          {% with limit=rem %}
+          {% if max_order and max_order < rem %}
+            {% with limit=max_order %}
+            {% endwith %}
+          {% endif %}
+
+          <article class="ppx-type {% if rem <= 0 %}is-soldout{% endif %}"
+                   data-tt-id="{{ tt.id }}"
+                   data-price-cents="{{ tt.price_cents }}"
+                   data-remaining="{{ rem }}"
+                   {% if max_order %}data-max="{{ max_order }}"{% endif %}>
+            <div class="ppx-type__main">
+              <div class="ppx-type__name">
+                <span class="ppx-type__title">{{ tt.name }}</span>
+                {% if tt.description %}
+                  <span class="ppx-type__desc">{{ tt.description }}</span>
+                {% endif %}
+              </div>
+              <div class="ppx-type__meta">
+                <span class="ppx-price">{{ tt.price_cents|money }}</span>
+                {% if rem > 0 %}
+                  <span class="ppx-remaining">{{ rem }} left</span>
+                {% else %}
+                  <span class="ppx-soldout">Sold out</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="ppx-type__qty">
+              {% if rem > 0 %}
+                <div class="ppx-stepper" data-limit="{{ limit }}">
+                  <button class="ppx-step btn-step dec" type="button" aria-label="Decrease">–</button>
+                  <input class="ppx-input qty-input"
+                         type="number"
+                         min="0"
+                         max="{{ limit }}"
+                         value="0"
+                         name="qty_{% firstof tt.id %}"
+                         inputmode="numeric"
+                         pattern="[0-9]*">
+                  <button class="ppx-step btn-step inc" type="button" aria-label="Increase">+</button>
+                </div>
+                <div class="ppx-line-total" aria-live="polite" data-line-total>—</div>
+              {% else %}
+                <div class="ppx-soldout-badge">Not available</div>
+              {% endif %}
+            </div>
+          </article>
+
+          {% endwith %}
+          {% endwith %}
+          {% endwith %}
+        {% empty %}
+          <p class="ppx-empty">No ticket types are available yet. You can <a href="{% url 'email_signup' %}?event={{ event.id }}">RSVP for updates</a>.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Sticky Summary -->
+    <div class="ppx-summary" id="ppx-summary">
+      <div class="ppx-summary__left">
+        <span class="ppx-summary__label">Subtotal</span>
+        <span class="ppx-summary__value" id="ppx-subtotal">$0.00</span>
+        <span class="ppx-summary__hint">Taxes/fees shown on next step</span>
+      </div>
+      <div class="ppx-summary__right">
+        <button id="ppx-submit" class="btn-primary" disabled>Continue to Checkout</button>
+      </div>
+    </div>
+
+    <!-- Fallback submit (in case JS disabled) -->
+    <div class="ppx-fallback-submit">
+      <button class="btn-primary">Continue to Checkout</button>
+    </div>
+  </form>
+</main>
 {% endblock %}
