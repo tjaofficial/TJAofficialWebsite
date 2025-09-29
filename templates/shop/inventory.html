@@ -1,4 +1,5 @@
 {% extends 'controlpanel/dashboard.html' %}
+{% load static shop_extras %}
 {% block title %}Inventory / Sales{% endblock %}
 {% block content %}
 <h1>Inventory / Sales</h1>
@@ -26,7 +27,7 @@
         <tr>
           <td>{{ row.title_snapshot }}</td>
           <td>{{ row.qty }}</td>
-          <td>${{ row.revenue|floatformat:-2 }}</td>
+          <td>${{ row.revenue|money }}</td>
         </tr>
       {% empty %}
         <tr><td colspan="3" class="muted">No data.</td></tr>
@@ -47,7 +48,7 @@
           <td>{{ it.title_snapshot }}</td>
           <td>{{ it.size }}</td>
           <td>{{ it.qty }}</td>
-          <td>${{ it.price_cents_snapshot|floatformat:-2 }}</td>
+          <td>${{ it.price_cents_snapshot|money }}</td>
         </tr>
       {% empty %}
         <tr><td colspan="6" class="muted">No items.</td></tr>

@@ -1,4 +1,5 @@
 {% extends 'controlpanel/dashboard.html' %}
+{% load static shop_extras %}
 {% block title %}Ticket Types{% endblock %}
 {% block content %}
 <h1>Ticket Types</h1>
@@ -10,7 +11,7 @@
     <tr>
       <td>{{ t.event.name|default:"(unnamed event)" }}</td>
       <td>{{ t.name }}</td>
-      <td>${{ t.price_cents|floatformat:-2 }}</td>
+      <td>${{ t.price_cents|money }}</td>
       <td>{{ t.quantity }}</td>
       <td>{% if t.active %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
       <td>{{ t.sales_start }} → {{ t.sales_end }}</td>

@@ -1,4 +1,5 @@
 {% extends 'controlpanel/dashboard.html' %}
+{% load static shop_extras %}
 {% block title %}Sold Tickets{% endblock %}
 {% block content %}
 <h1>Sold Tickets</h1>
@@ -81,7 +82,7 @@
           <td>{{ t.purchaser_email }}</td>
           <td>{% if t.checked_in_at %}{{ t.checked_in_at|date:"Y-m-d H:i" }}{% else %}<span class="muted">—</span>{% endif %}</td>
           <td><a class="btn" href="{% url 'control:tickets:ticket_detail' t.qr_token %}">View</a></td>
-          <td>${{ t.ticket_type.price_cents|floatformat:-2 }}</td>
+          <td>${{ t.ticket_type.price_cents|money }}</td>
         </tr>
       {% empty %}
         <tr><td colspan="8" class="muted">No tickets match.</td></tr>
