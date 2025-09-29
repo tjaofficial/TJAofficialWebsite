@@ -67,3 +67,5 @@ class UserBadgeAdmin(admin.ModelAdmin):
     list_filter  = ("source","badge")
     search_fields= ("user__username","badge__name","show__venue_name")
 
+
+admin.site.register(Subscriber)

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Your Ticket{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/public_ticket_detail.css' %}">
+    <script defer src="{% static 'js/public_ticket_detail.js' %}"></script>
+{% endblock %}
+{% block hero %}{% endblock %}
+{% block content %}
+<main class="ticket-wrap">
+  <section class="ticket-card" 
+           data-ev-name="{{ event.name|default:'Event' }}"
+           data-ev-start="{% if event.start %}{{ event.start|date:'c' }}{% endif %}"
+           data-ev-end="{% if event.end %}{{ event.end|date:'c' }}{% endif %}"
+           data-ev-venue="{{ venue.name|default:'' }}"
+           data-ev-location="{{ venue.address|default:'' }}{% if venue.city %}{% if venue.address %}, {% endif %}{{ venue.city }}{% if venue.state %}, {{ venue.state }}{% endif %}{% endif %}">
+    
+    <header class="ticket-header">
+      <div class="ticket-title">
+        <h1>{{ event.name|default:"Your Ticket" }}</h1>
+        {% if event.start %}
+          <div class="muted">
+            <time datetime="{{ event.start|date:'c' }}">
+              {{ event.start|date:"D, M j, Y" }} · {{ event.start|date:"g:i A" }}
+            </time>
+            {% if venue %}
+              <span class="dot">•</span>
+              <span>{{ venue.name }}</span>
+              {% if venue.city %}<span>— {{ venue.city }}{% if venue.state %}, {{ venue.state }}{% endif %}</span>{% endif %}
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="ticket-status">
+        {% if t.checked_in_at %}
+          <span class="pill pill-checkedin" title="Checked in at {{ t.checked_in_at|date:'M j, g:i A' }}">Checked-in</span>
+        {% else %}
+          <span class="pill pill-valid">Valid</span>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="ticket-body">
+      <div class="ticket-qr">
+        <img id="qrImage" src="{{ qr_data_uri }}" alt="Ticket QR Code">
+        <div class="qr-actions">
+          <button class="btn ghost" id="btnSaveQR">Save QR</button>
+          <button class="btn ghost" id="btnZoomQR">Zoom</button>
+        </div>
+      </div>
+
+      <div class="ticket-info">
+        <div class="kv">
+          <span class="k">Ticket Type</span>
+          <span class="v">{{ t.ticket_type.name }}</span>
+        </div>
+        {% if t.purchaser_name %}
+        <div class="kv">
+          <span class="k">Name</span>
+          <span class="v">{{ t.purchaser_name }}</span>
+        </div>
+        {% endif %}
+        {% if t.purchaser_email %}
+        <div class="kv">
+          <span class="k">Email</span>
+          <span class="v">{{ t.purchaser_email }}</span>
+        </div>
+        {% endif %}
+        <div class="kv">
+          <span class="k">Issued</span>
+          <span class="v">{{ t.issued_at|date:"M j, Y g:i A" }}</span>
+        </div>
+        <div class="kv">
+          <span class="k">Ticket ID</span>
+          <span class="v code">{{ t.qr_token }}</span>
+        </div>
+
+        <div class="ticket-actions">
+          {% if event.start %}
+            <button class="btn primary" id="btnAddICS">Add to Calendar</button>
+            <a class="btn" id="btnGCal" href="#" target="_blank" rel="noopener">Add to Google</a>
+          {% endif %}
+          <button class="btn" id="btnShare">Share</button>
+          <button class="btn ghost" id="btnCopy">Copy Link</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="ticket-footer">
+      <details>
+        <summary>Event details & venue</summary>
+        <div class="details-grid">
+          {% if venue %}
+            {% if venue.address or venue.city %}
+              <div>
+                <div class="label">Venue</div>
+                <div>{{ venue.name }}</div>
+                <div class="muted">
+                  {% if venue.address %}{{ venue.address }}<br>{% endif %}
+                  {% if venue.city %}{{ venue.city }}{% if venue.state %}, {{ venue.state }}{% endif %}{% endif %}
+                </div>
+              </div>
+            {% endif %}
+          {% endif %}
+          <div>
+            <div class="label">Check-in</div>
+            <div>Have this QR code ready at the door.</div>
+          </div>
+          <div>
+            <div class="label">Need help?</div>
+            <div>Email support@tjaofficial.com</div>
+          </div>
+        </div>
+      </details>
+    </footer>
+  </section>
+
+  <!-- Modal for zoomed QR -->
+  <div class="modal" id="qrModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-dialog">
+      <button class="modal-close" data-close aria-label="Close">×</button>
+      <img src="{{ qr_data_uri }}" alt="QR Code Large">
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -13,7 +13,7 @@
     <p class="home-hero__tag">Music • Shows • Day N Night Tour</p>
     <div class="hero-actions">
       <a class="btn" href="{% url 'tour_home' %}">Enter Day N Night</a>
-      <a class="btn ghost" href="{% url 'shows' %}">Upcoming Shows</a>
+      <a class="btn ghost" href="{% url 'public_events' %}">Upcoming Shows</a>
     </div>
   </div>
   <canvas id="orb" aria-hidden="true"></canvas>
@@ -94,25 +94,29 @@
 {# ===== Shows ===== #}
 {% if shows %}
 <section class="home-slab reveal">
-  <h2 class="slab-title">Upcoming Shows</h2>
-  <div class="shows-list compact">
-    {% for s in shows %}
-      <article class="show-row">
-        <div class="sr-date">
-          <div class="sr-day">{{ s.date|date:"M d" }}</div>
-          <div class="sr-year">{{ s.date|date:"Y" }}</div>
-        </div>
-        <div class="sr-main">
-          <div class="sr-venue">{{ s.venue_name }}</div>
-          <div class="sr-city muted">{{ s.city }}, {{ s.state }}</div>
-        </div>
-        <div class="sr-cta">
-          {% if s.tickets_url %}<a class="btn" href="{{ s.tickets_url }}" target="_blank" rel="noopener">Tickets</a>{% endif %}
-        </div>
-      </article>
-    {% endfor %}
-  </div>
-  <div class="slab-actions"><a class="btn ghost" href="{% url 'shows' %}">See All Dates</a></div>
+	<h2 class="slab-title">Upcoming Shows</h2>
+	<div class="shows-list compact">
+		{% for s in shows %}
+			<article class="show-row">
+				<div class="sr-date">
+					<div class="sr-day">{{ s.start|date:"M d" }}</div>
+					<div class="sr-year">{{ s.start|date:"Y" }}</div>
+				</div>
+				<div class="sr-main">
+					<div class="sr-venue">{{ s.venue.name }}</div>
+					<div class="sr-city muted">{{ s.venue.city }}, {{ s.venue.state }}</div>
+				</div>
+				<div class="sr-cta">
+					{% for tt in s.prefetched_types %}
+						{% if tt.name == "General Admission" %}
+							<a class="btn" href="{% url 'control:tickets:public_purchase' s.id %}" target="_blank" rel="noopener">Tickets</a>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</article>
+		{% endfor %}
+	</div>
+	<div class="slab-actions"><a class="btn ghost" href="{% url 'public_events' %}">See All Dates</a></div>
 </section>
 {% endif %}
 

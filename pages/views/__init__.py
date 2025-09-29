@@ -11,3 +11,4 @@ from .toxic_reality import *
 from .links import *
 from .tour_media import *
 from .passport import *
+from .tickets import *

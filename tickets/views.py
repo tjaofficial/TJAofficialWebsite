@@ -21,7 +21,6 @@ from django.contrib import messages
 from django.urls import reverse
 from datetime import timedelta
 
-
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 is_super = user_passes_test(lambda u: u.is_superuser)

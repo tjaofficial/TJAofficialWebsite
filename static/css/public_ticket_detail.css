@@ -1,0 +1,188 @@
+/* Layout */
+.ticket-wrap {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.ticket-card {
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  animation: floatIn .35s ease both;
+}
+
+@keyframes floatIn {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.ticket-header {
+  display: flex; 
+  align-items: flex-start; 
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 10px 20px;
+  border-bottom: 1px solid #222;
+}
+
+.ticket-title h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.ticket-title .muted {
+  color: #a9a9a9;
+  margin-top: 6px;
+  font-size: .95rem;
+}
+.dot { margin: 0 6px; color: #555; }
+
+/* Status */
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .85rem;
+  border: 1px solid currentColor;
+}
+.pill-valid { color: #2ee58a; background: rgba(46,229,138,.08); }
+.pill-checkedin { color: #ffa94d; background: rgba(255,169,77,.1); }
+
+/* Body */
+.ticket-body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding: 20px;
+}
+@media (max-width: 840px) {
+  .ticket-body { grid-template-columns: 1fr; }
+}
+
+.ticket-qr {
+  background: #0c0c0c;
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ticket-qr img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.qr-actions {
+  display: flex;
+  gap: 8px; 
+  margin-top: 10px;
+}
+
+/* Info */
+.ticket-info {
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+  padding: 14px;
+  background: #0f0f0f;
+}
+.kv {
+  display: grid; 
+  grid-template-columns: 140px 1fr;
+  gap: 8px; 
+  padding: 8px 0;
+  border-bottom: 1px dashed #222;
+}
+.kv:last-child { border-bottom: 0; }
+.k { color: #a0a0a0; }
+.v { color: #f5f5f5; }
+.v.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+/* Actions */
+.ticket-actions {
+  margin-top: 12px;
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 8px;
+}
+
+/* Buttons (align with your base.css if you have them) */
+.btn {
+  border: 1px solid #2e2e2e;
+  background: #1a1a1a;
+  color: #eee;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center; 
+  gap: 6px;
+}
+.btn:hover { background: #222; }
+.btn.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.btn.primary:hover { background: #1e4fc8; }
+.btn.ghost { background: transparent; }
+
+/* Footer details */
+.ticket-footer {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #111;
+}
+.ticket-footer details {
+  border: 1px solid #1e1e1e;
+  background: #0f0f0f;
+  border-radius: 12px;
+  padding: 12px;
+}
+.ticket-footer summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+@media (max-width: 840px) {
+  .details-grid { grid-template-columns: 1fr; }
+}
+.label { color: #a0a0a0; font-size: .9rem; margin-bottom: 4px; }
+
+/* Modal */
+.modal[hidden] { display: none; }
+.modal {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  z-index: 70;
+}
+.modal-backdrop {
+  position: absolute; inset: 0; 
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(2px);
+}
+.modal-dialog {
+  position: relative;
+  z-index: 71;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 14px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.modal-dialog img { display: block; width: 70vmin; height: auto; }
+.modal-close {
+  position: absolute; top: 6px; right: 10px;
+  background: transparent; color: #ccc; border: 0;
+  font-size: 24px; line-height: 1; cursor: pointer;
+}
+
+/* Helpers */
+.muted { color: #a0a0a0; }

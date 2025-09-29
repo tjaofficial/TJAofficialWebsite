@@ -40,7 +40,7 @@ urlpatterns = [
     path("events/", public_events, name="public_events"),
     path("events/<int:event_id>/<slug:slug>/", event_details, name="detail_slug"),
     path("events/<int:event_id>/", event_details, name="detail"),
-
+    path("ticket/<uuid:token>/", views.ticket_detail, name="ticket_detail"),
     #control panel
     
 ]
