@@ -24,7 +24,7 @@
     {% for o in orders %}
       <tr>
         <td>{{ o.created_at|date:"Y-m-d H:i" }}</td>
-        <td><a href="{% url 'control:shop:order_detail' o.number %}">{{ o.number }}</a></td>
+        <td>{% if o.number %}<a href="{% url 'control:shop:order_detail' o.number %}">{{ o.number }}</a>{% endif %}</td>
         <td>{{ o.email|default:o.user.email }}</td>
         <td>{{ o.get_status_display }}</td>
         <td>${{ o.total_cents|floatformat:-2 }}</td>

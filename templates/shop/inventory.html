@@ -43,7 +43,7 @@
       {% for it in items %}
         <tr>
           <td>{{ it.order.created_at|date:"Y-m-d H:i" }}</td>
-          <td><a href="{% url 'control:shop:order_detail' it.order.number %}">{{ it.order.number }}</a></td>
+          <td>{% if it.order.number%}<a href="{% url 'control:shop:order_detail' it.order.number %}">{{ it.order.number }}</a>{% endif %}</td>
           <td>{{ it.title_snapshot }}</td>
           <td>{{ it.size }}</td>
           <td>{{ it.qty }}</td>
