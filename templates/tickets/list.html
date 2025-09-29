@@ -11,7 +11,7 @@
     <tr>
       <td>{{ t.event.name|default:"(unnamed event)" }}</td>
       <td>{{ t.name }}</td>
-      <td>${{ t.price_cents|money }}</td>
+      <td>{{ t.price_cents|money }}</td>
       <td>{{ t.quantity }}</td>
       <td>{% if t.active %}Yes{% else %}<span class="muted">No</span>{% endif %}</td>
       <td>{{ t.sales_start }} → {{ t.sales_end }}</td>
