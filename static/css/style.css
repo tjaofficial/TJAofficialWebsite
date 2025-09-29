@@ -1,7 +1,7 @@
 /* ===== CSS VARIABLES (Day / Night) ===== */
 :root {
   --bg: #0b0b0f;
-  --surface: rgba(255,255,255,0.04);
+  --surface: #2b2e31;
   --text: #e9e9ee;
   --muted: #a6a6b3;
   --brand: #7c5cff;       /* accent */
