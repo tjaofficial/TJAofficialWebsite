@@ -10,9 +10,7 @@ User = get_user_model()
 SEX_CHOICES = (
     ("", "Select..."),
     ("M", "Male"),
-    ("F", "Female"),
-    ("NB", "Non-binary"),
-    ("PNTS", "Prefer not to say"),
+    ("F", "Female")
 )
 
 class SignupForm(forms.Form):

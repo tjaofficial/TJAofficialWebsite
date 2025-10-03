@@ -1,0 +1,40 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}{% load shop_extras %}
+{% block title %}Rewards — {{ acc.user.email }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/rewards_admin.css' %}">{% endblock %}
+{% block header %}Account — {{ acc.user.email }} ({{ acc.points_balance }} pts){% endblock %}
+{% block content %}
+  <section class="rw-admin-2col">
+    <div>
+      <h3>Ledger</h3>
+      <table class="table">
+        <thead><tr><th>When</th><th>Δ</th><th>Kind</th><th>Source</th><th>Ref</th></tr></thead>
+        <tbody>
+        {% for l in ledger %}
+          <tr>
+            <td>{{ l.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="{% if l.delta < 0 %}neg{% else %}pos{% endif %}">{{ l.delta }}</td>
+            <td>{{ l.get_kind_display }}</td>
+            <td>{{ l.get_source_display }}</td>
+            <td>{{ l.reference }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <aside>
+      <h3>Purchases</h3>
+      <ul class="list">
+        {% for p in purchases %}
+          <li>{{ p.created_at|date:"Y-m-d" }} — {{ p.kind }} #{{ p.external_id }} {% if p.subtotal_cents %}( {{ p.subtotal_cents|money }} ){% endif %}</li>
+        {% empty %}<li>No purchases.</li>{% endfor %}
+      </ul>
+
+      <h3 style="margin-top:16px;">Redemptions</h3>
+      <ul class="list">
+        {% for r in redemptions %}
+          <li>{{ r.created_at|date:"Y-m-d" }} — {{ r.item.name }} ({{ r.points_spent }} pts) {% if r.fulfilled %}✔{% else %}⏳{% endif %}</li>
+        {% empty %}<li>No redemptions.</li>{% endfor %}
+      </ul>
+    </aside>
+  </section>
+{% endblock %}

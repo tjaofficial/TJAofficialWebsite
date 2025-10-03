@@ -6,6 +6,7 @@ app_name = "shop"
 urlpatterns = [
     path("orders", views.orders_list, name="orders_list"),
     path("orders/<str:number>", views.order_detail, name="order_detail"),
+    path("orders/<int:pk>/ship/", views.mark_order_shipped, name="order_ship"),
 
     # Inventory
     path("products/inventory/", views.inventory_report, name="inventory"),

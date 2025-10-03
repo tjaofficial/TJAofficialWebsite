@@ -4,9 +4,11 @@ from django.db.models import Q, Sum, F, ExpressionWrapper, BigIntegerField
 from .models import (
     Order, OrderItem, Product, ProductImage, Coupon
 )
-from .forms import ProductForm, ProductImageForm, CouponForm, TokenIssueForm
+from .forms import ProductForm, CouponForm, TokenIssueForm
 from django.http import HttpResponse
 import csv
+from django.contrib import messages
+from django.utils import timezone
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 
@@ -270,3 +272,15 @@ def budget_export_csv(request):
         ])
 
     return resp
+
+@is_super
+def mark_order_shipped(request, pk):
+    o = get_object_or_404(Order, pk=pk)
+    o.status = "fulfilled"
+    if hasattr(o, "shipped_at") and not o.shipped_at:
+        o.shipped_at = timezone.now()
+    o.save(update_fields=["status"] + (["shipped_at"] if hasattr(o, "shipped_at") else []))
+    messages.success(request, f"Order {o.number or o.pk} marked as shipped.")
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+

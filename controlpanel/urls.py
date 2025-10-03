@@ -14,5 +14,6 @@ urlpatterns = [
     path("pages/", include(("pages.cp_urls", "pages"), namespace="pages")),
     path("booking/", include("bookingstack.urls", namespace="bookingstack")),
     path("accounts/", include("accounts.urls", namespace="accounts")),
+    path("rewards/", include("rewards.urls_control", namespace="rewards_control")),
     # path("music/", include("musiclib.urls")),
 ]

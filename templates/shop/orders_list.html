@@ -20,7 +20,16 @@
 </form>
 
 <table class="table">
-  <thead><tr><th>Date</th><th>Number</th><th>Email</th><th>Status</th><th>Total</th></tr></thead>
+  	<thead>
+		<tr>
+			<th>Date</th>
+			<th>Number</th>
+			<th>Email</th>
+			<th>Status</th>
+			<th>Total</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
   <tbody>
     {% for o in orders %}
       <tr>
@@ -29,6 +38,12 @@
         <td>{% if o.email %}{{ o.email }}{% endif %}</td>
         <td>{{ o.get_status_display }}</td>
         <td>{{ o.total_cents|money }}</td>
+        <td>
+			<a href="{% url 'control:shop:order_detail' o.number %}">View</a>
+			{% if o.status != "fulfilled" and o.status != "pending" %}
+				• <a href="{% url 'control:shop:order_ship' o.id %}" class="btn-small" onclick="return confirm('Mark this order as shipped?');">Mark shipped</a>
+			{% endif %}
+      </td>
       </tr>
     {% empty %}
       <tr><td colspan="5" class="muted">No orders found.</td></tr>

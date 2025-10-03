@@ -1,0 +1,49 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Rewards Overview{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/rewards_admin.css' %}">{% endblock %}
+{% block header %}Rewards — Overview{% endblock %}
+{% block content %}
+  <section class="rw-admin">
+    <div class="cards">
+      <div class="card"><div class="label">Accounts</div><div class="value">{{ metrics.accounts }}</div></div>
+      <div class="card"><div class="label">Total Points</div><div class="value">{{ metrics.total_points }}</div></div>
+      <div class="card"><div class="label">Pending Redemptions</div><div class="value">{{ metrics.pending_redemptions }}</div></div>
+      <div class="card"><div class="label">Purchases</div><div class="value">{{ metrics.purchases }}</div></div>
+    </div>
+
+    <h3>Top Accounts</h3>
+    <table class="table">
+      <thead><tr><th>User</th><th>Email</th><th>Balance</th><th></th></tr></thead>
+      <tbody>
+      {% for a in top_accounts %}
+        <tr>
+          <td>{{ a.user.username }}</td>
+          <td>{{ a.user.email }}</td>
+          <td>{{ a.points_balance }}</td>
+          <td><a href="{% url 'control:rewards_control:account_detail' a.user_id %}">View</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No accounts.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Recent Activity</h3>
+    <table class="table">
+      <thead><tr><th>When</th><th>User</th><th>Δ</th><th>Kind</th><th>Source</th><th>Ref</th></tr></thead>
+      <tbody>
+      {% for l in recent_ledger %}
+        <tr>
+          <td>{{ l.created_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ l.account.user.email }}</td>
+          <td class="{% if l.delta < 0 %}neg{% else %}pos{% endif %}">{{ l.delta }}</td>
+          <td>{{ l.get_kind_display }}</td>
+          <td>{{ l.get_source_display }}</td>
+          <td>{{ l.reference }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}
+{% block scripts %}<script defer src="{% static 'js/rewards_admin.js' %}"></script>{% endblock %}

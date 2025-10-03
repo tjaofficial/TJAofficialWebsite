@@ -24,12 +24,23 @@ admin.site.register(ProductImage)
 admin.site.register(Cart)
 admin.site.register(CartItem)
 
+@admin.action(description="Mark as shipped (fulfilled)")
+def mark_as_shipped(modeladmin, request, queryset):
+    # If you added shipped_at field (see below), set it too
+    now = timezone.now()
+    for o in queryset:
+        o.status = "fulfilled"
+        if hasattr(o, "shipped_at") and not o.shipped_at:
+            o.shipped_at = now
+        o.save(update_fields=["status"] + (["shipped_at"] if hasattr(o, "shipped_at") else []))
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("number", "status", "email", "total_cents", "created_at", "paid_at")
-    list_filter = ("status", "created_at")
-    search_fields = ("number", "email", "provider_session_id", "provider_payment_intent")
-    inlines = [OrderItemInline]
+    list_display = ("number", "email", "status", "total_cents", "paid_at")
+    search_fields = ("number", "email", "provider_payment_intent")
+    list_filter = ("status", "payment_provider", "created_at", "paid_at")
+    date_hierarchy = "created_at"
+    actions = [mark_as_shipped]
 
 @admin.register(StripeEvent)
 class StripeEventAdmin(admin.ModelAdmin):

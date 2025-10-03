@@ -1,0 +1,32 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}{% load shop_extras %}
+{% block title %}Rewards — Purchases{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/rewards_admin.css' %}">{% endblock %}
+{% block header %}Purchases{% endblock %}
+{% block content %}
+  <form method="get" class="rw-admin-search">
+    <select name="kind">
+      <option value="">All kinds</option>
+      <option value="ORDER" {% if kind == "ORDER" %}selected{% endif %}>Orders</option>
+      <option value="TICKET" {% if kind == "TICKET" %}selected{% endif %}>Tickets</option>
+    </select>
+    <input type="search" name="q" value="{{ q }}" placeholder="Search ref/email…">
+    <button>Filter</button>
+  </form>
+
+  <table class="table">
+    <thead><tr><th>When</th><th>Kind</th><th>Ref</th><th>Who</th><th>Subtotal</th></tr></thead>
+    <tbody>
+    {% for p in rows %}
+      <tr>
+        <td>{{ p.created_at|date:"Y-m-d H:i" }}</td>
+        <td>{{ p.kind }}</td>
+        <td>{{ p.external_id }}</td>
+        <td>{% if p.account_id %}{{ p.account.user.email }}{% else %}{{ p.email|default:"(guest)" }}{% endif %}</td>
+        <td>{{ p.subtotal_cents|money }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No results.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

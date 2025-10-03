@@ -192,6 +192,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
+    shipped_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.number or f"Order {self.pk}"
     

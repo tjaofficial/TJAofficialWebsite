@@ -1,1 +1,13 @@
-.rw-admin { max-width: 1100px; margin: 16px auto; }
+.rw-admin { max-width: 1100px; margin: 0 auto; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; margin-bottom: 16px; }
+.cards .card { border: 1px solid var(--border,#2a2a2a); border-radius: 10px; padding: 12px; }
+.cards .label { opacity: .7; font-size: .9rem; }
+.cards .value { font-weight: 700; font-size: 1.3rem; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { border-bottom: 1px solid var(--border,#2a2a2a); padding: 8px; text-align: left; }
+.pos { color: #1a7f2e; } .neg { color: #c03333; }
+
+.rw-admin-search { display: flex; gap: 8px; margin-bottom: 10px; }
+.rw-admin-2col { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+.list { list-style: none; padding:0; margin:0; }
