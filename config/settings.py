@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'equipment',
     'bookingstack',
     'accounts',
+    'rewards',
 ]
 
 MIDDLEWARE = [
@@ -200,8 +201,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
-# LOGIN_URL = "/accounts/login/"
-#LOGIN_REDIRECT_URL = "/control/events/venues/"
 LOGOUT_REDIRECT_URL = "/"
 
 # If running behind Nginx / proxy
@@ -213,7 +212,7 @@ CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE')
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://127.0.0.1:8000")
 
 VENUE_MODEL = "events.Venue"
-LOGIN_URL = f"{SITE_BASE_URL}/accounts/login/"
+LOGIN_URL = f"{SITE_BASE_URL}/control/accounts/login/"
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")

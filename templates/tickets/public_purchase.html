@@ -6,28 +6,28 @@
 	<script defer src="{% static 'js/public_purchase.js' %}"></script>
 {% endblock %}
 {% block content %}
-<main class="ppx">
-  <header class="ppx-hero">
-    <div class="ppx-hero__text">
-      <h1 class="ppx-title">Buy Tickets</h1>
-      <div class="ppx-subtitle">
-        <span class="ppx-event-name">{{ event.name }}</span>
-        {% if event.start %}
-          <span class="dot">•</span>
-          <time datetime="{{ event.start|date:'c' }}">{{ event.start|date:"D, M j @ g:ia" }}</time>
-        {% endif %}
-        {% if event.venue %}
-          <span class="dot">•</span>
-          <span class="ppx-venue">
-            {{ event.venue.name }}
-            {% if event.venue.city %} — {{ event.venue.city }}{% if event.venue.state %}, {{ event.venue.state }}{% endif %}{% endif %}
-          </span>
-        {% endif %}
-      </div>
-    </div>
-  </header>
+	<main class="ppx">
+		<header class="ppx-hero">
+			<div class="ppx-hero__text">
+				<h1 class="ppx-title">Buy Tickets</h1>
+				<div class="ppx-subtitle">
+					<span class="ppx-event-name">{{ event.name }}</span>
+					{% if event.start %}
+						<span class="dot">•</span>
+						<time datetime="{{ event.start|date:'c' }}">{{ event.start|date:"D, M j @ g:ia" }}</time>
+					{% endif %}
+					{% if event.venue %}
+						<span class="dot">•</span>
+						<span class="ppx-venue">
+							{{ event.venue.name }}
+							{% if event.venue.city %} — {{ event.venue.city }}{% if event.venue.state %}, {{ event.venue.state }}{% endif %}{% endif %}
+						</span>
+					{% endif %}
+				</div>
+			</div>
+		</header>
 
-  <form id="ppx-form" method="post" action="{% url 'control:tickets:public_checkout' event.id %}" novalidate>
+  <form id="ppx-form" method="post" action="{% url 'control:tickets:public_checkout' event.id %}" novalidate data-auth="{{ user.is_authenticated|yesno:'1,0' }}">
     {% csrf_token %}
     {% if artist_token %}
       <input type="hidden" name="artist_token" value="{{ artist_token }}">
@@ -35,17 +35,44 @@
 
     <!-- Purchaser -->
     <section class="ppx-card">
-      <h2 class="ppx-h2">Your Info</h2>
-      <div class="ppx-grid-2">
-        <label class="ppx-field">
-          <span>Name</span>
-          <input class="ppx-input" name="purchaser_name" placeholder="Your name" required>
-        </label>
-        <label class="ppx-field">
-          <span>Email</span>
-          <input class="ppx-input" type="email" name="email" placeholder="you@example.com" required>
-        </label>
-      </div>
+		<div style="display: flex; justify-content: space-between;">
+			<h2 class="ppx-h2">Your Info</h2>
+			{% if not user.is_authenticated %}
+				<div class="ppx-login-cta">
+					<a class="btn-secondary" id="ppx-login-btn" href="{{ login_href }}">Log in to earn points</a>
+					<span class="ppx-cta-sep">or</span>
+					<span class="ppx-cta-guest">Checkout as guest</span>
+				</div>
+			{% else %}
+				<div class="ppx-note">You’re logged in. Tickets will be linked to your account for points.</div>
+			{% endif %}
+		</div>
+
+		{% if user.is_authenticated %}
+			<!-- Display-only for UX, but we also POST hidden values to be safe -->
+			<div class="ppx-grid-2">
+				<div class="ppx-field">
+					<span><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name|default:'' }}</span>
+				</div>
+				<div class="ppx-field">
+					<span><strong>Email:</strong> {{ user.email }}</span>
+				</div>
+			</div>
+			<!-- Hidden fields so POST always has values (even though the view uses request.user) -->
+			<input type="hidden" name="purchaser_name" value="{% firstof request.user.get_full_name request.user.username %}">
+			<input type="hidden" name="email" value="{{ user.email }}">
+		{% else %}
+			<div class="ppx-grid-2">
+				<label class="ppx-field">
+					<span><strong>Name</strong></span>
+						<input class="ppx-input" name="purchaser_name" placeholder="Your name" required>
+					</label>
+					<label class="ppx-field">
+						<span><strong>Email</strong></span>
+					<input class="ppx-input" type="email" name="email" placeholder="you@example.com" required>
+				</label>
+			</div>
+		{% endif %}
     </section>
 
     <!-- Ticket Types -->
@@ -125,7 +152,7 @@
         <span class="ppx-summary__hint">Taxes/fees shown on next step</span>
       </div>
       <div class="ppx-summary__right">
-        <button id="ppx-submit" class="btn-primary" disabled>Continue to Checkout</button>
+        <button id="ppx-submit" class="btn-primary" {% if not user.is_authenticated %}disabled{% endif %}>Continue to Checkout</button>
       </div>
     </div>
 

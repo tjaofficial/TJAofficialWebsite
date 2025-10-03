@@ -1,0 +1,24 @@
+{% extends "controlpanel/dashboard.html" %}
+{% load static %}
+
+{% block title %}Rewards Snapshot{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/rewards_admin.css' %}">
+{% endblock %}
+
+{% block header %}Rewards Snapshot{% endblock %}
+{% block content %}
+  <section class="rw-admin">
+    <p>Use Django Admin for full details. Quick pointers:</p>
+    <ul>
+      <li><strong>Rewards Accounts</strong> – balances per user</li>
+      <li><strong>Points Ledger</strong> – all earns/redeems/adjustments</li>
+      <li><strong>Purchase Records</strong> – Orders & Tickets (account or guest)</li>
+      <li><strong>Reward Items</strong> & <strong>Redemptions</strong></li>
+    </ul>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script defer src="{% static 'js/rewards_admin.js' %}"></script>
+{% endblock %}

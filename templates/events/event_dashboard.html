@@ -18,6 +18,7 @@
     <a class="btn" href="{% url 'control:events:event_media' event.id %}">Manage Media</a>
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:tickets:sales' %}?event={{ event.id }}">View Tickets Sold</a>{% endif %}
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:tickets' event.id %}">Sell Card Tickets</a>{% endif %}
+    {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:tickets:add' %}">Add Tickets</a>{% endif %}
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:event_artists' event.id %}">Artists</a>{% endif %}
   </div>
 </div>

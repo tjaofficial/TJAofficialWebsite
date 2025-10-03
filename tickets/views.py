@@ -4,6 +4,7 @@ from .models import TicketType, Ticket, TicketReservation
 from events.models import Event, ArtistSaleLink
 from .forms import TicketTypeForm
 from django.http import HttpResponse, JsonResponse
+from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 from django.db import transaction
 import qrcode
@@ -20,9 +21,10 @@ import csv
 from django.contrib import messages
 from django.urls import reverse
 from datetime import timedelta
+import logging
 
+logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
-
 is_super = user_passes_test(lambda u: u.is_superuser)
 
 @is_super
@@ -121,6 +123,16 @@ def issue_tickets(request):
     
 @csrf_exempt
 def stripe_webhook(request):
+    GRACE = timedelta(minutes=5)
+
+    holds = (TicketReservation.objects
+            .select_for_update()
+            .filter(
+                id__in=ids,
+                stripe_session_id=session_id,
+                fulfilled=False,
+                expires_at__gt=timezone.now() - GRACE  # <-- allow slight lateness
+            ))
     payload = request.body
     sig = request.META.get("HTTP_STRIPE_SIGNATURE")
     try:
@@ -161,8 +173,12 @@ def stripe_webhook(request):
                 h.save(update_fields=["fulfilled"])
 
         # email the QR links (or images)
-        if tickets_created:
-            send_tickets_email(email, tickets_created, site_base=settings.SITE_BASE_URL)
+        if tickets_created and email:
+            try:
+                send_tickets_email(email, tickets_created, site_base=settings.SITE_BASE_URL)
+            except Exception as e:
+                logger.exception("Ticket email send failed for session %s to %s", session_id, email)
+
 
     return HttpResponse(status=200)
 
@@ -381,8 +397,19 @@ def public_purchase(request, event_id):
     
     artist_token = request.GET.get("artist")  # may be None
 
+    # Build login URL with ?next back to this page + preserve artist token
+    next_qs = {"next": request.get_full_path()}
+    login_url = settings.LOGIN_URL if hasattr(settings, "LOGIN_URL") else reverse("control:accounts:login")
+    if "://" not in login_url:
+        # make it absolute for some auth setups
+        login_url = settings.SITE_BASE_URL + login_url
+    login_href = f"{login_url}?{urlencode(next_qs)}"
+
     return render(request, "tickets/public_purchase.html", {
-        "event": ev, "types": types, "artist_token": artist_token
+        "event": ev, 
+        "types": types, 
+        "artist_token": artist_token,
+        "login_href": login_href,
     })
 
 def public_create_checkout(request, event_id):
@@ -391,8 +418,14 @@ def public_create_checkout(request, event_id):
 
     ev = get_object_or_404(Event, pk=event_id, published=True)
 
-    purchaser_email = (request.POST.get("email") or "").strip()
-    purchaser_name  = (request.POST.get("purchaser_name") or "").strip()
+    if request.user.is_authenticated:
+        purchaser_email = (request.user.email or "").strip()
+        purchaser_name  = (f"{getattr(request.user, 'first_name', '')} {getattr(request.user, 'last_name', '')}".strip()
+                           or getattr(request.user, 'username', ''))
+    else:
+        purchaser_email = (request.POST.get("email") or "").strip()
+        purchaser_name  = (request.POST.get("purchaser_name") or "").strip()
+
     artist_token = request.POST.get("artist_token") or request.GET.get("artist")
     artist_id = None
     if artist_token:

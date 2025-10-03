@@ -1,0 +1,12 @@
+{% extends "base_tour.html" %}
+{% load static %}
+
+{% block title %}Tour Passport{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/rewards.css' %}">
+  <script defer src="{% static 'js/rewards.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  {% include "rewards/_passport_body.html" %}
+{% endblock %}

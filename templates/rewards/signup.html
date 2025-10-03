@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Account{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/rewards_signup.css' %}">
+  <script defer src="{% static 'js/rewards_signup.js' %}"></script>
+{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+<section class="rs-wrap" data-signup>
+  <header class="rs-head">
+    <h1>Create your TJA Rewards account</h1>
+    <p>Earn points for tickets, merch, and more. First 10 points are on us.</p>
+  </header>
+
+  <form method="post" novalidate class="rs-form" id="signupForm">
+    {% csrf_token %}
+
+    <!-- Account -->
+    <fieldset class="rs-card">
+      <legend>Account</legend>
+      <div class="rs-grid rs-grid-3">
+    <label class="rs-field">
+      <span>Username</span>
+      {{ form.username }}
+      {% if form.username.errors %}<em class="rs-err">{{ form.username.errors.0 }}</em>{% endif %}
+    </label>
+
+    <label class="rs-field">
+      <span>Email</span>
+      {{ form.email }}
+      {% if form.email.errors %}<em class="rs-err">{{ form.email.errors.0 }}</em>{% endif %}
+    </label>
+
+    <label class="rs-field">
+      <span>Password</span>
+      {{ form.password }}
+      {% if form.password.errors %}<em class="rs-err">{{ form.password.errors.0 }}</em>{% endif %}
+    </label>
+  </div>
+
+  <!-- second aligned row for confirm + (optional blank spacers to keep grid) -->
+  <div class="rs-grid rs-grid-3">
+    <label class="rs-field">
+      <span>Confirm Password</span>
+      {{ form.confirm_password }}
+      {% if form.confirm_password.errors %}<em class="rs-err">{{ form.confirm_password.errors.0 }}</em>{% endif %}
+    </label>
+    <div class="rs-field rs-spacer"></div>
+    <div class="rs-field rs-spacer"></div>
+  </div>
+
+  <!-- single meter/hint row spanning all columns so fields stay the same height -->
+  <div class="rs-row-footer">
+    <meter id="pwMeter" min="0" max="4" value="0" class="rs-meter"></meter>
+    <small class="rs-hint" id="pwHint">Use 8+ chars, mix letters & numbers.</small>
+  </div>
+    </fieldset>
+
+    <!-- Contact -->
+    <fieldset class="rs-card">
+      <legend>Contact</legend>
+      <div class="rs-grid">
+        <label class="rs-field">
+          <span>Phone</span>
+          {{ form.phone }}
+        </label>
+        <label class="rs-field">
+          <span>Birthday</span>
+          {{ form.birthday }}
+        </label>
+        <label class="rs-field">
+          <span>Sex</span>
+          {{ form.sex }}
+        </label>
+      </div>
+    </fieldset>
+
+    <!-- Shipping -->
+    <details class="rs-card">
+      <summary>Shipping Address (optional)</summary>
+      <div class="rs-grid">
+        <label class="rs-field"><span>Full Name</span>{{ form.ship_name }}</label>
+        <label class="rs-field"><span>Address Line 1</span>{{ form.ship_line1 }}</label>
+        <label class="rs-field"><span>Address Line 2</span>{{ form.ship_line2 }}</label>
+        <label class="rs-field"><span>City</span>{{ form.ship_city }}</label>
+        <label class="rs-field"><span>State/Province</span>{{ form.ship_state }}</label>
+        <label class="rs-field"><span>Postal Code</span>{{ form.ship_postal }}</label>
+        <label class="rs-field"><span>Country (2-letter)</span>{{ form.ship_country }}</label>
+      </div>
+    </details>
+
+    <!-- Opt-ins -->
+    <fieldset class="rs-card">
+      <legend>Preferences</legend>
+      <label class="rs-check">
+        {{ form.marketing_opt_in }} <span>Email me rewards news, drops & exclusive offers</span>
+      </label>
+      <label class="rs-check">
+        {{ form.accept_terms }} <span>I agree to the <a href="/terms/" target="_blank" rel="noopener">Terms</a> & <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></span>
+        {% if form.accept_terms.errors %}<em class="rs-err">{{ form.accept_terms.errors.0 }}</em>{% endif %}
+      </label>
+    </fieldset>
+
+    <!-- Honeypot -->
+    {{ form.website }}
+
+    <footer class="rs-actions">
+      <button type="submit" class="rs-btn" id="signupBtn">
+        <span class="rs-btn-label">Create Account (+10 pts)</span>
+        <span class="rs-spinner" aria-hidden="true"></span>
+      </button>
+      <a href="{% url 'control:accounts:login' %}" class="rs-link">Already have an account? Log in</a>
+    </footer>
+
+    {% if form.non_field_errors %}
+      <div class="rs-alert">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

@@ -7,7 +7,7 @@ from ..models import Badge, ShowBadge, UserBadge, Show
 
 def _now(): return timezone.now()
 
-@login_required(login_url="/accounts/login/")
+@login_required(login_url="/control/accounts/login/")
 def tour_passport(request):
     user = request.user
     earned = (UserBadge.objects
@@ -55,7 +55,7 @@ def tour_passport(request):
         "level_progress": level_progress,
     })
 
-@login_required(login_url="/accounts/login/")
+@login_required(login_url="/control/accounts/login/")
 def tour_passport_redeem(request):
     code = (request.POST.get("code") or request.GET.get("code") or "").strip()
     if not code:

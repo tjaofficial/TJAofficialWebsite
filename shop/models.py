@@ -164,6 +164,7 @@ class Order(models.Model):
         ("failed", "Failed"),
         ("refunded", "Refunded"),
         ("canceled", "Canceled"),
+        ("shipped", "Shipped"),
     ]
 
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="orders")
@@ -193,6 +194,11 @@ class Order(models.Model):
 
     def __str__(self):
         return self.number or f"Order {self.pk}"
+    
+    def mark_paid(self, when=None):
+        self.status = "paid"
+        self.paid_at = when or timezone.now()
+        self.save(update_fields=["status", "paid_at"])
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")

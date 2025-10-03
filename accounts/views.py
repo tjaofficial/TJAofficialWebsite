@@ -23,7 +23,7 @@ class LoginViewCustom(auth_views.LoginView):
         elif self.request.user.is_superuser:
             return reverse("control:events:venues")
         else:
-            return reverse("tour_passport")
+            return reverse("rewards:dashboard")
 
 class LogoutViewCustom(auth_views.LogoutView):
     next_page = "/"

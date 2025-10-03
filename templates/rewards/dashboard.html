@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Passport{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/rewards.css' %}">
+    <script defer src="{% static 'js/rewards.js' %}"></script>
+{% endblock %}
+{% block hero %}{% endblock %}
+{% block content %}
+<section class="rw-wrap" data-rewards>
+  <h1 class="rw-h1">Tour Passport</h1>
+
+  <section class="rw-card" aria-labelledby="points">
+    <h2 id="points" class="rw-h2">Your Points</h2>
+    <p class="rw-points" data-points>{{ account.points_balance }}</p>
+  </section>
+
+  <section class="rw-card" aria-labelledby="redeem">
+    <h2 id="redeem" class="rw-h2">Redeem Rewards</h2>
+    {% if items %}
+      <ul class="rw-grid">
+        {% for it in items %}
+          <li class="rw-item">
+            <div class="rw-item-main">
+              <div class="rw-item-name">{{ it.name }}</div>
+              <div class="rw-item-cost">{{ it.points_cost }} pts</div>
+            </div>
+            <form method="post" action="{% url 'rewards:redeem' it.id %}" class="rw-item-actions" data-redeem-form>
+              {% csrf_token %}
+              <button type="submit" class="rw-btn" data-redeem="{{ it.name }}|{{ it.points_cost }}">Redeem</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="rw-empty">No reward items yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="rw-card" aria-labelledby="activity">
+    <h2 id="activity" class="rw-h2">Recent Activity</h2>
+    {% if ledger %}
+      <ul class="rw-activity">
+        {% for row in ledger %}
+          <li class="rw-activity-row">
+            <div>
+              <div class="rw-activity-line">
+                {{ row.get_kind_display }} • {{ row.get_source_display }}{% if row.reference %} #{{ row.reference }}{% endif %}
+              </div>
+              <div class="rw-activity-sub">{{ row.created_at|date:"M j, Y g:ia" }}</div>
+            </div>
+            <div class="rw-activity-amt {% if row.delta < 0 %}rw-neg{% else %}rw-pos{% endif %}">
+              {{ row.delta }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="rw-empty">No activity yet.</p>
+    {% endif %}
+  </section>
+<hr>
+
+<section class="rw-card" aria-labelledby="purchases">
+  <h2 id="purchases" class="rw-h2">Purchase History</h2>
+
+  {% if purchases %}
+    <ul class="rw-history">
+      {% for p in purchases %}
+        <li class="rw-history-row">
+          <div class="rw-history-main">
+            <div class="rw-history-kind">
+              {% if p.kind == "ORDER" %}Order{% else %}Ticket{% endif %} • #{{ p.external_id }}
+            </div>
+            <div class="rw-history-sub">{{ p.created_at|date:"M j, Y g:ia" }}</div>
+          </div>
+
+          <div class="rw-history-meta">
+            {% if p.kind == "ORDER" %}
+              {% with cents=p.meta.total_cents|default:p.subtotal_cents %}
+                    ${{ cents|floatformat:2|divisibleby:"100" }}
+            {% endwith %}
+
+              <span class="rw-chip">{{ p.currency }}</span>
+            {% else %}
+              <span class="rw-chip">Ticket</span>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="rw-empty">No purchases yet.</p>
+  {% endif %}
+</section>
+    <hr>
+    <section class="rw-card" aria-labelledby="active_tix">
+        <h2 id="active_tix" class="rw-h2">Active Tickets</h2>
+        {% if active_tickets %}
+            <ul class="rw-tickets">
+                {% for t in active_tickets %}
+                    <li class="rw-ticket">
+                        <div class="rw-ticket-main">
+                            <div class="rw-ticket-title">{{ t.ticket_type.name }}</div>
+                            <div class="rw-ticket-sub">
+                                Issued {{ t.issued_at|date:"M j, Y g:ia" }}
+                                {% if t.note %} • {{ t.note }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="rw-ticket-actions">
+                            <!-- Update href to your actual ticket-detail route if different -->
+                            <a class="rw-btn" href="/ticket/{{ t.qr_token }}/">View Ticket</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="rw-empty">You have no active (unchecked-in) tickets.</p>
+        {% endif %}
+    </section>
+    <hr>
+    <section class="rw-card" aria-labelledby="merge">
+        <h2 id="merge" class="rw-h2">Link Past Guest Orders</h2>
+        <form method="post" action="{% url 'rewards:merge' %}" class="rw-merge" data-merge-form>
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="Email used at checkout" required class="rw-input">
+            <button type="submit" class="rw-btn">Link</button>
+        </form>
+        <p class="rw-hint">If you bought tickets or merch without an account, enter that email to pull your history and earn retro points.</p>
+    </section>
+</section>
+{% endblock %}

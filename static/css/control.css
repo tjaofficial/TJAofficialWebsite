@@ -18,7 +18,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-app
 .btn{display:inline-block;padding:8px 12px;border:1px solid #1a1f27;background:#11151b;color:var(--ink);border-radius:8px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#0b0d11;font-weight:700}
 .input, select{background:#0f1318;border:1px solid #1a1f27;color:var(--ink);padding:8px 10px;border-radius:8px}
-.form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;flex-direction: column;}
+.form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;flex-direction: row;}
 .card{background:#0f1318;border:1px solid #1a1f27;border-radius:12px;padding:16px;margin-bottom:16px}
 .kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .kpi .card h2{margin:0;font-size:20px}

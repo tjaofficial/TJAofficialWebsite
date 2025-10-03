@@ -109,3 +109,9 @@
 
 /* Empty */
 .ppx-empty { margin: 8px 0 0; color: var(--muted, #9aa0a6); }
+
+
+.ppx-login-cta { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.ppx-cta-sep { opacity:.7; }
+.ppx-cta-guest { opacity:.9; }
+.btn-secondary { border:1px solid var(--border,#2a2a2a); padding:8px 12px; border-radius:8px; text-decoration:none; }

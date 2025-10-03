@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pages.urls')),
     path("control/", include(("controlpanel.urls", "control"), namespace="control")),
+    path("rewards/", include("rewards.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
