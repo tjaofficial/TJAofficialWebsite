@@ -21,6 +21,8 @@ class SignupForm(forms.Form):
     password = forms.CharField(label="Password", widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
     confirm_password = forms.CharField(label="Confirm Password", widget=forms.PasswordInput())
     username = forms.CharField(label="Username", max_length=30)
+    first_name = forms.CharField(label="First Name", max_length=30, widget=forms.TextInput(attrs={"required": True}))
+    last_name = forms.CharField(label="Last Name", max_length=30, widget=forms.TextInput(attrs={"required": True}))
     # Contact & Birthday
     phone = forms.CharField(label="Phone", max_length=32, required=False)
     birthday = forms.DateField(label="Birthday", required=False, widget=forms.DateInput(attrs={"type": "date"}))

@@ -120,7 +120,9 @@ def signup(request):
 
         # Create user
         username = form.cleaned_data["username"].strip()
-        user = User.objects.create_user(username=username, email=email, password=password)
+        last_name = form.cleaned_data.get("last_name").strip()
+        first_name = form.cleaned_data.get("first_name").strip()
+        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
 
         # Ensure rewards/profile exist (signals will create, but we want to persist fields now)
         profile, _ = CustomerProfile.objects.get_or_create(user=user)

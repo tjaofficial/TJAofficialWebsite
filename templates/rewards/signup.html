@@ -20,26 +20,38 @@
 
     <!-- Account -->
     <fieldset class="rs-card">
-      <legend>Account</legend>
-      <div class="rs-grid rs-grid-3">
-    <label class="rs-field">
-      <span>Username</span>
-      {{ form.username }}
-      {% if form.username.errors %}<em class="rs-err">{{ form.username.errors.0 }}</em>{% endif %}
-    </label>
+      	<legend>Account</legend>
+			<div class="rs-grid rs-grid-3">
+				<label class="rs-field">
+					<span>First Name</span>
+					{{ form.first_name }}
+					{% if form.first_name.errors %}<em class="rs-err">{{ form.first_name.errors.0 }}</em>{% endif %}
+				</label>
 
-    <label class="rs-field">
-      <span>Email</span>
-      {{ form.email }}
-      {% if form.email.errors %}<em class="rs-err">{{ form.email.errors.0 }}</em>{% endif %}
-    </label>
+				<label class="rs-field">
+					<span>Last Name</span>
+					{{ form.last_name }}
+					{% if form.last_name.errors %}<em class="rs-err">{{ form.last_name.errors.0 }}</em>{% endif %}
+				</label>
 
-    <label class="rs-field">
-      <span>Password</span>
-      {{ form.password }}
-      {% if form.password.errors %}<em class="rs-err">{{ form.password.errors.0 }}</em>{% endif %}
-    </label>
-  </div>
+				<label class="rs-field">
+					<span>Username</span>
+					{{ form.username }}
+					{% if form.username.errors %}<em class="rs-err">{{ form.username.errors.0 }}</em>{% endif %}
+				</label>
+
+				<label class="rs-field">
+					<span>Email</span>
+					{{ form.email }}
+					{% if form.email.errors %}<em class="rs-err">{{ form.email.errors.0 }}</em>{% endif %}
+				</label>
+
+				<label class="rs-field">
+					<span>Password</span>
+					{{ form.password }}
+					{% if form.password.errors %}<em class="rs-err">{{ form.password.errors.0 }}</em>{% endif %}
+				</label>
+			</div>
 
   <!-- second aligned row for confirm + (optional blank spacers to keep grid) -->
   <div class="rs-grid rs-grid-3">
