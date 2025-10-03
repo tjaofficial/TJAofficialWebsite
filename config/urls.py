@@ -18,10 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from rewards import views as reward_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pages.urls')),
+    path("signup/", reward_views.signup, name="signup"),
     path("control/", include(("controlpanel.urls", "control"), namespace="control")),
     path("rewards/", include("rewards.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
