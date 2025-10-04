@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'equipment',
     'bookingstack',
     'accounts',
-    'rewards',
+    "rewards.apps.RewardsConfig",
 ]
 
 MIDDLEWARE = [

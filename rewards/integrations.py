@@ -1,5 +1,6 @@
 # rewards/integrations.py
 from __future__ import annotations
+from typing import TYPE_CHECKING
 from django.apps import apps
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -10,9 +11,14 @@ from .models import PurchaseRecord, RewardsAccount, GuestCustomer
 
 # --- ORDER: award when status flips to "paid" ---
 Order = apps.get_model("shop", "Order")  # adjust app label if different
+Ticket = apps.get_model("tickets", "Ticket")  # adjust app label if different
+
+if TYPE_CHECKING:
+    from shop.models import Order as ShopOrder
+    from tickets.models import Ticket as TicketsTicket
 
 @receiver(pre_save, sender=Order)
-def rewards_on_order_paid(sender, instance: "Order", **kwargs):
+def rewards_on_order_paid(sender, instance: "ShopOrder", **kwargs):
     if not instance.pk:
         return
     try:
@@ -65,11 +71,9 @@ def rewards_on_order_paid(sender, instance: "Order", **kwargs):
         )
 
 
-# --- TICKET: award when checked_in_at is set (first time) ---
-Ticket = apps.get_model("tickets", "Ticket")  # adjust app label if different
 
 @receiver(post_save, sender=Ticket)
-def rewards_on_ticket_checkin(sender, instance: "Ticket", created: bool, **kwargs):
+def rewards_on_ticket_checkin(sender, instance: "TicketsTicket", created: bool, **kwargs):
     # Only act if this save created or toggled the check-in timestamp from None -> value
     if not instance.checked_in_at:
         return

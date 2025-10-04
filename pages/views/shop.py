@@ -366,11 +366,10 @@ def checkout_start(request):
 
     # Persist provider session id on the order (optional but handy)
     try:
-        from ..models import Order
-        order.provider = "stripe"
+        order.payment_provider = "stripe"
         order.provider_session_id = session.id
         order.total_cents = total_cents
-        order.save(update_fields=["provider", "provider_session_id", "total_cents"])
+        order.save(update_fields=["payment_provider", "provider_session_id", "total_cents"])
     except Exception:
         pass
 
