@@ -431,9 +431,28 @@ def stripe_webhook(request):
                     Product.objects.filter(pk=it.product_id).update(inventory=F("inventory") - it.qty)
                 # (optional) clear cart for that user/session is not straightforward from webhook request;
                 # you can leave it to success page or use fulfillment email.
-
     elif event["type"] == "payment_intent.succeeded":
         # Optional: cross-check order by payment intent if you saved it earlier
         pass
+    # ---------- ABANDONED/CANCELED ----------
+    elif event["type"] in ("checkout.session.expired", "checkout.session.async_payment_failed"):
+        session = event["data"]["object"]
+        session_id = session.get("id")
+
+        order = Order.objects.filter(provider_session_id=session_id).first()
+        if order and order.status not in ("paid", "refunded", "canceled", "failed"):
+            # expired = customer never completed; async_payment_failed = later failure
+            order.status = "canceled" if event["type"] == "checkout.session.expired" else "failed"
+            order.save(update_fields=["status"])
+    # ---------- CARD DECLINED / FAILED INTENT (best-effort) ----------
+    elif event["type"] == "payment_intent.payment_failed":
+        pi = event["data"]["object"]
+        intent_id = pi.get("id")
+        # We only know the order if we had stored provider_payment_intent previously.
+        # (Often we only set this on 'paid', so this may be a no-op—but it’s safe.)
+        order = Order.objects.filter(provider_payment_intent=intent_id).first()
+        if order and order.status not in ("paid", "refunded", "canceled", "failed"):
+            order.status = "failed"
+            order.save(update_fields=["status"])
 
     return HttpResponse(status=200)

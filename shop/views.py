@@ -22,6 +22,9 @@ def orders_list(request):
     status = request.GET.get("status", "").strip()
     state  = request.GET.get("state", "").strip()
 
+    if not status:
+        status = "paid"
+        
     if email:
         qs = qs.filter(Q(email__icontains=email) | Q(user__email__icontains=email))
     if number:
@@ -58,8 +61,9 @@ def inventory_report(request):
     date_to = request.GET.get("to", "").strip()
 
     items = (OrderItem.objects
-             .select_related("order", "product")
-             .order_by("-order__created_at"))
+        .select_related("order", "product")
+        .filter(order__status="paid")
+        .order_by("-order__created_at"))
 
     if title:
         items = items.filter(title_snapshot__icontains=title)
@@ -162,7 +166,8 @@ def budget_sales(request):
     date_to   = request.GET.get("to", "").strip()
     state     = request.GET.get("state", "").strip()
 
-    orders = Order.objects.all()
+    orders = Order.objects.filter(status="paid")
+
     if date_from:
         orders = orders.filter(created_at__date__gte=date_from)
     if date_to:
