@@ -5,7 +5,7 @@
 
 <div class="card">
   <div><b>Status:</b> {{ order.get_status_display }}</div>
-  <div><b>Email:</b> {{ order.email|default:order.user.email }}</div>
+  <div><b>Email:</b> {{ order.email }}</div>
   <div><b>Total:</b> ${{ order.total_cents|floatformat:-2 }}</div>
   <div><b>Ship To:</b> {{ order.ship_to_name }} — {{ order.ship_to_addr1 }}, {{ order.ship_to_city }}, {{ order.ship_to_state }} {{ order.ship_to_postal }}</div>
 </div>
