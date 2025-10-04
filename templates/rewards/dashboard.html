@@ -51,10 +51,56 @@
             </div>
         </section>
 
-  <section class="rw-card" aria-labelledby="points">
-    <h2 id="points" class="rw-h2">Your Points</h2>
-    <p class="rw-points" data-points>{{ account.points_balance }}</p>
-  </section>
+    <section class="rw-card" aria-labelledby="points">
+        <h2 id="points" class="rw-h2">Your Points</h2>
+        <p class="rw-points" data-points>{{ account.points_balance }}</p>
+    </section>
+
+    {% if pending_gifts %}
+        <section class="card">
+            <h3>Gifts waiting for you</h3>
+            <ul class="rw-gifts">
+                {% for r in pending_gifts %}
+                <li class="rw-gift-row">
+                    <div class="rw-gift-main">
+                    <div class="rw-gift-title">{{ r.item.name }}</div>
+                    <div class="rw-gift-sub">
+                        {% if r.item.fulfill_type == "TICKET" %}
+                            Tickets
+                        {% elif r.item.fulfill_type == "PRODUCT" %}
+                            Merch
+                        {% else %}
+                            Reward
+                        {% endif %}
+                        • gifted on {{ r.created_at|date:"M j, Y" }}
+                        {% if r.quantity and r.quantity > 1 %} • ×{{ r.quantity }}{% endif %}
+                    </div>
+                    </div>
+                    <div class="rw-gift-actions">
+                    {% if r.item.fulfill_type == "PRODUCT" and r.item.target_ct.model == "product" and r.item.target_id %}
+                        {# If product has variants, your redeem view will route to choose-variant #}
+                        <form method="post" action="{% url 'rewards:redeem_redemption' r.id %}">
+                        {% csrf_token %}
+                        <button class="btn">Redeem</button>
+                        </form>
+                    {% elif r.item.fulfill_type == "TICKET" %}
+                        <form method="post" action="{% url 'rewards:redeem_redemption' r.id %}">
+                        {% csrf_token %}
+                        <button class="btn">Redeem</button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'rewards:redeem_redemption' r.id %}">
+                        {% csrf_token %}
+                        <button class="btn">Redeem</button>
+                        </form>
+                    {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
 
   <section class="rw-card" aria-labelledby="redeem">
     <h2 id="redeem" class="rw-h2">Redeem Rewards</h2>
@@ -77,6 +123,17 @@
       <p class="rw-empty">No reward items yet.</p>
     {% endif %}
   </section>
+    {% if pending_variant %}
+        <section class="card">
+            <h3>Action required</h3>
+            <p>
+            You redeemed <strong>{{ pending_variant.item.name }}</strong>.
+            Choose your variant to complete.
+            </p>
+            <a class="btn" href="{% url 'rewards:choose_variant' pending_variant.id %}">Choose variant</a>
+        </section>
+    {% endif %}
+
 
   <section class="rw-card" aria-labelledby="activity">
     <h2 id="activity" class="rw-h2">Recent Activity</h2>
@@ -142,7 +199,7 @@
                 {% for t in active_tickets %}
                     <li class="rw-ticket">
                         <div class="rw-ticket-main">
-                            <div class="rw-ticket-title">{{ t.ticket_type.name }}</div>
+                            <div class="rw-ticket-title">{{ t.ticket_type.event }} • {{ t.ticket_type.name }}</div>
                             <div class="rw-ticket-sub">
                                 Issued {{ t.issued_at|date:"M j, Y g:ia" }}
                                 {% if t.note %} • {{ t.note }}{% endif %}

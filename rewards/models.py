@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from shop.models import ProductVariant 
 
 User = get_user_model()
 
@@ -154,16 +155,26 @@ class GiftCode(models.Model):
         return f"{self.code} → {self.item.name}"
 
 class Redemption(models.Model):
+    STATUS_CHOICES = (
+        ("PENDING", "Pending"),
+        ("FULFILLED", "Fulfilled"),
+        ("CANCELED", "Canceled"),
+    )
     account = models.ForeignKey(RewardsAccount, on_delete=models.PROTECT, related_name="redemptions")
     item = models.ForeignKey(RewardItem, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
     points_spent = models.PositiveIntegerField()
-    fulfilled = models.BooleanField(default=False)
+    quantity = models.PositiveIntegerField(default=1)                 # NEW (matches quantity_per_redeem)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="FULFILLED")  # default remains for non-variant flows
+    selected_variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)  # NEW
+    fulfilled = models.BooleanField(default=False)  # keep for backward compat
     notes = models.TextField(blank=True)
 
-    def __str__(self):
-        return f"Redeem {self.item} by {self.account.user} ({self.points_spent} pts)"
-
+    def mark_fulfilled(self):
+        self.status = "FULFILLED"
+        self.fulfilled = True
+        self.save(update_fields=["status", "fulfilled"])
+        
 class GuestCustomer(models.Model):
     """Tracks purchasers who don’t (yet) have a site account.
     Later, we can merge into a RewardsAccount if they sign up with same email/phone."""

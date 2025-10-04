@@ -118,13 +118,14 @@
     const qtyInput  = form.querySelector('input[name="quantity_per_redeem"]');
 
     function syncTarget(){
-      const v = typeSel.value;
-      targetProd.style.display = (v === 'PRODUCT') ? 'block' : 'none';
-      targetTick.style.display = (v === 'TICKET') ? 'block' : 'none';
-      // For tickets, quantity per redemption defaults to 1 if empty
-      if(v === 'TICKET' && (!qtyInput.value || parseInt(qtyInput.value,10) < 1)){
-        qtyInput.value = 1;
-      }
+        if(!typeSel) return;
+        const v = typeSel.value;
+        targetProd.style.display = (v === 'PRODUCT') ? 'block' : 'none';
+        targetTick.style.display = (v === 'TICKET') ? 'block' : 'none';
+        // For tickets, quantity per redemption defaults to 1 if empty
+        if(v === 'TICKET' && (!qtyInput.value || parseInt(qtyInput.value,10) < 1)){
+            qtyInput.value = 1;
+        }
     }
     typeSel && typeSel.addEventListener('change', syncTarget);
     syncTarget();
@@ -235,18 +236,45 @@
 
 
 (function(){
-    const sel = document.querySelector('select[name="reward_type"]');
-    const tTicket = document.getElementById('giftTargetTicket');
-    const tProduct = document.getElementById('giftTargetProduct');
-    const qty = document.querySelector('input[name="quantity"]');
+  // Runs on the gift page
+  const form = document.querySelector('.cp-form');
+  if(!form) return;
 
-    function sync(){
-      const v = sel.value;
-      tTicket.style.display  = (v === 'TICKET') ? 'block' : 'none';
-      tProduct.style.display = (v === 'PRODUCT') ? 'block' : 'none';
-      if(v === 'TICKET' && (!qty.value || parseInt(qty.value,10) < 1)){ qty.value = 1; }
-      if(v === 'PRODUCT' && (!qty.value || parseInt(qty.value,10) < 1)){ qty.value = 1; }
+  const rewardTypeSel = form.querySelector('select[name="reward_type"]');
+  const eventSel      = form.querySelector('select[name="event"]');
+  const ticketSel     = form.querySelector('select[name="ticket_type"]');
+  const productSel    = form.querySelector('select[name="product"]');
+  const panelTicket   = document.getElementById('giftTargetTicket');
+  const panelProduct  = document.getElementById('giftTargetProduct');
+
+  function show(el, on){ if(el) el.style.display = on ? 'block' : 'none'; }
+
+  function syncPanels(){
+    const v = rewardTypeSel ? rewardTypeSel.value : '';
+    show(panelTicket, v === 'TICKET');
+    show(panelProduct, v === 'PRODUCT');
+  }
+
+  function filterTicketTypes(){
+    if(!eventSel || !ticketSel) return;
+    const ev = eventSel.value;
+    Array.from(ticketSel.options).forEach(opt=>{
+      if(!opt.value){ opt.hidden = false; return; }
+      const evId = opt.getAttribute('data-event');
+      const showOpt = !ev || evId === ev;
+      opt.hidden = !showOpt;
+    });
+    // If current selection is hidden, clear it
+    if (ticketSel.selectedOptions[0] && ticketSel.selectedOptions[0].hidden) {
+      ticketSel.value = '';
     }
-    sel.addEventListener('change', sync);
-    sync();
-  })();
+  }
+
+  // Hook up listeners (guarded)
+  rewardTypeSel && rewardTypeSel.addEventListener('change', syncPanels);
+  eventSel && eventSel.addEventListener('change', filterTicketTypes);
+
+  // Initial
+  syncPanels();
+  filterTicketTypes();
+})();

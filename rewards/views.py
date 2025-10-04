@@ -8,9 +8,13 @@ from .utils import merge_guest_into_user
 from django.contrib.auth import login
 from .forms import SignupForm
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, F
 from django.apps import apps
 from .services import redeem_item, RedemptionError
+from django.db import transaction
+from shop.models import Product, ProductVariant, Order, OrderItem
+from django.utils import timezone
+from .services import _fulfill_product_without_variant, _fulfill_tickets
 
 User = get_user_model()
 
@@ -30,54 +34,53 @@ def dashboard(request):
 
     # --- Purchase history (normalized from PurchaseRecord) ---
     # Show most recent 50 across orders+tickets; you can paginate later.
-    purchases = PurchaseRecord.objects.filter(
-        Q(account=acc) | Q(email__iexact=request.user.email)
-    ).order_by("-created_at", "-id")[:50]
+    purchases = (PurchaseRecord.objects
+        .filter(Q(account=acc) | Q(email__iexact=request.user.email))
+        .exclude(meta__gift=True) 
+        .order_by("-created_at", "-id")[:50]
+    )
 
-    # --- Active tickets (unchecked-in) ---
+    pending_gifts = acc.redemptions.select_related("item").filter(
+        points_spent=0, fulfilled=False
+    ).order_by("-created_at")
+
+    # ✅ Find the FIRST pending redemption that needs a product variant
+    pending_variant = next(
+        (r for r in redemptions
+         if r.status == "PENDING" and getattr(r.item, "fulfill_type", "") == "PRODUCT"),
+        None
+    )
+
     Ticket = None
     active_tickets = []
     try:
-        Ticket = apps.get_model("tickets", "Ticket")  # adjust app label if yours differs
+        Ticket = apps.get_model("tickets", "Ticket")
     except Exception:
         Ticket = None
 
     if Ticket:
-        # Tickets known via PurchaseRecord (linked to this account)
-        ticket_ids = list(
-            PurchaseRecord.objects.filter(
-                Q(account=acc) | Q(email__iexact=request.user.email),
-                kind="TICKET"
-            ).values_list("external_id", flat=True)
-        )
-
-        # Build a query that captures:
-        #  - Tickets referenced in PurchaseRecord
-        #  - PLUS any tickets purchased with user's email (fallback)
-        q = Q(checked_in_at__isnull=True)
-        if ticket_ids:
-            q &= (Q(pk__in=ticket_ids) | Q(purchaser_email__iexact=request.user.email))
-        else:
-            q &= Q(purchaser_email__iexact=request.user.email)
-
         active_tickets = list(
-            Ticket.objects.filter(q).select_related("ticket_type").order_by("-issued_at")[:50]
+            Ticket.objects
+                .select_related("ticket_type", "ticket_type__event")
+                .filter(
+                    Q(purchaser_email__iexact=request.user.email),
+                    Q(checked_in_at__isnull=True),
+                )
+                .order_by("-issued_at")[:50]
         )
 
-    return render(
-        request,
-        "rewards/dashboard.html",
-        {
-            "account": acc,
-            "balance": balance,
-            "affordable": affordable,
-            "ledger": ledger,
-            "redemptions": redemptions,
-            "items": reward_items,
-            "purchases": purchases,
-            "active_tickets": active_tickets,
-        },
-    )
+    return render(request, "rewards/dashboard.html",{
+        "account": acc,
+        "balance": balance,
+        "affordable": affordable,
+        "ledger": ledger,
+        "redemptions": redemptions,
+        "items": reward_items,
+        "purchases": purchases,
+        "pending_variant": pending_variant,
+        "pending_gifts": pending_gifts,
+        'active_tickets': active_tickets,
+    })
 
 @login_required
 @require_POST
@@ -203,3 +206,148 @@ def claim_code(request):
     except RedemptionError as e:
         messages.error(request, str(e))
     return redirect("rewards:dashboard")
+
+@login_required
+def choose_variant(request, redemption_id):
+    red = get_object_or_404(Redemption.objects.select_related("item","account__user"), pk=redemption_id)
+    if red.account.user_id != request.user.id:
+        messages.error(request, "Not authorized.")
+        return redirect("rewards:dashboard")
+
+    if red.status != "PENDING" or red.item.fulfill_type != "PRODUCT":
+        messages.info(request, "Nothing to do for this redemption.")
+        return redirect("rewards:dashboard")
+
+    product = Product.objects.filter(pk=red.item.target_id).first()
+    if not product or not product.has_variants:
+        messages.error(request, "This item no longer requires variant selection.")
+        return redirect("rewards:dashboard")
+
+    variants = product.variants.filter(is_active=True, inventory__gt=0).order_by("size")
+    if request.method == "POST":
+        try:
+            variant_id = int(request.POST.get("variant_id") or 0)
+        except ValueError:
+            variant_id = 0
+        variant = variants.filter(pk=variant_id).first()
+        if not variant:
+            messages.error(request, "Please choose an in-stock variant.")
+            return redirect("rewards:choose_variant", redemption_id=red.pk)
+
+        # Fulfill with this variant
+        with transaction.atomic():
+            # Create $0 order (comp) for traceability
+            order = Order.objects.create(
+                user=request.user,
+                email=request.user.email,
+                status="paid",
+                number=f"REDEEM-{timezone.now().strftime('%Y%m%d%H%M%S')}-{red.pk}",
+                subtotal_cents=0, shipping_cents=0, tax_cents=0, total_cents=0,
+                payment_provider="comp",
+                paid_at=timezone.now(),
+                ship_to_name=request.user.get_full_name() or request.user.username,
+            )
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                variant=variant,
+                title_snapshot=product.title,
+                size=getattr(variant, "size", ""),
+                qty=red.quantity,
+                price_cents_snapshot=0,
+            )
+            # decrement the chosen variant inventory
+            ProductVariant.objects.filter(pk=variant.pk).update(inventory=F("inventory") - red.quantity)
+
+            # link & mark redemption
+            red.selected_variant = variant
+            red.mark_fulfilled()
+
+            # record purchase for dashboard
+            PurchaseRecord.objects.create(
+                kind="ORDER",
+                external_id=order.number or str(order.pk),
+                account=red.account,
+                subtotal_cents=0,
+                currency="USD",
+                email=request.user.email,
+                meta={"redeem": True, "product": product.title, "variant": getattr(variant, "size", ""), "qty": red.quantity},
+            )
+
+        messages.success(request, f"Fulfilled {product.title} — {getattr(variant, 'size', '')}.")
+        return redirect("rewards:dashboard")
+
+    return render(request, "rewards/choose_variant.html", {
+        "redemption": red,
+        "product": product,
+        "variants": variants,
+    })
+
+
+@login_required
+@require_POST
+def redeem_redemption(request, pk):
+    red = get_object_or_404(Redemption.objects.select_related("item", "account", "account__user"), pk=pk)
+
+    # Security: ensure this redemption belongs to the current user
+    if red.account.user_id != request.user.id:
+        messages.error(request, "This gift does not belong to your account.")
+        return redirect("rewards:dashboard")
+
+    if red.fulfilled or red.status == "FULFILLED":
+        messages.info(request, "Already redeemed.")
+        return redirect("rewards:dashboard")
+
+    item = red.item
+    try:
+        if item.fulfill_type == "TICKET":
+            # issue comp tickets now
+            from tickets.models import TicketType
+            tt = None
+            if item.target_ct and item.target_ct.model == "tickettype":
+                from django.contrib.contenttypes.models import ContentType
+                tt = TicketType.objects.filter(pk=item.target_id).first()
+            if not tt:
+                messages.error(request, "This ticket gift is missing its show.")
+                return redirect("rewards:dashboard")
+
+            _fulfill_tickets(account=red.account, ticket_type=tt, qty=red.quantity, redemption=red)
+            red.status = "FULFILLED"
+            red.fulfilled = True
+            red.save(update_fields=["status", "fulfilled"])
+            messages.success(request, "Tickets issued! Check your email and Active Tickets.")
+            return redirect("rewards:dashboard")
+
+        elif item.fulfill_type == "PRODUCT":
+            # If product has variants, send them to choose-variant flow
+            from shop.models import Product
+            product = None
+            if item.target_ct and item.target_ct.model == "product":
+                product = Product.objects.filter(pk=item.target_id).first()
+            if not product:
+                messages.error(request, "This merch gift is missing its product.")
+                return redirect("rewards:dashboard")
+
+            if getattr(product, "has_variants", False):
+                # Your existing choose_variant flow
+                return redirect("rewards:choose_variant", red.id)
+
+            # No variants: fulfill now
+            _fulfill_product_without_variant(account=red.account, product=product, qty=red.quantity, redemption=red)
+            red.status = "FULFILLED"
+            red.fulfilled = True
+            red.save(update_fields=["status", "fulfilled"])
+            messages.success(request, "Merch redeemed! We created a comp order for you.")
+            return redirect("rewards:dashboard")
+
+        else:
+            # Custom/simple reward: mark fulfilled
+            red.status = "FULFILLED"
+            red.fulfilled = True
+            red.save(update_fields=["status", "fulfilled"])
+            messages.success(request, "Reward redeemed.")
+            return redirect("rewards:dashboard")
+
+    except Exception as e:
+        messages.error(request, f"Could not redeem: {e}")
+        return redirect("rewards:dashboard")

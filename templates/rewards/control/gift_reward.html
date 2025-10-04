@@ -15,17 +15,70 @@
     <label>Gift Type {{ form.reward_type }}</label>
   </div>
 
+  <!-- TICKETS -->
   <div id="giftTargetTicket" class="cp-conditional">
-    <label>Ticket Type (event/tier) {{ form.ticket_type }}</label>
+    <div class="cp-grid">
+      <label>Show (Event)
+        <select name="event" class="cp-select">
+          <option value="">— choose an event —</option>
+          {% for ev in form.fields.event.queryset %}
+            {% with ev_id=ev.id|stringformat:"s" %}
+              <option value="{{ ev.id }}"
+                {% if form.data.event == ev_id or form.initial.event == ev.id %}selected{% endif %}>
+                {{ ev.start|date:"Y-m-d" }} — {{ ev.name }}
+              </option>
+            {% endwith %}
+          {% empty %}
+            <option value="" disabled>(No events found)</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Ticket Type
+        <select name="ticket_type" class="cp-select">
+          <option value="">— choose ticket type —</option>
+          {% for tt in form.fields.ticket_type.queryset %}
+            {% with tt_id=tt.id|stringformat:"s" %}
+              <option value="{{ tt.id }}"
+                      data-event="{{ tt.event_id }}"
+                      {% if form.data.ticket_type == tt_id or form.initial.ticket_type == tt.id %}selected{% endif %}>
+                {{ tt.event.name }} — {{ tt.name }}
+              </option>
+            {% endwith %}
+          {% empty %}
+            <option value="" disabled>(No ticket types found)</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <p class="hint">Pick the show first to narrow ticket types.</p>
   </div>
 
+  <!-- PRODUCT -->
   <div id="giftTargetProduct" class="cp-conditional">
-    <label>Product {{ form.product }}</label>
+    <label>Product
+      <select name="product" class="cp-select">
+        <option value="">— choose a product —</option>
+        {% for p in form.fields.product.queryset %}
+          {% with pid=p.id|stringformat:"s" %}
+            <option value="{{ p.id }}"
+              {% if form.data.product == pid or form.initial.product == p.id %}selected{% endif %}>
+              {{ p.title }}
+            </option>
+          {% endwith %}
+        {% empty %}
+          <option value="" disabled>(No products found)</option>
+        {% endfor %}
+      </select>
+    </label>
+    <p class="hint">If the product has variants (e.g., size), the recipient will choose their variant after you gift it.</p>
   </div>
 
   <div class="cp-grid">
     <label>Quantity {{ form.quantity }}</label>
-    <label class="hint">Email recipient {{ form.email_recipient }}</label>
+    <label class="hint" style="display:flex;align-items:center;gap:8px;">
+      {{ form.email_recipient }} Email recipient
+    </label>
   </div>
 
   <label>Admin Note {{ form.note }}</label>

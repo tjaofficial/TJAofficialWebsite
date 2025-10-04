@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from tickets.models import TicketType
 from shop.models import Product
 from .models import RewardItem
+from events.models import Event
 from django.contrib.contenttypes.models import ContentType
 
 User = get_user_model()
@@ -164,6 +165,11 @@ class GiftAdHocForm(forms.Form):
         choices=REWARD_TYPES,
         widget=forms.Select(attrs={"class": "cp-select"})
     )
+    event = forms.ModelChoiceField(
+        queryset=Event.objects.order_by("-start"),
+        required=False,
+        widget=forms.Select(attrs={"class": "cp-select"})
+    )
     # Targets (conditional)
     ticket_type = forms.ModelChoiceField(
         queryset=TicketType.objects.select_related("event").order_by("-event__start","event__name","name"),
@@ -179,13 +185,22 @@ class GiftAdHocForm(forms.Form):
     note = forms.CharField(required=False, widget=forms.TextInput(attrs={"class":"cp-input", "placeholder":"optional admin note"}))
     email_recipient = forms.BooleanField(required=False, initial=True, widget=forms.CheckboxInput(attrs={"class":"cp-checkbox"}))
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Server-side filtering when Event already chosen (POST back or initial)
+        data = self.data or self.initial
+        chosen_event_id = (data.get("event") or "").strip()
+        if chosen_event_id.isdigit():
+            self.fields["ticket_type"].queryset = TicketType.objects.filter(event_id=int(chosen_event_id)).order_by("name")
+
     def clean(self):
         cleaned = super().clean()
         rt = cleaned.get("reward_type")
-        tt = cleaned.get("ticket_type")
-        prod = cleaned.get("product")
-        if rt == "TICKET" and not tt:
-            raise forms.ValidationError("Select a Ticket Type for a ticket gift.")
-        if rt == "PRODUCT" and not prod:
+        if rt == "TICKET":
+            if not cleaned.get("event"):
+                raise forms.ValidationError("Select a show (Event).")
+            if not cleaned.get("ticket_type"):
+                raise forms.ValidationError("Select a Ticket Type for that show.")
+        if rt == "PRODUCT" and not cleaned.get("product"):
             raise forms.ValidationError("Select a Product for a product gift.")
         return cleaned

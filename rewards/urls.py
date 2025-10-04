@@ -5,10 +5,12 @@ app_name = "rewards"
 
 urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
-    path("redeem/<int:item_id>/", views.redeem, name="redeem"),
+    path("redeems/<int:item_id>/", views.redeem, name="redeem"),
     path("merge/", views.merge_history, name="merge"),
     path("staff/", views.staff_snapshot, name="staff"),
     path("rewards/catalog/", views.catalog, name="catalog"),
     path("rewards/redeem/<int:item_id>/", views.redeem, name="redeem"),
     path("rewards/claim/", views.claim_code, name="claim_code"),
+    path("rewards/pending/<int:redemption_id>/variant/", views.choose_variant, name="choose_variant"),\
+    path("redeem/<int:pk>/", views.redeem_redemption, name="redeem_redemption"),
 ]

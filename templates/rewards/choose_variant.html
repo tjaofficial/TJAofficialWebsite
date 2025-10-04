@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Choose Variant{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/rewards.css' %}">
+{% endblock %}
+{% block hero %}{% endblock %}
+
+{% block content %}
+<section class="card" style="max-width:640px; margin-inline:auto;">
+  <h2>Choose Variant</h2>
+  <p>You redeemed <strong>{{ product.title }}</strong>. Select your preferred variant to complete fulfillment.</p>
+  <form method="post" style="display:grid; gap:12px;">
+    {% csrf_token %}
+    <label>Variant
+      <select name="variant_id" class="ppx-input" required>
+        <option value="">— choose —</option>
+        {% for v in variants %}
+          <option value="{{ v.id }}">{{ v.size }}{% if v.inventory is not None %} ({{ v.inventory }} left){% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="btn">Confirm</button>
+  </form>
+</section>
+{% endblock %}
