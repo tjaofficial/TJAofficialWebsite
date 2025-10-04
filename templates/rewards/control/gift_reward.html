@@ -1,0 +1,40 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Gift (Ad-Hoc){% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/rewards_control.css' %}">
+    <script defer src="{% static 'js/rewards_control.js' %}"></script>
+{% endblock %}
+{% block header %}Gift Reward (Ad-Hoc){% endblock %}
+
+{% block content %}
+<form method="post" class="cp-form" style="max-width:760px">
+  {% csrf_token %}
+
+  <div class="cp-grid">
+    <label>Recipient {{ form.user }}</label>
+    <label>Gift Type {{ form.reward_type }}</label>
+  </div>
+
+  <div id="giftTargetTicket" class="cp-conditional">
+    <label>Ticket Type (event/tier) {{ form.ticket_type }}</label>
+  </div>
+
+  <div id="giftTargetProduct" class="cp-conditional">
+    <label>Product {{ form.product }}</label>
+  </div>
+
+  <div class="cp-grid">
+    <label>Quantity {{ form.quantity }}</label>
+    <label class="hint">Email recipient {{ form.email_recipient }}</label>
+  </div>
+
+  <label>Admin Note {{ form.note }}</label>
+
+  {% if form.non_field_errors %}<div class="cp-errors">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="cp-actions">
+    <button class="btn btn-primary" type="submit">Gift</button>
+    <a class="btn" href="{% url 'control:rewards_control:items' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

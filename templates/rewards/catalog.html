@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Redeem Rewards{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/rewards_catalog.css' %}">
+    <script defer src="{% static 'js/rewards_catalog.js' %}"></script>
+{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Redeem Rewards</h2>
+  <p>Balance: <strong>{{ balance }} pts</strong></p>
+  <a class="btn" href="{% url 'rewards:claim_code' %}">Have a gift code?</a>
+</section>
+
+<div class="grid">
+  {% for i in items %}
+    <article class="card">
+      <h3>{{ i.name }}</h3>
+      <p class="muted">{{ i.description }}</p>
+      <p>Cost: <strong>{{ i.points_cost }} pts</strong> {% if i.quantity_per_redeem > 1 %} (x{{ i.quantity_per_redeem }}){% endif %}</p>
+      <p>Available: {{ i.inventory }}</p>
+      <form method="post" action="{% url 'rewards:redeem' i.id %}">
+        {% csrf_token %}
+        <button class="btn" {% if i.inventory <= 0 %}disabled{% endif %}>Redeem</button>
+      </form>
+    </article>
+  {% empty %}
+    <p>No rewards yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

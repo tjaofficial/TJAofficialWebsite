@@ -1,0 +1,104 @@
+/* ===== Rewards Control UI (tables, forms, toasts, dialogs) ===== */
+:root{
+  --cp-bg: #0b0b0f;
+  --cp-card: #10131b;
+  --cp-border: rgba(255,255,255,0.12);
+  --cp-text: #e8e8ee;
+  --cp-muted: #98a2b3;
+  --cp-accent: #8ab4f8;
+  --cp-accent-2: #6ee7b7;
+  --cp-danger: #ff6b6b;
+  --cp-ok: #34d399;
+  --cp-warn: #f59e0b;
+  --cp-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+
+/* --- toolbar --- */
+.cp-toolbar .btn{ margin-right: 8px; }
+
+.btn{
+  appearance:none; border:1px solid var(--cp-border);
+  background: linear-gradient(180deg,#1b2130,#151a26);
+  color: var(--cp-text); padding:10px 14px; border-radius:10px;
+  font-weight:700; cursor:pointer; transition: transform .08s, filter .08s;
+}
+.btn:hover{ transform: translateY(-1px); filter: brightness(1.06); }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-primary{ background: var(--cp-accent); color:#0b0b0f; border:none; }
+.btn-danger{ background: #2a1010; border-color:#5f1d1d; color:#ffb3b3; }
+.btn-ghost{ background: transparent; }
+
+/* --- table --- */
+.cp-table{
+  width:100%; border-collapse:separate; border-spacing:0;
+  border:1px solid var(--cp-border); border-radius:14px; overflow:hidden;
+  box-shadow: var(--cp-shadow); background: var(--cp-card);
+}
+.cp-table thead th{
+  text-align:left; font-weight:800; font-size:.92rem; padding:12px;
+  position:sticky; top:0; background:#0f1420; z-index:1; letter-spacing:.3px;
+}
+.cp-table tbody td{ padding:12px; border-top:1px solid var(--cp-border); vertical-align:middle; }
+.cp-table tbody tr:hover{ background: rgba(255,255,255,0.03); }
+
+/* small badges */
+.badge{ display:inline-block; padding:2px 8px; font-size:.75rem; border-radius:999px; border:1px solid var(--cp-border); color:var(--cp-muted); }
+.badge-ok{ color:#0b2; border-color:#0b2; }
+.badge-warn{ color:var(--cp-warn); border-color:var(--cp-warn); }
+.badge-danger{ color:var(--cp-danger); border-color:var(--cp-danger); }
+
+/* --- form --- */
+.cp-form{ display:grid; gap:12px; background: var(--cp-card); border:1px solid var(--cp-border); border-radius:16px; padding:16px; box-shadow: var(--cp-shadow); }
+.cp-grid{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); }
+.cp-input, .cp-select, .cp-textarea, .cp-checkbox{
+  width:100%; background:#0f1420; color:var(--cp-text);
+  border:1px solid var(--cp-border); border-radius:10px; padding:10px 12px; outline:none;
+}
+.cp-select{ padding-block: 9px; }
+.cp-textarea{ min-height: 92px; resize: vertical; }
+.cp-checkbox{ width:auto; height:auto; padding:0; }
+.cp-input:focus, .cp-select:focus, .cp-textarea:focus{
+  border-color: var(--cp-accent); box-shadow: 0 0 0 3px rgba(138,180,248,.18);
+}
+.cp-actions{ display:flex; gap:8px; justify-content:flex-end; }
+.cp-errors{ color: var(--cp-danger); font-weight:600; }
+
+.cp-conditional{ display:none; }
+
+.hint{ color:var(--cp-muted); font-size:.9rem; }
+
+/* --- quick filters / search --- */
+.rc-filters{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+.rc-filters input, .rc-filters select{
+  background:#0f1420; color:var(--cp-text); border:1px solid var(--cp-border);
+  border-radius:10px; padding:8px 10px;
+}
+
+/* --- toast --- */
+.rc-toast{
+  position:fixed; inset-inline:0; bottom:20px; display:grid; place-items:center; z-index:70; pointer-events:none;
+}
+.rc-toast > div{
+  background:#151a26; color:var(--cp-text); border:1px solid var(--cp-border);
+  padding:10px 16px; border-radius:999px; transform:translateY(14px); opacity:0; transition:.2s;
+}
+.rc-toast--show > div{ transform:translateY(0); opacity:1; }
+
+/* --- confirm modal --- */
+.rc-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.52); display:none; align-items:center; justify-content:center; z-index:80;
+}
+.rc-dialog{
+  width:min(540px,92vw); background:#0f1420; border:1px solid var(--cp-border);
+  border-radius:14px; box-shadow: var(--cp-shadow); padding:16px; color:var(--cp-text);
+}
+.rc-dialog h4{ margin:0 0 6px; }
+.rc-dialog p{ margin:0 0 12px; color:var(--cp-muted); }
+.rc-dialog .row{ display:flex; gap:8px; justify-content:flex-end; }
+
+/* --- responsive --- */
+@media (max-width: 680px){
+  .cp-table thead{ display:none; }
+  .cp-table tr{ display:grid; gap:6px; padding:10px; border-top:1px solid var(--cp-border); }
+  .cp-table td{ border:none; padding:4px 0; }
+}

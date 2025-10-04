@@ -3,6 +3,8 @@ from django.db import models, transaction
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.validators import MinValueValidator
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 User = get_user_model()
 
@@ -99,15 +101,57 @@ class EarningRule(models.Model):
         return f"{self.code} {self.rule_type} x{self.multiplier} (active={self.active})"
 
 class RewardItem(models.Model):
+    FULFILL_CHOICES = (
+        ("PRODUCT", "Shop Product"),
+        ("TICKET",  "Ticket Type"),
+        ("COUPON",  "Shop Coupon"),
+        ("CUSTOM",  "Custom/Manual"),
+    )
     sku = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    points_cost = models.PositiveIntegerField()
-    inventory = models.PositiveIntegerField(default=0)
+    points_cost = models.PositiveIntegerField()           # 0 is allowed (for gifts)
+    inventory = models.PositiveIntegerField(default=0)    # # of redemptions available
     is_active = models.BooleanField(default=True)
+
+    # NEW: how we fulfill this reward
+    fulfill_type = models.CharField(max_length=12, choices=FULFILL_CHOICES, default="PRODUCT")
+    # Generic link to what we deliver (Product, TicketType, Coupon, etc.)
+    target_ct = models.ForeignKey(ContentType, null=True, blank=True, on_delete=models.SET_NULL)
+    target_id = models.PositiveIntegerField(null=True, blank=True)
+    target = GenericForeignKey("target_ct", "target_id")
+
+    # Optional: how many units per redemption (e.g., “2 tickets”)
+    quantity_per_redeem = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.name} ({self.points_cost} pts)"
+
+class GiftCode(models.Model):
+    """
+    A code that can be claimed by an account (optionally restricted to an email).
+    Can override the points cost to 0 for pure gifts.
+    """
+    code = models.CharField(max_length=40, unique=True, db_index=True)
+    item = models.ForeignKey(RewardItem, on_delete=models.PROTECT, related_name="gift_codes")
+    points_cost_override = models.PositiveIntegerField(null=True, blank=True)  # e.g., 0 for free
+    email_restricted = models.EmailField(blank=True)  # if set, only this email can claim
+    notes = models.TextField(blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    redeemed_at = models.DateTimeField(null=True, blank=True)
+    redeemed_by = models.ForeignKey(RewardsAccount, null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="giftcodes_created")
+
+    def is_redeemed(self) -> bool:
+        return self.redeemed_at is not None
+
+    def is_expired(self) -> bool:
+        from django.utils import timezone
+        return bool(self.expires_at and self.expires_at < timezone.now())
+
+    def __str__(self):
+        return f"{self.code} → {self.item.name}"
 
 class Redemption(models.Model):
     account = models.ForeignKey(RewardsAccount, on_delete=models.PROTECT, related_name="redemptions")

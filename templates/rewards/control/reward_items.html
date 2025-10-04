@@ -1,0 +1,59 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Rewards — Control{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/rewards_control.css' %}">
+    <script defer src="{% static 'js/rewards_control.js' %}"></script>
+{% endblock %}
+{% block header %}Rewards{% endblock %}
+
+{% block content %}
+<div class="cp-toolbar" style="display:flex; gap:8px; margin-bottom:12px;">
+  <a class="btn" href="{% url 'control:rewards_control:item_new' %}">Add Reward</a>
+  <a class="btn" href="{% url 'control:rewards_control:gift' %}">Gift Reward</a>
+</div>
+
+<table class="cp-table">
+  <thead>
+    <tr>
+      <th>SKU</th>
+      <th>Name</th>
+      <th>Cost (pts)</th>
+      <th>Type</th>
+      <th>Target</th>
+      <th>Qty/redeem</th>
+      <th>Inventory</th>
+      <th>Active</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in items %}
+    <tr>
+      <td>{{ i.sku }}</td>
+      <td>{{ i.name }}</td>
+      <td>{{ i.points_cost }}</td>
+      <td>{{ i.get_fulfill_type_display }}</td>
+      <td>
+        {% if i.target_ct_id %}
+          {{ i.target_ct.model }} #{{ i.target_id }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td>{{ i.quantity_per_redeem }}</td>
+      <td>{{ i.inventory }}</td>
+      <td>{% if i.is_active %}✅{% else %}—{% endif %}</td>
+      <td style="white-space:nowrap;">
+        <a class="btn" href="{% url 'control:rewards_control:item_edit' i.id %}">Edit</a>
+        <form method="post" action="{% url 'control:rewards_control:item_delete' i.id %}" style="display:inline">
+          {% csrf_token %}
+          <button class="btn" onclick="return confirm('Delete {{ i.name }}?')" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="9">No rewards yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -3,13 +3,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST, require_http_methods
-from .models import RewardsAccount, RewardItem, Redemption, CustomerProfile, PurchaseRecord
+from .models import RewardsAccount, RewardItem, Redemption, CustomerProfile, PurchaseRecord, GiftCode
 from .utils import merge_guest_into_user
 from django.contrib.auth import login
 from .forms import SignupForm
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.apps import apps
+from .services import redeem_item, RedemptionError
 
 User = get_user_model()
 
@@ -17,6 +18,11 @@ User = get_user_model()
 def dashboard(request):
     acc, _ = RewardsAccount.objects.get_or_create(user=request.user)
 
+    balance = acc.points_balance
+    # What you can afford right now (and in stock)
+    affordable = (RewardItem.objects
+                  .filter(is_active=True, inventory__gt=0, points_cost__lte=balance)
+                  .order_by("points_cost", "name")[:24])
     # Ledger & redemptions for the existing sections
     ledger = acc.ledger.select_related().all()[:100]
     redemptions = acc.redemptions.select_related("item").order_by("-created_at")
@@ -63,6 +69,8 @@ def dashboard(request):
         "rewards/dashboard.html",
         {
             "account": acc,
+            "balance": balance,
+            "affordable": affordable,
             "ledger": ledger,
             "redemptions": redemptions,
             "items": reward_items,
@@ -149,3 +157,49 @@ def signup(request):
         return redirect("rewards:dashboard")
 
     return render(request, "rewards/signup.html", {"form": form})
+
+@login_required
+def catalog(request):
+    acc = request.user.rewards  # RewardsAccount (created on signup)
+    items = RewardItem.objects.filter(is_active=True).order_by("points_cost","name")
+    return render(request, "rewards/catalog.html", {"items": items, "balance": acc.points_balance})
+
+@login_required
+def redeem(request, item_id):
+    if request.method != "POST":
+        return redirect("rewards:dashboard")
+    acc = request.user.rewards
+    item = get_object_or_404(RewardItem, pk=item_id, is_active=True, inventory__gt=0)
+    try:
+        redeem_item(account=acc, item=item)  # auto-fulfills (tickets are specific shows)
+        messages.success(request, f"Redeemed {item.name}!")
+    except RedemptionError as e:
+        messages.error(request, str(e))
+    return redirect("rewards:dashboard")
+
+@login_required
+def claim_code(request):
+    if request.method != "POST":
+        return redirect("rewards:dashboard")
+    code = (request.POST.get("code") or "").strip().upper()
+    gc = GiftCode.objects.filter(code=code).first()
+    if not gc:
+        messages.error(request, "Invalid code.")
+        return redirect("rewards:dashboard")
+    if gc.is_expired():
+        messages.error(request, "This code is expired.")
+        return redirect("rewards:dashboard")
+    if gc.is_redeemed():
+        messages.error(request, "This code was already redeemed.")
+        return redirect("rewards:dashboard")
+    if gc.email_restricted and gc.email_restricted.lower() != request.user.email.lower():
+        messages.error(request, "This code is restricted to a different email.")
+        return redirect("rewards:dashboard")
+
+    acc = request.user.rewards
+    try:
+        redeem_item(account=acc, item=gc.item, via_code=gc)  # auto-fulfills
+        messages.success(request, f"{gc.item.name} claimed!")
+    except RedemptionError as e:
+        messages.error(request, str(e))
+    return redirect("rewards:dashboard")

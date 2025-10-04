@@ -1,11 +1,12 @@
 # rewards/admin.py
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.db.models import Sum, Count, Q
 from .models import (
     CustomerProfile, RewardsAccount, PointsLedger, EarningRule,
-    RewardItem, Redemption, GuestCustomer, PurchaseRecord
+    RewardItem, Redemption, GuestCustomer, PurchaseRecord, GiftCode
 )
+import secrets, string
 
 @admin.register(CustomerProfile)
 class CustomerProfileAdmin(admin.ModelAdmin):
@@ -65,9 +66,35 @@ class PurchaseRecordAdmin(admin.ModelAdmin):
 
 @admin.register(RewardItem)
 class RewardItemAdmin(admin.ModelAdmin):
-    list_display = ("sku", "name", "points_cost", "inventory", "is_active")
+    list_display = ("sku", "name", "points_cost", "inventory", "is_active", "fulfill_type", "target_repr")
     list_editable = ("points_cost", "inventory", "is_active")
+    list_filter = ("fulfill_type", "is_active")
     search_fields = ("sku", "name")
+
+    def target_repr(self, obj):
+        if not obj.target_ct_id or not obj.target_id:
+            return "-"
+        return f"{obj.target_ct.model}#{obj.target_id}"
+
+def _rand_code(n=10):
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(n))
+
+@admin.action(description="Generate 10 gift codes (free) for selected reward")
+def generate_gift_codes_free(modeladmin, request, queryset):
+    created = 0
+    for item in queryset:
+        for _ in range(10):
+            GiftCode.objects.create(code=_rand_code(), item=item, points_cost_override=0)
+            created += 1
+    messages.success(request, f"Created {created} gift codes (0 points)")
+
+@admin.register(GiftCode)
+class GiftCodeAdmin(admin.ModelAdmin):
+    list_display = ("code","item","points_cost_override","email_restricted","expires_at","redeemed_at","redeemed_by")
+    list_filter = ("item","expires_at","redeemed_at")
+    search_fields = ("code","email_restricted","item__name")
+    actions = [generate_gift_codes_free]
 
 @admin.action(description="Mark selected redemptions fulfilled")
 def mark_fulfilled(modeladmin, request, queryset):

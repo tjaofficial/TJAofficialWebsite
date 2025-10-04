@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static shop_extras %}
 {% block title %}Passport{% endblock %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/rewards.css' %}">
@@ -7,8 +7,49 @@
 {% endblock %}
 {% block hero %}{% endblock %}
 {% block content %}
-<section class="rw-wrap" data-rewards>
-  <h1 class="rw-h1">Tour Passport</h1>
+    <section class="rw-wrap" data-rewards>
+        <h1 class="rw-h1">Tour Passport</h1>
+
+        <section class="card">
+            <h2>Your Passport</h2>
+            <p>Points balance: <strong>{{ balance }}</strong></p>
+
+            <form class="giftcode-form" method="post" action="{% url 'rewards:claim_code' %}">
+                {% csrf_token %}
+                <label>Have a gift code?
+                    <input type="text" name="code" placeholder="ABC123" required>
+                </label>
+                <button class="btn">Claim</button>
+            </form>
+        </section>
+
+    <!-- Redeemables you can afford now -->
+        <section class="card">
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 10px 0px;">Redeemables you can afford now</h3>
+                <a href="{% url 'rewards:catalog' %}">see all rewards</a>
+            </div>
+            <div class="grid">
+                {% for i in affordable %}
+                <article class="reward-tile">
+                    <div class="rt-title">{{ i.name }}</div>
+                    {% if i.description %}<div class="rt-desc">{{ i.description }}</div>{% endif %}
+                    <div class="rt-meta">
+                        <span>{{ i.points_cost }} pts</span>
+                        {% if i.quantity_per_redeem > 1 %}<span>×{{ i.quantity_per_redeem }}</span>{% endif %}
+                        <span>Left: {{ i.inventory }}</span>
+                        <span class="tag">Instant</span>
+                    </div>
+                    <form method="post" action="{% url 'rewards:redeem' i.id %}">
+                        {% csrf_token %}
+                        <button class="btn" {% if i.inventory <= 0 %}disabled{% endif %}>Redeem</button>
+                    </form>
+                </article>
+                {% empty %}
+                <p class="muted">Nothing in range yet — keep earning!</p>
+                {% endfor %}
+            </div>
+        </section>
 
   <section class="rw-card" aria-labelledby="points">
     <h2 id="points" class="rw-h2">Your Points</h2>
@@ -78,7 +119,7 @@
           <div class="rw-history-meta">
             {% if p.kind == "ORDER" %}
               {% with cents=p.meta.total_cents|default:p.subtotal_cents %}
-                    ${{ cents|floatformat:2|divisibleby:"100" }}
+                    {{ cents|money }}
             {% endwith %}
 
               <span class="rw-chip">{{ p.currency }}</span>

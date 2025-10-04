@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Claim a Gift Code{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/rewards_catalog.css' %}">
+{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Claim Code</h2>
+  <form method="post">
+    {% csrf_token %}
+    <label>Code
+      <input type="text" name="code" class="ppx-input" placeholder="ABC123" required>
+    </label>
+    <button class="btn">Claim</button>
+  </form>
+</section>
+{% endblock %}

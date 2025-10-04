@@ -1,0 +1,60 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}{% if mode == 'new' %}Add Reward{% else %}Edit Reward{% endif %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/rewards_control.css' %}">
+    <script defer src="{% static 'js/rewards_control.js' %}"></script>
+{% endblock %}
+{% block header %}{% if mode == 'new' %}Add Reward{% else %}Edit Reward{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" class="cp-form">
+  {% csrf_token %}
+
+  <div class="cp-grid">
+    <label>SKU {{ form.sku }}</label>
+    <label>Name {{ form.name }}</label>
+  </div>
+
+  <label>Description {{ form.description }}</label>
+
+  <div class="cp-grid">
+    <label>Points Cost {{ form.points_cost }}</label>
+    <label>Inventory {{ form.inventory }}</label>
+    <label>Qty Per Redemption {{ form.quantity_per_redeem }}</label>
+  </div>
+
+  <div class="cp-grid">
+    <label>Type {{ form.fulfill_type }}</label>
+    <label>Active {{ form.is_active }}</label>
+  </div>
+
+  <div id="targetProduct" class="cp-conditional">
+    <label>Product Target {{ form.target_product }}</label>
+  </div>
+  <div id="targetTicket" class="cp-conditional">
+    <label>Ticket Type Target {{ form.target_ticket_type }}</label>
+  </div>
+
+  {% if form.non_field_errors %}<div class="cp-errors">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="cp-actions">
+    <button class="btn" type="submit">{% if mode == 'new' %}Create{% else %}Save{% endif %}</button>
+    <a class="btn" href="{% url 'control:rewards_control:items' %}">Cancel</a>
+  </div>
+</form>
+
+<script>
+  (function(){
+    const sel = document.querySelector('select[name="fulfill_type"]');
+    const prod = document.getElementById('targetProduct');
+    const tick = document.getElementById('targetTicket');
+    function sync(){
+      const v = sel.value;
+      prod.style.display = (v === 'PRODUCT') ? 'block' : 'none';
+      tick.style.display = (v === 'TICKET') ? 'block' : 'none';
+    }
+    sel.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{% endblock %}
