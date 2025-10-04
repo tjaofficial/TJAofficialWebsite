@@ -40,7 +40,7 @@
         <td>{{ o.total_cents|money }}</td>
         <td>
 			<a href="{% url 'control:shop:order_detail' o.number %}">View</a>
-			{% if o.status != "fulfilled" and o.status != "pending" %}
+			{% if o.status != "fulfilled" and o.status != "pending" and o.status != "canceled" %}
 				• <a href="{% url 'control:shop:order_ship' o.id %}" class="btn-small" onclick="return confirm('Mark this order as shipped?');">Mark shipped</a>
 			{% endif %}
       </td>
