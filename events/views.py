@@ -580,6 +580,7 @@ def event_details(request, event_id, slug=None):
     types = getattr(event, "types_active", None)
     if types is None:
         types = tt_qs.filter(event=event)
+    print(types)
 
     # Compute sale state for the primary/general type + any others
     for t in types:

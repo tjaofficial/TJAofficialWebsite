@@ -27,7 +27,7 @@ def home(request):
         .order_by("start")[:4]
     )
     videos = Video.objects.filter(is_public=True).order_by("-published_at")[:3]
-    releases = Release.objects.filter(is_public=True).order_by("-release_date")[:3] if "pages" in settings.INSTALLED_APPS else []
+    releases = Release.objects.filter(is_public=True).order_by("-release_date")[:4] if "pages" in settings.INSTALLED_APPS else []
     return render(request, "pages/home.html", {
         "products": products,
         "shows": shows,

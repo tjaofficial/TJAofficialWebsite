@@ -107,6 +107,7 @@
 					<div class="sr-city muted">{{ s.venue.city }}, {{ s.venue.state }}</div>
 				</div>
 				<div class="sr-cta">
+          <a class="btn" href="{% url 'detail' s.id %}" target="_blank" rel="noopener">View</a>
 					{% for tt in s.prefetched_types %}
 						{% if tt.name == "General Admission" %}
 							<a class="btn" href="{% url 'control:tickets:public_purchase' s.id %}" target="_blank" rel="noopener">Tickets</a>

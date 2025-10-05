@@ -28,10 +28,8 @@
       <div class="sticky-actions">
         {% if anyis_on_sale %}
           <a class="btn primary" href="{% url 'control:tickets:public_purchase' event.id %}">Get Tickets</a>
-        {% elif types and types|length > 0 %}
-          <span class="btn soldout" aria-disabled="true">Sold Out</span>
         {% else %}
-          <a class="btn ghost" href="/email-signup/?tag=event_rsvp_{{ event.id }}">RSVP</a>
+          <span class="btn soldout" aria-disabled="true">Sold Out</span>
         {% endif %}
       </div>
     </div>
