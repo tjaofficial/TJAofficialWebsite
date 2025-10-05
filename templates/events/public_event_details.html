@@ -1,16 +1,59 @@
 {% extends "base.html" %}
 {% load static shop_extras %}
 {% block title %}{{ event.name|default:"Event" }} — Event Details{% endblock %}
+
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/event_details.css' %}">
-    <script defer src="{% static 'js/event_details.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/event_details.css' %}">
+  <script defer src="{% static 'js/event_details.js' %}"></script>
 {% endblock %}
+
 {% block content %}
 <section class="event-hero">
   {% if hero_src %}
-    <div class="hero-media" style="width: 30%; height: unset;">
+    <div class="hero-media">
       <img src="{{ hero_src }}" alt="{{ event.name|default:'Event' }}">
       <div class="hero-vignette"></div>
+
+      <div class="hero-overlay">
+        <h1 class="event-title">{{ event.name }}</h1>
+        <div class="event-sub">
+          {% if event.start %}
+            <span class="event-when">{{ event.start|date:"D, M j @ g:ia" }}</span>
+          {% else %}
+            <span class="event-when tbd">Date TBA</span>
+          {% endif %}
+          {% if event.venue %}
+            <span class="dot">•</span>
+            <span class="event-where">
+              {{ event.venue.name }}
+              {% if event.venue.city %} — {{ event.venue.city }}{% if event.venue.state %}, {{ event.venue.state }}{% endif %}{% endif %}
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="hero-actions">
+          {% if any_on_sale %}
+            <a class="btn primary" href="{% url 'control:tickets:public_purchase' event.id %}">Get Tickets</a>
+          {% else %}
+            <span class="btn soldout" aria-disabled="true">Sold Out</span>
+          {% endif %}
+          {% if ics_url %}
+            <a class="btn ghost" href="{{ ics_url }}">Add to Calendar</a>
+          {% endif %}
+        </div>
+
+        {% if event.start %}
+          <div class="countdown" data-countdown="{{ event.start|date:'c' }}">
+            <div class="cd-label">Countdown</div>
+            <div class="cd-grid">
+              <div><span class="cd-val" data-d>0</span><span class="cd-unit">Days</span></div>
+              <div><span class="cd-val" data-h>0</span><span class="cd-unit">Hours</span></div>
+              <div><span class="cd-val" data-m>0</span><span class="cd-unit">Min</span></div>
+              <div><span class="cd-val" data-s>0</span><span class="cd-unit">Sec</span></div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
   {% endif %}
 
@@ -39,58 +82,30 @@
 <section class="event-body container">
   <div class="event-columns">
     <div class="event-main">
-      {% if event.afterparty_info or event.meet_greet_info %}
-      <div class="event-info-cards">
-        {% if event.afterparty_info %}
-        <article class="info-card">
-          <h3>Afterparty</h3>
-          <p>{{ event.afterparty_info|linebreaksbr }}</p>
-        </article>
-        {% endif %}
-        {% if event.meet_greet_info %}
-        <article class="info-card">
-          <h3>Meet & Greet</h3>
-          <p>{{ event.meet_greet_info|linebreaksbr }}</p>
-        </article>
-        {% endif %}
-      </div>
+
+      {% if event.about or event.afterparty_info or event.meet_greet_info %}
+        <div class="event-info-cards">
+          {% if event.about %}
+            <article class="info-card">
+              <h3>About</h3>
+              <p>{{ event.about|linebreaksbr }}</p>
+            </article>
+          {% endif %}
+          {% if event.afterparty_info %}
+            <article class="info-card">
+              <h3>Afterparty</h3>
+              <p>{{ event.afterparty_info|linebreaksbr }}</p>
+            </article>
+          {% endif %}
+          {% if event.meet_greet_info %}
+            <article class="info-card">
+              <h3>Meet &amp; Greet</h3>
+              <p>{{ event.meet_greet_info|linebreaksbr }}</p>
+            </article>
+          {% endif %}
+        </div>
       {% endif %}
 
-      {% if types %}
-      <div class="ticket-types">
-        <h2>Tickets</h2>
-        <div class="tt-grid">
-          {% for t in types %}
-          <div class="tt-card {% if not t.is_on_sale or t.remaining <= 0 %}is-disabled{% endif %}">
-            <div class="tt-head">
-              <h3>{{ t.name }}</h3>
-              <div class="tt-price">{{ t.price_cents|money }}</div>
-            </div>
-            <div class="tt-meta">
-              {% if t.remaining > 0 %}
-                <span class="badge">Remaining: {{ t.remaining }}</span>
-              {% else %}
-                <span class="badge danger">Sold Out</span>
-              {% endif %}
-              {% if t.sales_start or t.sales_end %}
-                <div class="sale-window">
-                  {% if t.sales_start %}<span>From: {{ t.sales_start|date:"M j, g:ia" }}</span>{% endif %}
-                  {% if t.sales_end %}<span>Until: {{ t.sales_end|date:"M j, g:ia" }}</span>{% endif %}
-                </div>
-              {% endif %}
-            </div>
-            <div class="tt-actions">
-              {% if t.is_on_sale and t.remaining > 0 %}
-                <a class="btn small primary" href="{% url 'control:tickets:public_purchase' event.id %}">Select</a>
-              {% else %}
-                <button class="btn small" disabled>Unavailable</button>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
     </div>
 
     <aside class="event-side">

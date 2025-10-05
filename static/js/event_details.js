@@ -38,18 +38,17 @@
     });
   }
 
-  // Show/hide sticky bar after user scrolls past hero title
+  // Make sticky bar appear after hero title scrolls out
   const sticky = document.querySelector("[data-sticky]");
   const title = document.querySelector(".event-title");
   if (sticky && title) {
     const obs = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
-          // When title is not visible, sticky stands out more (we already use CSS position:sticky)
           sticky.style.opacity = entry.isIntersecting ? "0.0" : "1.0";
           sticky.style.pointerEvents = entry.isIntersecting ? "none" : "auto";
         });
-      }, { threshold: 0.1 }
+      }, { threshold: 0.05 }
     );
     obs.observe(title);
   }
