@@ -19,7 +19,7 @@
   <ul class="hl-grid">
     {% for a in headliners %}
       <li class="hl-card" data-obs style="--i:{{ forloop.counter0 }}">
-        <div class="hl-img" data-lazy-bg data-bg="{{ a.avatar.url|default:'' }}"></div>
+        <div class="hl-img" data-lazy-bg {% if a.avatar %} data-bg="{{ a.avatar.url }}"{% endif %}></div>
         <div class="hl-overlay">
           <div class="hl-meta">
             <h3>{{ a.name }}</h3>

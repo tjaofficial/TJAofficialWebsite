@@ -18,7 +18,7 @@ def tour_home(request):
     headliners = (Artist.objects
                   .filter(is_public=True, default_role="headliner")
                   .order_by("sort", "name")
-                  .values("id", "slug", "name", "short_tag", "genre", "hometown")
+                  .only("id", "slug", "name", "short_tag", "genre", "hometown", "avatar")
                  )[:6]
     print(headliners)
 
