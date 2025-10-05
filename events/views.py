@@ -577,10 +577,7 @@ def event_details(request, event_id, slug=None):
     event = get_object_or_404(Event, id=event_id, published=True)
 
     # Fetch active ticket types (prefetched if using the queryset above)
-    types = getattr(event, "types_active", None)
-    if types is None:
-        types = tt_qs.filter(event=event)
-    print(types)
+    types = getattr(event, "types_active", None) or tt_qs.filter(event=event)
 
     # Compute sale state for the primary/general type + any others
     for t in types:
