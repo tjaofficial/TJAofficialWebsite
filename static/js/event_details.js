@@ -39,7 +39,7 @@
   }
 
   // Make sticky bar appear after hero title scrolls out
-  const sticky = document.querySelector("[data-sticky]");
+  const sticky = document.querySelector("[data-stickys]");
   const title = document.querySelector(".event-title");
   if (sticky && title) {
     const obs = new IntersectionObserver(

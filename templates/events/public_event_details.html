@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% load static shop_extras %}
 {% block title %}{{ event.name|default:"Event" }} — Event Details{% endblock %}
-
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'css/event_details.css' %}">
   <script defer src="{% static 'js/event_details.js' %}"></script>
 {% endblock %}
-
+{% block hero %}{% endblock %}
 {% block content %}
 <section class="event-hero">
   {% if hero_src %}
@@ -57,7 +56,7 @@
     </div>
   {% endif %}
 
-  <div class="sticky-buy" data-sticky>
+  <div class="sticky-buy" data-stickys>
     <div class="sticky-inner">
       <div class="sticky-whenwhere">
         {% if event.start %}
