@@ -31,6 +31,7 @@
       <a href="{% url 'tour_media' %}" class="{% if '/media' in request.path %}active{% endif %}">Media</a>
       <a href="{% url 'public_events' %}" class="{% if '/events' in request.path %}active{% endif %}">Shows</a>
       <a href="{% url 'rewards:dashboard' %}" class="{% if '/passport' in request.path %}active{% endif %} nav-link">Passport</a>
+      <a href="{% url 'control:accounts:login' %}" class="{% if '/login' in request.path %}active{% endif %} nav-link">Login</a>
       <span class="nav-ink" aria-hidden="true"></span>
     </nav>
   </header>

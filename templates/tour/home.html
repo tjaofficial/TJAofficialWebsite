@@ -152,11 +152,11 @@
 </section>
 
 {# ===== VIDEO MODAL ===== #}
-<div class="reel-backdrop" data-reel hidden>
+<div class="reel-backdrop" data-reel hidden style="position: fixed; z-index: 10000; top: 128px;">
   <div class="reel-dialog" role="dialog" aria-modal="true" aria-label="Tour Video">
-    <button class="reel-close" data-close-reel aria-label="Close">×</button>
+    <button class="reel-close" data-close-reel aria-label="Close" style="float: right;">×</button>
     <div class="reel-frame">
-      <iframe src="" title="Tour Video" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe style="width: 1080px;height: 610px;" src="" title="Tour Video" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
 </div>
