@@ -2,11 +2,20 @@
   --ink:#f4f4f4; --muted:#bdbdbd; --bg:#0a0a0a; --card:#111; --line:#262626;
   --brand:#5a7cff; --brand2:#ff6bd6; --glow:#83a0ff66;
 }
-*{box-sizing:border-box}
-body.tour-body{background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial}
+* {
+	box-sizing:border-box
+}
+/* body.tour-body{
+	background:var(--bg);
+	color:var(--ink);
+	font-family:system-ui,Segoe UI,Roboto,Arial;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+} */
 
 /* base header already exists; add lower hero strip */
-.hero-strip{max-width:1100px;margin:14px auto 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:0 16px}
+.hero-strip{max-width:1100px;margin:14px auto 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:0 16px;justify-content: center;}
 .stat-pill{background:#141414;border:1px solid var(--line);padding:8px 12px;border-radius:999px;color:var(--muted)}
 .stat-pill span{color:#fff;font-weight:800;margin-right:6px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#191919;color:#fff;text-decoration:none}

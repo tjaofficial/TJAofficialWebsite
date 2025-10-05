@@ -2,11 +2,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse, HttpResponseBadRequest
 from django.contrib import messages
-from ..models import Artist, ArtistPhoto, ArtistVideo
+from ..models import Artist, ArtistPhoto
 from ..forms import ArtistEPKForm, ArtistVideoForm, ArtistPhotoUploadForm
 from django.utils import timezone
 from events.models import Event
-from pages.models import Show, Artist, Release, Video, Subscriber
+from pages.models import Artist, Release, Video, Subscriber
+from django.db.models import Exists, OuterRef, Prefetch, Min
+from tickets.models import TicketType
 
 def tour(request):
     return render(request, 'pages/tour.html')
@@ -20,15 +22,28 @@ def tour_home(request):
                   .order_by("sort", "name")
                   .only("id", "slug", "name", "short_tag", "genre", "hometown", "avatar")
                  )[:6]
-    print(headliners)
-
+    
+    active_types = TicketType.objects.filter(active=True, name="General Admission").order_by('price_cents', 'sales_start')
     # Next 12 shows
-    shows = Event.objects.filter(start__date__gte=now, is_tour_stop=True).order_by("start")[:12]
+    shows = (Event.objects
+                .filter(start__date__gte=now, is_tour_stop=True)
+                .order_by("start")[:12]
+                .select_related("venue")
+                .prefetch_related(Prefetch("ticket_types", queryset=active_types, to_attr="prefetched_types"))
+                .annotate(
+                    has_tickets=Exists(
+                        TicketType.objects.filter(event_id=OuterRef("pk"), active=True)
+                    ),
+                    # Example: the earliest sales_end across all TTs for this event
+                    first_sales_end=Min("ticket_types__sales_end")
+                )
+            )
 
     # Latest releases & videos
     releases = (Release.objects
                 .filter(is_public=True)
                 .order_by("-release_date", "-id")[:6])
+    
     videos = (Video.objects
               .filter(is_public=True)
               .order_by("sort", "-published_at", "-id")[:6])

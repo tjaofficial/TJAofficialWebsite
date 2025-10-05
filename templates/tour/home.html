@@ -1,5 +1,8 @@
 {% extends "tour/base_tour.html" %}
 {% load static shop_extras %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/tour_home.css' %}">
+    <script defer src="{% static 'js/tour_home.js' %}"></script>{% endblock %}
 {% block content %}
 {# ===== HERO LOWER STRIP (the top hero is in base) ===== #}
 <section class="hero-strip" data-snap>
@@ -44,16 +47,16 @@
   {% if shows %}
     <div class="slider" data-slider>
       <button class="nav prev" data-prev aria-label="Previous">‹</button>
-      <div class="track" data-track>
+      <div class="track" data-track style="width: 97%; margin: auto;">
         {% for s in shows %}
           <article class="show-card">
-            <div class="date">{{ s.date|date:"D • M j" }}</div>
-            <h3 class="name">{{ s.venue_name }}</h3>
-            <div class="where">{{ s.city }}{% if s.state %}, {{ s.state }}{% endif %}</div>
-            {% if s.tickets_url %}
-              <a class="btn small primary" href="{{ s.tickets_url }}" target="_blank" rel="noopener">Tickets</a>
+            <div class="date">{{ s.start|date:"D • M j @ g:ia" }}</div>
+            <h3 class="name">{{ s.venue.name }}</h3>
+            <div class="where">{{ s.venue.city }}{% if s.venue.state %}, {{ s.venue.state }}{% endif %}</div>
+            {% if s.has_tickets %}
+              <a class="btn small primary" href="{% url 'control:tickets:public_purchase' s.id %}" target="_blank" rel="noopener">Tickets</a>
             {% else %}
-              <a class="btn small" href="{% url 'public_events' %}">Details</a>
+              <a class="btn small" href="{% url 'detail' s.id %}">Details</a>
             {% endif %}
           </article>
         {% endfor %}

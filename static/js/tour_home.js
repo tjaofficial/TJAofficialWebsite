@@ -14,14 +14,31 @@
   }, {threshold:.12});
   snaps.forEach(el=>io.observe(el));
 
-  // Lazy BGs for headliners
-  $$('[data-lazy-bg]').forEach(node=>{
+  // Lazy BGs for headliners (robust)
+(() => {
+  const els = document.querySelectorAll('[data-lazy-bg]');
+  els.forEach(node => {
     const src = node.getAttribute('data-bg');
-    if(!src) return;
+    if (!src) return; // nothing to load
+
+    // Optional: fade-in
+    node.style.opacity = '0';
+    node.style.transition = 'opacity .35s ease';
+
     const img = new Image();
-    img.onload = () => node.style.backgroundImage = `url('${src}')`;
+    img.onload = () => {
+      node.style.backgroundImage = `url("${src}")`;
+      requestAnimationFrame(() => (node.style.opacity = '1'));
+    };
+    img.onerror = () => {
+      // fallback background on error (optional)
+      node.style.background = 'linear-gradient(180deg,#111,#0d0d0d)';
+      node.style.opacity = '1';
+    };
     img.src = src;
   });
+})();
+
 
   // Slider
   const track = $('[data-track]');
