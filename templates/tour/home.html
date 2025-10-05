@@ -1,16 +1,161 @@
-{% extends "tour/base_tour.html" %}{% load static %}
-{% block title %}Day N Night Tour — The Stage{% endblock %}
-{% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/tour_home.css' %}">
-    <script defer src="{% static 'js/tour_home.js' %}"></script>
-{% endblock  %}
+{% extends "tour/base_tour.html" %}
+{% load static shop_extras %}
 {% block content %}
-<section class="tour-section">
-  <h1>Welcome to the Day N Night Tour</h1>
-  <p>The tour that blends vibes from sunrise to midnight. Check the shows, meet the headliners, and collect your passport badges as you follow us across the country.</p>
-  <div class="hero-actions">
-    <a href="{% url 'shows' %}" class="btn">See Tour Dates</a>
-    <a href="{% url 'tour_passport' %}" class="btn ghost">Collect Badges</a>
+{# ===== HERO LOWER STRIP (the top hero is in base) ===== #}
+<section class="hero-strip" data-snap>
+  <div class="stat-pill"><span>{{ stats.dates|default:0 }}</span> Dates</div>
+  <div class="stat-pill"><span>{{ stats.cities|default:0 }}</span> Cities</div>
+  <div class="stat-pill"><span>{{ stats.headliners|default:0 }}</span> Headliners</div>
+  <a href="{% url 'public_events' %}" class="btn primary">Get Tickets</a>
+</section>
+
+{# ===== HEADLINERS: staggered wall ===== #}
+<section class="wrap section" aria-label="Headliners">
+  <div class="rowhead">
+    <h2 class="section-title">The Stage • Headliners</h2>
+    <a href="{% url 'tour_headliners' %}" class="btn ghost small">All Headliners</a>
+  </div>
+
+  <ul class="hl-grid">
+    {% for a in headliners %}
+      <li class="hl-card" data-obs style="--i:{{ forloop.counter0 }}">
+        <div class="hl-img" data-lazy-bg data-bg="{{ a.avatar.url|default:'' }}"></div>
+        <div class="hl-overlay">
+          <div class="hl-meta">
+            <h3>{{ a.name }}</h3>
+            <p class="muted">{% firstof a.short_tag a.genre "Artist" %}{% if a.hometown %} • {{ a.hometown }}{% endif %}</p>
+          </div>
+          <a class="btn small" href="{% url 'tour_epk_detail' a.slug %}">See more</a>
+        </div>
+      </li>
+    {% empty %}
+      <li class="muted">Headliners coming soon.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# ===== SHOWS: horizontal scroller ===== #}
+<section class="wrap section" aria-label="Upcoming Shows" data-snap>
+  <div class="rowhead">
+    <h2 class="section-title">Upcoming Shows</h2>
+    <a href="{% url 'public_events' %}" class="btn ghost small">All Dates</a>
+  </div>
+
+  {% if shows %}
+    <div class="slider" data-slider>
+      <button class="nav prev" data-prev aria-label="Previous">‹</button>
+      <div class="track" data-track>
+        {% for s in shows %}
+          <article class="show-card">
+            <div class="date">{{ s.date|date:"D • M j" }}</div>
+            <h3 class="name">{{ s.venue_name }}</h3>
+            <div class="where">{{ s.city }}{% if s.state %}, {{ s.state }}{% endif %}</div>
+            {% if s.tickets_url %}
+              <a class="btn small primary" href="{{ s.tickets_url }}" target="_blank" rel="noopener">Tickets</a>
+            {% else %}
+              <a class="btn small" href="{% url 'public_events' %}">Details</a>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+      <button class="nav next" data-next aria-label="Next">›</button>
+    </div>
+  {% else %}
+    <p class="muted">Dates dropping soon — follow {{ tour_hashtag }}.</p>
+  {% endif %}
+</section>
+
+{# ===== RELEASES: cover wall ===== #}
+<section class="wrap section" aria-label="New Music" data-snap>
+  <div class="rowhead">
+    <h2 class="section-title">New & Featured Releases</h2>
+    <a href="{% url 'tour_media' %}" class="btn ghost small">Media</a>
+  </div>
+
+  {% if releases %}
+    <div class="rel-grid">
+      {% for r in releases %}
+        <article class="rel-card" data-obs>
+          <div class="rel-cover" style="background-image:url('{{ r.cover_src }}')"></div>
+          <div class="rel-info">
+            <div class="rel-type">{{ r.type_label }}</div>
+            <h3 class="rel-title">{{ r.title }}</h3>
+            {% if r.release_date %}<div class="rel-date">{{ r.release_date|date:"M j, Y" }}</div>{% endif %}
+            {% if r.links_url %}<a class="btn small" href="{{ r.links_url }}" target="_blank" rel="noopener">Listen</a>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">More music coming…</p>
+  {% endif %}
+</section>
+
+{# ===== VIDEO REEL ===== #}
+<section class="wrap section videos" data-snap aria-label="Tour Reel">
+  <div class="rowhead">
+    <h2 class="section-title">Tour Reel</h2>
+  </div>
+
+  {% if videos %}
+    <div class="vid-grid">
+      {% for v in videos %}
+        <button class="vid-tile" data-open-video data-embed="{{ v.youtube_id|default:'' }}">
+          <div class="thumb" data-lazy-thumb="{{ v.youtube_id }}"></div>
+          <div class="cap">{{ v.title }}</div>
+        </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Video highlights incoming.</p>
+  {% endif %}
+</section>
+
+{# ===== PASSPORT TEASE ===== #}
+<section class="wrap section passport" data-snap>
+  <div class="passport-card">
+    <div>
+      <h2>Tour Passport</h2>
+      <p>Check in at shows, earn points, redeem exclusive merch & free tickets. Flex your journey.</p>
+    </div>
+    <a href="{% url 'rewards:dashboard' %}" class="btn">Open Passport</a>
   </div>
 </section>
+
+{# ===== SUBSCRIBE / CTA ===== #}
+<section class="wrap section sub" data-snap>
+  <form class="sub-form" method="post" action="{% url 'tour_subscribe' %}">
+    {% csrf_token %}
+    <div class="legend">Get early drops & presales</div>
+    <div class="row">
+      <input type="text" name="name" placeholder="Name (optional)">
+      <input type="email" name="email" placeholder="you@example.com" required>
+      <button class="btn primary">Join the List</button>
+    </div>
+  </form>
+</section>
+
+{# ===== SOCIAL MARQUEE ===== #}
+<section class="wrap social" aria-label="Social">
+  <div class="marquee" data-marquee>
+    <div class="marquee-track">
+      <span>{{ tour_hashtag }}</span>
+      <span>Drop your fit</span>
+      <span>Tag your city</span>
+      <span>See you in the pit</span>
+      <span>{{ tour_hashtag }}</span>
+    </div>
+  </div>
+</section>
+
+{# ===== VIDEO MODAL ===== #}
+<div class="reel-backdrop" data-reel hidden>
+  <div class="reel-dialog" role="dialog" aria-modal="true" aria-label="Tour Video">
+    <button class="reel-close" data-close-reel aria-label="Close">×</button>
+    <div class="reel-frame">
+      <iframe src="" title="Tour Video" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

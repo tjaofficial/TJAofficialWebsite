@@ -4,12 +4,71 @@ from django.http import HttpResponseForbidden, JsonResponse, HttpResponseBadRequ
 from django.contrib import messages
 from ..models import Artist, ArtistPhoto, ArtistVideo
 from ..forms import ArtistEPKForm, ArtistVideoForm, ArtistPhotoUploadForm
+from django.utils import timezone
+from events.models import Event
+from pages.models import Show, Artist, Release, Video, Subscriber
 
 def tour(request):
     return render(request, 'pages/tour.html')
 
 def tour_home(request):
-    return render(request, "tour/home.html")
+    now = timezone.now()
+
+    # Headliners (up to 6 to fill the stagger grid)
+    headliners = (Artist.objects
+                  .filter(is_public=True, default_role="headliner")
+                  .order_by("sort", "name")
+                  .values("id", "slug", "name", "short_tag", "genre", "hometown")
+                 )[:6]
+    print(headliners)
+
+    # Next 12 shows
+    shows = Event.objects.filter(start__date__gte=now, is_tour_stop=True).order_by("start")[:12]
+
+    # Latest releases & videos
+    releases = (Release.objects
+                .filter(is_public=True)
+                .order_by("-release_date", "-id")[:6])
+    videos = (Video.objects
+              .filter(is_public=True)
+              .order_by("sort", "-published_at", "-id")[:6])
+
+    stats = {
+        "dates": shows.count(),
+        "cities": len({(s.venue.city, s.venue.state) for s in shows}),
+        "headliners": len(headliners),
+    }
+
+    return render(request, "tour/home.html", {
+        "headliners": headliners,
+        "shows": shows,
+        "releases": releases,
+        "videos": videos,
+        "stats": stats,
+        "tour_hashtag": "#DayNNightTour",
+    })
+
+
+def tour_subscribe(request):
+    if request.method != "POST":
+        return redirect("tour_home")
+    email = (request.POST.get("email") or "").strip().lower()
+    name  = (request.POST.get("name")  or "").strip()
+    if not email:
+        messages.error(request, "Enter your email to subscribe.")
+        return redirect("tour_home")
+    sub, created = Subscriber.objects.get_or_create(email=email, defaults={
+        "name": name,
+        "source": "/tour/",
+        "consent": True,
+        "ip": request.META.get("REMOTE_ADDR"),
+        "user_agent": request.META.get("HTTP_USER_AGENT","")[:500],
+    })
+    if not created and name and not sub.name:
+        sub.name = name
+        sub.save(update_fields=["name"])
+    messages.success(request, "You're on the list. See you on tour!")
+    return redirect("tour_home")
 
 def tour_headliners(request):
     artists = Artist.objects.filter(is_public=True)
