@@ -9,6 +9,7 @@ from django.http import HttpResponse
 import csv
 from django.contrib import messages
 from django.utils import timezone
+from .services import send_order_shipped_email
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 
@@ -24,7 +25,7 @@ def orders_list(request):
 
     if not status:
         status = "paid"
-        
+
     if email:
         qs = qs.filter(Q(email__icontains=email) | Q(user__email__icontains=email))
     if number:
@@ -285,7 +286,11 @@ def mark_order_shipped(request, pk):
     if hasattr(o, "shipped_at") and not o.shipped_at:
         o.shipped_at = timezone.now()
     o.save(update_fields=["status"] + (["shipped_at"] if hasattr(o, "shipped_at") else []))
-    messages.success(request, f"Order {o.number or o.pk} marked as shipped.")
+    try:
+        send_order_shipped_email(o, request=request)
+        messages.success(request, f"Order {o.number or o.pk} marked as shipped and email sent.")
+    except Exception as e:
+        messages.warning(request, f"Order marked shipped, but email failed: {e}")
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 

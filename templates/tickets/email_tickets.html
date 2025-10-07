@@ -1,17 +1,55 @@
 <!doctype html>
-<html>
-  <body>
-    <h2>Your Tickets</h2>
-    <p>Show this QR at the door.</p>
-    <ul>
-      {% for t in tickets %}
-        <li>
-          {{ t.ticket_type.event.name }} — {{ t.ticket_type.name }}<br>
-          <img src="{{ site_base }}{% url 'control:tickets:qr_png' t.qr_token %}" alt="QR" />
-          <br>
-          Verify: {{ site_base }}{% url 'control:tickets:ticket_detail' t.qr_token %}
-        </li>
-      {% endfor %}
-    </ul>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Your Tickets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{margin:0;background:#0f0f0f;color:#eaeaea}
+    .wrap{max-width:640px;margin:0 auto;background:#121212}
+    .pad{padding:22px}
+    .card{border:1px solid #2a2a2a;border-radius:12px;background:#171717;padding:16px}
+    .tt{display:grid;grid-template-columns:80px 1fr;gap:12px;margin-bottom:12px;align-items:center}
+    .qr{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:6px;text-align:center}
+    .qr img{display:block;max-width:100%;height:auto}
+    .meta{line-height:1.45}
+    .btn{display:inline-block;background:#5a7cff;color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px}
+    .muted{color:#bdbdbd}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pad">
+      <h2 style="margin:0 0 8px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Your Tickets 🎟️
+      </h2>
+      <p class="muted" style="margin:0 0 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Show this QR at the door. You can also open your ticket detail page to verify.
+      </p>
+
+      <div class="card">
+        {% for t in tickets %}
+          <div class="tt">
+            <div class="qr">
+              <img src="{{ site_base }}{% url 'control:tickets:qr_png' t.qr_token %}" alt="QR code">
+            </div>
+            <div class="meta" style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+              <div style="font-weight:700">{{ t.ticket_type.event.name }} — {{ t.ticket_type.name }}</div>
+              {% if t.ticket_type.event.start %}
+                <div class="muted">{{ t.ticket_type.event.start|date:"D, M j @ g:ia" }}</div>
+              {% endif %}
+              <div style="margin-top:8px">
+                <a class="btn" href="{{ site_base }}{% url 'control:tickets:ticket_detail' t.qr_token %}">View / Verify</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="muted" style="margin-top:16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        If you have any issues, reply to this email.
+      </p>
+    </div>
+  </div>
+</body>
 </html>

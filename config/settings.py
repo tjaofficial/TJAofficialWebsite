@@ -234,5 +234,5 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() in ("1", "true", "ye
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() in ("1", "true", "yes")
 EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "30"))
 
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "webmaster@localhost")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "aackerman@voxoluniverse.com")
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)

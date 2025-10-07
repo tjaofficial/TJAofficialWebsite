@@ -26,6 +26,7 @@ admin.site.register(Category)
 admin.site.register(ProductImage)
 admin.site.register(Cart)
 admin.site.register(CartItem)
+admin.site.register(OrderItem)
 
 @admin.action(description="Mark as shipped (fulfilled)")
 def mark_as_shipped(modeladmin, request, queryset):

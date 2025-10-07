@@ -1,0 +1,21 @@
+Your order has shipped!
+
+Order #{{ order.number|default:order.id }}
+Placed: {{ order.created_at|date:"M j, Y g:ia" }}
+
+Items:
+{% for it in order.items.all %}
+- {{ it.title_snapshot }}{% if it.size %} — {{ it.size }}{% endif %} x {{ it.qty }} @ {{ it.price_cents_snapshot|money }}
+{% endfor %}
+
+Subtotal: {{ order.subtotal_cents|money }}
+Shipping: {{ order.shipping_cents|money }}
+Tax:      {{ order.tax_cents|money }}
+Total:    {{ order.total_cents|money }}
+
+Ship To:
+{{ order.ship_to_name }}
+{{ order.ship_to_addr1 }}{% if order.ship_to_addr2 %} {{ order.ship_to_addr2 }}{% endif %}
+{{ order.ship_to_city }}, {{ order.ship_to_state }} {{ order.ship_to_postal }}
+
+Support: {{ support_email }}
