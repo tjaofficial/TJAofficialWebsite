@@ -15,4 +15,6 @@ urlpatterns = [
     path("redeem/<int:pk>/", views.redeem_redemption, name="redeem_redemption"),
     path("activate/<uidb64>/<token>/", views.activate, name="activate"),
     path("resend-activation/", views.resend_activation, name="resend_activation"),
+    path("terms/", views.terms, name="terms"),
+    path("privacy/", views.privacy, name="privacy"),
 ]

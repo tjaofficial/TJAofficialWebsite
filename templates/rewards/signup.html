@@ -33,6 +33,7 @@
 					{{ form.last_name }}
 					{% if form.last_name.errors %}<em class="rs-err">{{ form.last_name.errors.0 }}</em>{% endif %}
 				</label>
+        <br>
 
 				<label class="rs-field">
 					<span>Username</span>
@@ -45,7 +46,7 @@
 					{{ form.email }}
 					{% if form.email.errors %}<em class="rs-err">{{ form.email.errors.0 }}</em>{% endif %}
 				</label>
-
+        <br>
 				<label class="rs-field">
 					<span>Password</span>
 					{{ form.password }}
@@ -111,7 +112,7 @@
         {{ form.marketing_opt_in }} <span>Email me rewards news, drops & exclusive offers</span>
       </label>
       <label class="rs-check">
-        {{ form.accept_terms }} <span>I agree to the <a href="/terms/" target="_blank" rel="noopener">Terms</a> & <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></span>
+        {{ form.accept_terms }} <span>I agree to the <a href="{% url 'rewards:terms' %}" target="_blank" rel="noopener">Terms</a> & <a href="{% url 'rewards:privacy' %}" target="_blank" rel="noopener">Privacy</a></span>
         {% if form.accept_terms.errors %}<em class="rs-err">{{ form.accept_terms.errors.0 }}</em>{% endif %}
       </label>
     </fieldset>
@@ -120,7 +121,7 @@
     {{ form.website }}
 
     <footer class="rs-actions">
-      <button type="submit" class="rs-btn" id="signupBtn">
+      <button type="submit" class="rs-btn" style="background-color:blue;" id="signupBtn">
         <span class="rs-btn-label">Create Account (+10 pts)</span>
         <span class="rs-spinner" aria-hidden="true"></span>
       </button>

@@ -1,0 +1,23 @@
+:root {
+  --ink:#f4f4f4; --muted:#bdbdbd; --bg:#0a0a0a; --card:#111; --line:#262626;
+  --brand:#5a7cff; --brand2:#ff6bd6;
+}
+.policy-wrap {
+  max-width: 900px; margin: 24px auto; padding: 0 16px;
+  color: var(--ink);
+}
+.policy-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px; margin-bottom: 14px;
+}
+.policy-title { font-size: clamp(26px, 3.5vw, 38px); margin: 10px 0 6px; }
+.policy-updated { color: var(--muted); font-size: 0.95rem; margin-bottom: 14px; }
+.policy h2 { font-size: 1.25rem; margin: 18px 0 6px; }
+.policy p { color: var(--ink); opacity: 0.95; line-height: 1.65; margin: 8px 0; }
+.policy ul { margin: 8px 0 12px 20px; }
+.policy li { margin: 4px 0; }
+.policy a { color: var(--brand); text-decoration: none; }
+.policy a:hover { text-decoration: underline; }
+.callout {
+  border-left: 3px solid var(--brand); background: #131313; padding: 10px 12px; border-radius: 8px; margin: 10px 0;
+}

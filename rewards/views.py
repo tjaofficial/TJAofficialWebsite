@@ -21,6 +21,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django import forms
+from django.conf import settings
 
 User = get_user_model()
 SIGNUP_BONUS_POINTS = 10
@@ -414,6 +415,16 @@ def resend_activation(request):
 
     return render(request, "rewards/resend_activation.html", {"form": form})
 
+def terms(request):
+    default_email = settings.DEFAULT_FROM_EMAIL
+    return render(request, "rewards/terms.html", {
+        "default_email": default_email
+    })
 
+def privacy(request):
+    default_email = settings.DEFAULT_FROM_EMAIL
+    return render(request, "rewards/privacy.html", {
+        "default_email": default_email
+    })
 
 

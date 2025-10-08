@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Terms of Service{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/policies.css' %}">
+{% endblock %}
+{% block content %}
+<section class="policy-wrap policy">
+  <header class="policy-card">
+    <h1 class="policy-title">Terms of Service</h1>
+    <div class="policy-updated">Last updated: {{ now|default:None|date:"F j, Y" }}</div>
+    <p>Welcome to our site. These Terms of Service (“Terms”) govern your access to and use of our
+      website, store, tickets, and the TJA Rewards program (collectively, the “Services”). By using
+      the Services you agree to these Terms.</p>
+  </header>
+
+  <article class="policy-card">
+    <h2>1. Eligibility & Accounts</h2>
+    <ul>
+      <li>You must be at least 13 years old (or the age of majority in your region where higher) to create an account.</li>
+      <li>You’re responsible for safeguarding your password and any activity under your account.</li>
+      <li>Provide accurate registration information and keep it updated.</li>
+    </ul>
+
+    <h2>2. Purchases, Pricing & Availability</h2>
+    <ul>
+      <li>Merchandise prices and availability are subject to change without notice.</li>
+      <li>Orders are not confirmed until you receive a confirmation email. We may cancel or refuse orders (e.g., suspected fraud, inventory errors).</li>
+      <li>Taxes, shipping, and fees are shown at checkout (where applicable).</li>
+    </ul>
+
+    <h2>3. Shipping, Returns & Exchanges</h2>
+    <ul>
+      <li>Estimated shipping times are not guarantees; carriers may experience delays.</li>
+      <li>Return/exchange policies (including time windows, condition requirements, and exclusions) are stated on the product or checkout pages where applicable.</li>
+      <li>Risk of loss transfers upon delivery to the carrier.</li>
+    </ul>
+
+    <h2>4. Tickets & Events</h2>
+    <ul>
+      <li>Event dates, venues, lineups, and seating are subject to change. The latest details are posted on the event page.</li>
+      <li>Unless stated otherwise, tickets are typically non-refundable except where required by law or for event cancellations.</li>
+      <li>You agree to comply with venue policies (e.g., prohibited items, re-entry, security checks).</li>
+    </ul>
+
+    <h2>5. Rewards Program</h2>
+    <ul>
+      <li>You earn points through eligible activities (e.g., paid orders, ticket check-ins) as described on your Rewards dashboard.</li>
+      <li>Points have no cash value, are non-transferable, and may be revoked for fraud or abuse.</li>
+      <li>Redemptions are subject to item availability and program rules. We may change earn rates or redemption items at any time.</li>
+      <li>Gifted rewards are for the recipient only and may require variant selection (e.g., shirt size) before fulfillment.</li>
+    </ul>
+
+    <h2>6. Acceptable Use</h2>
+    <ul>
+      <li>No unlawful, infringing, harassing, or fraudulent activity.</li>
+      <li>No attempts to circumvent security, scrape at scale, or disrupt the Services.</li>
+    </ul>
+
+    <h2>7. Intellectual Property</h2>
+    <p>The site, content, logos, and materials are owned by us or our licensors. You may not copy,
+      modify, distribute, or create derivative works without permission, except as permitted by law.</p>
+
+    <h2>8. Third-Party Services</h2>
+    <p>We may link to or integrate third-party services (e.g., payment processors, social platforms).
+      Their terms and privacy policies govern your use of those services.</p>
+
+    <h2>9. Disclaimer & Limitation of Liability</h2>
+    <p>The Services are provided “as is” without warranties of any kind. To the maximum extent
+      permitted by law, we disclaim liability for indirect or consequential damages. Some regions do
+      not allow certain limitations; your rights may vary.</p>
+
+    <h2>10. Changes to the Terms</h2>
+    <p>We may update these Terms occasionally. We’ll post the effective date above. Continued use
+      after changes means you accept the updated Terms.</p>
+
+    <h2>11. Contact</h2>
+    <p>Questions? Email us at <a href="mailto:{{ default_email }}">{{ default_email }}</a>.</p>
+
+    <div class="callout">
+      By using the Services you also agree to our <a href="{% url 'rewards:privacy' %}">Privacy Policy</a>.
+    </div>
+  </article>
+</section>
+{% endblock %}
