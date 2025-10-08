@@ -13,4 +13,6 @@ urlpatterns = [
     path("rewards/claim/", views.claim_code, name="claim_code"),
     path("rewards/pending/<int:redemption_id>/variant/", views.choose_variant, name="choose_variant"),\
     path("redeem/<int:pk>/", views.redeem_redemption, name="redeem_redemption"),
+    path("activate/<uidb64>/<token>/", views.activate, name="activate"),
+    path("resend-activation/", views.resend_activation, name="resend_activation"),
 ]

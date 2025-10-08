@@ -31,7 +31,14 @@
       <a href="{% url 'tour_media' %}" class="{% if '/media' in request.path %}active{% endif %}">Media</a>
       <a href="{% url 'public_events' %}" class="{% if '/events' in request.path %}active{% endif %}">Shows</a>
       <a href="{% url 'rewards:dashboard' %}" class="{% if '/passport' in request.path %}active{% endif %} nav-link">Passport</a>
-      <a href="{% url 'control:accounts:login' %}" class="{% if '/login' in request.path %}active{% endif %} nav-link">Login</a>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'control:accounts:logout' %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="nav-link btn btn-link p-0 align-baseline">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'control:accounts:login' %}" class="{% if '/login' in request.path %}active{% endif %} nav-link">Login</a>
+      {% endif %}
       <span class="nav-ink" aria-hidden="true"></span>
     </nav>
   </header>

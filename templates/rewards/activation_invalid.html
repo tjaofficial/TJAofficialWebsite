@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Invalid Activation Link{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/rewards_signup.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="rs-wrap">
+  <header class="rs-head">
+    <h1>Invalid or Expired Link</h1>
+    <p>This activation link is invalid, expired, or already used.</p>
+  </header>
+
+  <div class="rs-card" style="text-align:center">
+    <p>You can request a new one below.</p>
+    <a class="rs-btn" href="{% url 'rewards:resend_activation' %}">Resend activation email</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Resend Activation{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/rewards_signup.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="rs-wrap" data-signup>
+  <header class="rs-head">
+    <h1>Resend activation link</h1>
+    <p>Enter the email you used to sign up. If there’s an inactive account, we’ll send a fresh link.</p>
+  </header>
+
+  <form method="post" class="rs-form rs-card" novalidate>
+    {% csrf_token %}
+    <label class="rs-field">
+      <span>Email</span>
+      <input type="email" name="email" placeholder="you@example.com" required value="{{ request.GET.email|default:'' }}">
+    </label>
+    <footer class="rs-actions">
+      <button class="rs-btn" type="submit">Send Link</button>
+      <a class="rs-link" href="{% url 'rewards:signup' %}">Back to sign up</a>
+    </footer>
+    {% if messages %}
+      <div class="rs-alert" style="margin-top:10px">
+        {% for m in messages %}{{ m }}{% endfor %}
+      </div>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

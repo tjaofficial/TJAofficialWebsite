@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Activation Sent{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/rewards_signup.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="rs-wrap">
+  <header class="rs-head">
+    <h1>Check your email</h1>
+    <p>If an inactive account exists for that address, we’ve sent a new activation link.</p>
+  </header>
+
+  <div class="rs-card" style="text-align:center">
+    <p>Didn’t get it? Give it a minute, then check spam.</p>
+    <div style="margin-top:12px">
+      <a class="rs-btn" href="{% url 'rewards:resend_activation' %}">Resend again</a>
+      <a class="rs-link" style="margin-left:12px" href="{% url 'rewards:signup' %}">Return to sign up</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

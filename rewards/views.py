@@ -16,8 +16,14 @@ from shop.models import Product, ProductVariant, Order, OrderItem
 from django.utils import timezone
 from .services import _fulfill_product_without_variant, _fulfill_tickets
 from coreutils.mailer import send_notification_update
+from coreutils.mailer_activation import send_activation_email
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django import forms
 
 User = get_user_model()
+SIGNUP_BONUS_POINTS = 10
 
 @login_required
 def dashboard(request):
@@ -134,31 +140,41 @@ def signup(request):
         username = form.cleaned_data["username"].strip()
         last_name = form.cleaned_data.get("last_name").strip()
         first_name = form.cleaned_data.get("first_name").strip()
-        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
 
-        # Ensure rewards/profile exist (signals will create, but we want to persist fields now)
-        profile, _ = CustomerProfile.objects.get_or_create(user=user)
-        profile.phone = form.cleaned_data.get("phone") or ""
-        profile.birthday = form.cleaned_data.get("birthday")
-        profile.sex = form.cleaned_data.get("sex") or ""
-        profile.ship_name = form.cleaned_data.get("ship_name") or ""
-        profile.ship_line1 = form.cleaned_data.get("ship_line1") or ""
-        profile.ship_line2 = form.cleaned_data.get("ship_line2") or ""
-        profile.ship_city = form.cleaned_data.get("ship_city") or ""
-        profile.ship_state = form.cleaned_data.get("ship_state") or ""
-        profile.ship_postal = form.cleaned_data.get("ship_postal") or ""
-        profile.ship_country = (form.cleaned_data.get("ship_country") or "US").upper()
-        profile.marketing_opt_in = bool(form.cleaned_data.get("marketing_opt_in"))
-        profile.save()
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            # make user inactive until email verified
+            user.is_active = False
+            user.save(update_fields=["is_active"])
 
-        # Rewards account (created by signal; also safe to get/create)
-        newAccount, created = RewardsAccount.objects.get_or_create(user=user)
+            # profile fields
+            profile, _ = CustomerProfile.objects.get_or_create(user=user)
+            profile.phone = form.cleaned_data.get("phone") or ""
+            profile.birthday = form.cleaned_data.get("birthday")
+            profile.sex = form.cleaned_data.get("sex") or ""
+            profile.ship_name = form.cleaned_data.get("ship_name") or ""
+            profile.ship_line1 = form.cleaned_data.get("ship_line1") or ""
+            profile.ship_line2 = form.cleaned_data.get("ship_line2") or ""
+            profile.ship_city = form.cleaned_data.get("ship_city") or ""
+            profile.ship_state = form.cleaned_data.get("ship_state") or ""
+            profile.ship_postal = form.cleaned_data.get("ship_postal") or ""
+            profile.ship_country = (form.cleaned_data.get("ship_country") or "US").upper()
+            profile.marketing_opt_in = bool(form.cleaned_data.get("marketing_opt_in"))
+            profile.save()
 
-        # Log them in
-        login(request, user)
+            newAccount, created = RewardsAccount.objects.get_or_create(user=user)
+
+        # send activation
+        send_activation_email(user, request=request)
         send_notification_update('rewards', newAccount, request=request)
-        messages.success(request, "Welcome! Your account is ready. +10 points added for signing up 🎉")
-        return redirect("rewards:dashboard")
+        messages.success(request, "Check your email to activate your account.")
+        return redirect("rewards:signup")  # or a “check your email” page
 
     return render(request, "rewards/signup.html", {"form": form})
 
@@ -284,7 +300,6 @@ def choose_variant(request, redemption_id):
         "variants": variants,
     })
 
-
 @login_required
 @require_POST
 def redeem_redemption(request, pk):
@@ -352,3 +367,53 @@ def redeem_redemption(request, pk):
     except Exception as e:
         messages.error(request, f"Could not redeem: {e}")
         return redirect("rewards:dashboard")
+    
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except Exception:
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+            # award signup bonus now
+            acc, _ = RewardsAccount.objects.get_or_create(user=user)
+            if not acc.signup_bonus_awarded:
+                acc.apply_ledger(delta=SIGNUP_BONUS_POINTS, kind="EARN", source="SIGNUP", ref="email-verified")
+                acc.signup_bonus_awarded = True
+                acc.save(update_fields=["signup_bonus_awarded"])
+        login(request, user)
+        messages.success(request, "Your email is verified. Welcome! (+10 pts)")
+        return redirect("rewards:dashboard")
+    else:
+        return render(request, "rewards/activation_invalid.html", {})
+
+class ResendActivationForm(forms.Form):
+    email = forms.EmailField()
+
+def resend_activation(request):
+    form = ResendActivationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        email = form.cleaned_data["email"].strip().lower()
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            messages.error(request, "If that email exists, we’ve sent a new link.")
+            return redirect("rewards:resend_activation")
+
+        if user.is_active:
+            messages.info(request, "That account is already active. You can sign in.")
+            return redirect("control:accounts:login")
+
+        send_activation_email(user, request=request)
+        messages.success(request, "A new activation link has been sent.")
+        return redirect("rewards:resend_activation")
+
+    return render(request, "rewards/resend_activation.html", {"form": form})
+
+
+
+
