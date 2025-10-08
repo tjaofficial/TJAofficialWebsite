@@ -100,12 +100,15 @@
     <h2 class="section-title">Tour Reel</h2>
   </div>
 
-  {% if videos %}
+  {% if reel %}
     <div class="vid-grid">
-      {% for v in videos %}
-        <button class="vid-tile" data-open-video data-embed="{{ v.youtube_id|default:'' }}">
-          <div class="thumb" data-lazy-thumb="{{ v.youtube_id }}"></div>
-          <div class="cap">{{ v.title }}</div>
+      {% for v in reel %}
+        <button class="vid-tile" data-open-video data-embed="{{ v.youtube_id }}">
+          <div class="thumb"></div>
+          <div class="cap">
+            {{ v.title }}
+            {% if v.artist %}<span class="muted"> • {{ v.artist }}</span>{% endif %}
+          </div>
         </button>
       {% endfor %}
     </div>

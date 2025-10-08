@@ -2,13 +2,28 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse, HttpResponseBadRequest
 from django.contrib import messages
-from ..models import Artist, ArtistPhoto
+from ..models import Artist, ArtistPhoto, ArtistVideo
 from ..forms import ArtistEPKForm, ArtistVideoForm, ArtistPhotoUploadForm
 from django.utils import timezone
 from events.models import Event
 from pages.models import Artist, Release, Video, Subscriber
 from django.db.models import Exists, OuterRef, Prefetch, Min
 from tickets.models import TicketType
+import re, random
+
+_YT_PATTERNS = [
+    re.compile(r"[?&]v=([A-Za-z0-9_-]{6,})"),      # watch?v=
+    re.compile(r"youtu\.be/([A-Za-z0-9_-]{6,})"),  # youtu.be/
+    re.compile(r"/embed/([A-Za-z0-9_-]{6,})"),     # /embed/
+]
+
+def _youtube_id_from_url(url: str) -> str:
+    u = url or ""
+    for pat in _YT_PATTERNS:
+        m = pat.search(u)
+        if m:
+            return m.group(1)
+    return ""
 
 def tour(request):
     return render(request, 'pages/tour.html')
@@ -43,10 +58,25 @@ def tour_home(request):
     releases = (Release.objects
                 .filter(is_public=True)
                 .order_by("-release_date", "-id")[:6])
-    
-    videos = (Video.objects
-              .filter(is_public=True)
-              .order_by("sort", "-published_at", "-id")[:6])
+    #---------------------------------------------------------------
+    #------------------ VIDEOS -------------------------------------
+    #---------------------------------------------------------------
+    headliner_ids = [a.id for a in headliners]
+    headliner_videos = list(
+        ArtistVideo.objects.filter(artist_id__in=headliner_ids).select_related("artist").order_by("sort", "id")[:48]
+    )
+    artist_payload = []
+    for av in headliner_videos:
+        vid = _youtube_id_from_url(av.url)
+        if vid:
+            artist_payload.append({
+                "title": av.title or av.artist.name,
+                "youtube_id": vid,
+                "artist": av.artist.name,
+                "artist_slug": av.artist.slug,
+            })
+    random.shuffle(artist_payload)
+    reel = artist_payload[:6]
 
     stats = {
         "dates": shows.count(),
@@ -58,7 +88,7 @@ def tour_home(request):
         "headliners": headliners,
         "shows": shows,
         "releases": releases,
-        "videos": videos,
+        "reel": reel,
         "stats": stats,
         "tour_hashtag": "#DayNNightTour",
     })
