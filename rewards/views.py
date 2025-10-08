@@ -15,6 +15,7 @@ from django.db import transaction
 from shop.models import Product, ProductVariant, Order, OrderItem
 from django.utils import timezone
 from .services import _fulfill_product_without_variant, _fulfill_tickets
+from coreutils.mailer import send_notification_update
 
 User = get_user_model()
 
@@ -151,11 +152,11 @@ def signup(request):
         profile.save()
 
         # Rewards account (created by signal; also safe to get/create)
-        RewardsAccount.objects.get_or_create(user=user)
+        newAccount, created = RewardsAccount.objects.get_or_create(user=user)
 
         # Log them in
         login(request, user)
-
+        send_notification_update('rewards', newAccount, request=request)
         messages.success(request, "Welcome! Your account is ready. +10 points added for signing up 🎉")
         return redirect("rewards:dashboard")
 

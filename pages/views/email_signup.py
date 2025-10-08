@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from ..forms import EmailSignupForm
 from ..models import Subscriber
+from coreutils.mailer import send_notification_update
 
 def email_signup(request):
     just_subscribed = False
@@ -28,6 +29,7 @@ def email_signup(request):
 
             just_subscribed = True
             # reset the form with new timestamp so bots can’t reuse it
+            send_notification_update('subscriber', sub, request=request)
             form = EmailSignupForm(initial={"ts": int(timezone.now().timestamp())})
         else:
             # keep form with errors; also refresh ts so a quick retry passes the time check

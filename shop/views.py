@@ -10,6 +10,7 @@ import csv
 from django.contrib import messages
 from django.utils import timezone
 from .services import send_order_shipped_email
+from coreutils.mailer import send_notification_update
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 

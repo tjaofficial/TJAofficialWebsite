@@ -1,0 +1,95 @@
+{% load shop_extras %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>You have a new order!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *{color:white;}
+    /* Many clients keep basic <style>, but critical layout should be inline */
+    body{margin:0;background:#0f0f0f;color:#eaeaea}
+    .wrap{max-width:640px;margin:0 auto;background:#0b0b0f;color: white;border-radius: 30px;}
+    .pad{padding:24px}
+    .card{border:1px solid #737373;border-radius:12px;background:#171717}
+    .btn{display:inline-block;background:#5a7cff;color:#fff;text-decoration:none;
+         padding:12px 18px;border-radius:10px}
+    .muted{color:#bdbdbd}
+    h2, p{color: white;}
+    .hr{height:1px;background:#737373;margin:18px 0}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:10px;border-bottom:1px solid #737373;text-align:left}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #3a3a3a;background:#1a1a1a;color:#ddd;font-size:12px}
+    @media (max-width: 680px){ .pad{padding:16px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pad">
+      <h2 style="margin:0 0 6px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Your have a new order! 🚚
+      </h2>
+
+      <div class="card" style="padding:16px; margin-bottom:14px;">
+        <p style="margin:0 0 8px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+          <strong>Order #{{ order.number|default:order.id }}</strong><br>
+          Placed: {{ order.created_at|date:"M j, Y g:ia" }}
+        </p>
+
+        <div class="hr"></div>
+
+        <table class="table" role="presentation">
+          <thead>
+            <tr>
+              <th style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">Item</th>
+              <th style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">Qty</th>
+              <th style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in order.items.all %}
+              <tr>
+                <td style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+                  {{ it.title_snapshot }}{% if it.size %} — {{ it.size }}{% endif %}
+                </td>
+                <td style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">{{ it.qty }}</td>
+                <td style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+                  {{ it.price_cents_snapshot|money }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top:10px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+          <div>Subtotal: <strong>{{ order.subtotal_cents|money }}</strong></div>
+          <div>Shipping: <strong>{{ order.shipping_cents|money }}</strong></div>
+          <div>Tax: <strong>{{ order.tax_cents|money }}</strong></div>
+          <div style="margin-top:6px; font-size: 18px;">Total: <strong>{{ order.total_cents|money }}</strong></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px; margin-bottom:14px;">
+        <h3 style="margin:0 0 8px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">Shipment</h3>
+        <p style="margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+          <strong>Ship To:</strong><br>
+          {{ order.ship_to_name }}<br>
+          {{ order.ship_to_addr1 }}{% if order.ship_to_addr2 %}<br>{{ order.ship_to_addr2 }}{% endif %}<br>
+          {{ order.ship_to_city }}, {{ order.ship_to_state }} {{ order.ship_to_postal }}
+        </p>
+        <p class="muted" style="margin:0 0 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+            Let get this one shipped fast Anthony!
+        </p>
+      </div>
+
+      <p style="margin:18px 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Dont forget to add a flyer to each order!
+      </p>
+
+      <p class="muted" style="font-size:12px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Sent {{ now|date:"M j, Y g:ia T" }}
+      </p>
+    </div>
+  </div>
+</body>
+</html>

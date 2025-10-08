@@ -22,6 +22,7 @@ from django.contrib import messages
 from django.urls import reverse
 from datetime import timedelta
 import logging
+from coreutils.mailer import send_notification_update
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -176,6 +177,7 @@ def stripe_webhook(request):
         if tickets_created and email:
             try:
                 send_tickets_email(email, tickets_created, site_base=settings.SITE_BASE_URL)
+                send_notification_update('tickets', tickets_created, request=request)
             except Exception as e:
                 logger.exception("Ticket email send failed for session %s to %s", session_id, email)
 

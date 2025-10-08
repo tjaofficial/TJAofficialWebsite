@@ -13,6 +13,7 @@ from ..cart_utils import (
 from decimal import Decimal, ROUND_HALF_UP
 from ..order_utils import create_order_from_cart, mark_order_paid
 from django.db.models import F
+from coreutils.mailer import send_notification_update
 
 def shop(request):
     q = (request.GET.get("q") or "").strip()
@@ -426,6 +427,7 @@ def stripe_webhook(request):
             with transaction.atomic():
                 # Mark paid
                 mark_order_paid(order, payment_intent=payment_intent)
+                send_notification_update("order", order, request=request)
                 # Decrement inventory
                 for it in order.items.select_related("product"):
                     Product.objects.filter(pk=it.product_id).update(inventory=F("inventory") - it.qty)

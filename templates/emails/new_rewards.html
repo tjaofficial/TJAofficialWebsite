@@ -1,0 +1,42 @@
+{% load shop_extras %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>You have a new rewards subscriber</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *{color:white;}
+    /* Many clients keep basic <style>, but critical layout should be inline */
+    body{margin:0;background:#0f0f0f;color:#eaeaea}
+    .wrap{max-width:640px;margin:0 auto;background:#0b0b0f;color: white;border-radius: 30px;}
+    .pad{padding:24px}
+    .card{border:1px solid #737373;border-radius:12px;background:#171717}
+    .btn{display:inline-block;background:#5a7cff;color:#fff;text-decoration:none;
+         padding:12px 18px;border-radius:10px}
+    .muted{color:#bdbdbd}
+    h2, p{color: white;}
+    .hr{height:1px;background:#737373;margin:18px 0}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:10px;border-bottom:1px solid #737373;text-align:left}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #3a3a3a;background:#1a1a1a;color:#ddd;font-size:12px}
+    @media (max-width: 680px){ .pad{padding:16px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pad">
+      <h2 style="margin:0 0 6px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        You have new a new rewardssubscriber! 🚚
+      </h2>
+      <p class="muted" style="margin:0 0 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        - {{rewards.user.first_name}} {{rewards.user.last_name}} subscribed to your rewards program with the email {{rewards.user.email}}.
+      </p>
+
+      <p class="muted" style="font-size:12px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+        Sent {{ now|date:"M j, Y g:ia T" }}
+      </p>
+    </div>
+  </div>
+</body>
+</html>
