@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Day N Night Tour — Press Kit{% endblock %}
+{% block hero %}{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/presskit_daynnight.css' %}">
+  <!-- OpenGraph / Preview -->
+  <meta property="og:title" content="Day N Night Tour — Press Kit">
+  <meta property="og:description" content="Independent, high-energy multi-city tour by TJA, Jay Willy & Toxic Reality. Booking window: {{ tour_window }}.">
+  {% if hero_image_url %}<meta property="og:image" content="{{ hero_image_url }}">{% endif %}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
+{% block content %}
+<section id="pk-hero" class="pk-container">
+  <div class="pk-hero-inner">
+    <h1 class="pk-title">Day N Night Tour</h1>
+    <p class="pk-subtitle">Booking Window: <strong>{{ tour_window }}</strong></p>
+    <div class="pk-cta">
+      <button id="pk-download" class="pk-btn">Download PDF</button>
+      <a href="{{ site_url }}" class="pk-btn pk-btn-secondary" target="_blank" rel="noopener">Visit Website</a>
+    </div>
+  </div>
+</section>
+
+<section id="pk-overview" class="pk-container pk-card">
+  <h2>Overview</h2>
+  <p>
+    A multi-city independent tour built by three Michigan artists — <strong>TJA</strong>, <strong>Jay Willy</strong>, and
+    <strong>Toxic Reality</strong> — blending hip-hop and alt energy for a raw, high-intensity show.
+  </p>
+  <ul class="pk-bullets">
+    <li><strong>Recent stat:</strong> Corktown Test Show — {{ corktown_stat }}.</li>
+    <li><strong>Offer:</strong> Open to guarantee or door split (venue preference).</li>
+    <li><strong>Dates:</strong> {{ tour_window }}</li>
+  </ul>
+</section>
+
+<section id="pk-artists" class="pk-container">
+    <h2>Artists</h2>
+    <div class="pk-grid">
+        {% for a in artists %}
+            <article class="pk-card">
+                <h3>Name: {{ a.name }}</h3>
+                <p>{{ a.desc }}</p>
+                <p class="pk-socials">
+                    {% for label, handle in a.socials.items %}
+                        <span>{{ label }}: {{ handle }}</span>
+                    {% endfor %}
+                </p>
+                <p class="pk-socials">
+                    <span>See More(Video/Socials): <a href="{% url 'tour_epk_detail' a.slug %}">{{ a.name }} EPK</a></span>
+                </p>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="pk-tech" class="pk-container pk-card">
+  <h2>Basic Tech Needs</h2>
+  <ul class="pk-list">
+    {% for item in tech_requirements %}
+      <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+  <p>We have our own wireless microphones and receiver, LED Lighting, DJ table/stage setup.</p>
+  <p class="pk-note">We can scale up or down to fit the room. Advance sheet available on request.</p>
+</section>
+
+{% comment %} <section id="pk-media" class="pk-container">
+  <h2>Media</h2>
+  {% if promo_reel_url %}
+    <div class="pk-video-wrap">
+      <video controls preload="metadata" src="{{ promo_reel_url }}"></video>
+    </div>
+  {% else %}
+    <div class="pk-placeholder pk-card">
+      <p>Add a 20–30s promo reel here (MP4/YouTube). This boosts bookings.</p>
+    </div>
+  {% endif %}
+</section> {% endcomment %}
+
+<section id="pk-media" class="pk-container">
+    <h2>Photos</h2>
+    <div class="pk-grid">
+        {% for item in media_gallery %}
+            <img src="{{ item }}" alt="Promo image" class="pk-media-img">
+        {% endfor %}
+    </div>
+</section>
+<section id="pk-media" class="pk-container">
+    <h2>Videos</h2>
+    <div class="pk-grid">
+        <iframe width="480" height="315" src="https://www.youtube.com/embed/xEmUqdTf-RA?si=4UIDo01K48gUnWJu" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <iframe width="480" height="315" src="https://www.youtube.com/embed/Riaqf5H5wmg?si=zDK_h--C6JoPM4bX" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+</section>
+
+
+<section id="pk-contact" class="pk-container pk-card pk-contact">
+  <h2>Booking & Contact</h2>
+  <p><strong>Anthony Ackerman</strong></p>
+  <p>Phone: {{ contact_phone }} &nbsp;•&nbsp; Email: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+  <p>Main Website Link: <a href="{{ site_url }}" target="_blank" rel="noopener">{{ site_url }}</a></p>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/presskit_daynnight.js' %}"></script>
+{% endblock %}

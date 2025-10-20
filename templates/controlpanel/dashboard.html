@@ -57,6 +57,7 @@
 				<a href="#">Booking</a>
 				<ul>
 					<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
+					<li><a href="{% url 'presskit_daynnight' %}">Tour PressKit</a></li>
 				</ul>
 				<form action="{% url 'control:accounts:logout' %}" method="post" style="display:inline">
 					{% csrf_token %}

@@ -42,6 +42,7 @@ urlpatterns = [
     path("events/<int:event_id>/", event_details, name="detail"),
     path("ticket/<uuid:token>/", views.ticket_detail, name="ticket_detail"),
     path("subscribe/", views.tour_subscribe, name="tour_subscribe"),
+    path("presskit/daynnight/", views.presskit_daynnight, name="presskit_daynnight"),
     #control panel
     
 ]

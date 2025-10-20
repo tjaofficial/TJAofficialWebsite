@@ -181,3 +181,51 @@ def tour_media(request):
 
 def tour_shows(request):
     return render(request, "tour/shows.html")
+
+def presskit_daynnight(request):
+    context = {
+        "tour_window": "Jan 30 – May 31, 2026",
+        "corktown_stat": "120 tickets sold, 150 Capacity",
+        "contact_phone": "(810) 618-2253",
+        "contact_email": "tjaofficialbooking@gmail.com",
+        "site_url": "https://www.tjaofficial.com",
+        "artists": [
+            {
+                "name": "TJA",
+                "slug": "tja",
+                "desc": "High-energy Catchy hip-hop/alt fusion. Michigan-built. Crowd-engaging sets.",
+                "socials": {"IG": "@tjaofficial"},
+            },
+            {
+                "name": "Jay Willy",
+                "slug": "jay-willy",
+                "desc": "Punchy hooks, upbeat bounce, versatile stage presence.",
+                "socials": {"IG": "@jaywilly"},
+            },
+            {
+                "name": "Toxic Reality",
+                "slug": "toxic-reality",
+                "desc": "Dark-toned alt vibes with live-show intensity.",
+                "socials": {"IG": "@toxicreality"},
+            },
+        ],
+        "tech_requirements": [
+            "House Audio System",
+            "2x DI boxes (stereo playback + backup)(Only with band)",
+            "Basic stage wash (we can adapt to room with our own lights)",
+        ],
+        "promo_reel_url": "",  # optional: MP4 or YouTube embed
+        "hero_image_url": "/static/img/full_tour_logo.png",  # optional: hosted hero image
+        "media_gallery": [
+            "/static/img/promo1.png",
+            "/static/img/promo2.jpeg",
+            "/static/img/promo3.png",
+            "/static/img/promo4.png",
+            "/static/img/promo5.jpeg",
+            "/static/img/promo6.jpeg",
+        ]
+    }
+    return render(request, "presskit/presskit_daynnight.html", context)
+
+
+

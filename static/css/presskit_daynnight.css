@@ -1,0 +1,58 @@
+:root {
+  --bg: #0d0f12;
+  --card: #151923;
+  --text: #e9eef7;
+  --muted: #aab4c5;
+  --accent: #6ea8fe; /* matches your cool modern vibe */
+  --radius: 18px;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.pk-container { width: min(1100px, 92%); margin: 0 auto; }
+#pk-hero { background: radial-gradient(80% 100% at 50% 0%, #1a2030, #0d0f12); color: var(--text); padding: 72px 0 48px; }
+.pk-hero-inner { text-align: center; }
+.pk-title { font-size: clamp(2rem, 4.5vw, 3.5rem); letter-spacing: 0.5px; margin: 0 0 8px; }
+.pk-subtitle { color: var(--muted); margin: 0 0 20px; }
+
+.pk-btn {
+  background: var(--accent); color: #0b1020; border: 0; padding: 12px 18px;
+  border-radius: 999px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+  margin: 6px; transition: transform .06s ease;
+}
+.pk-btn:hover { transform: translateY(-1px); }
+.pk-btn-secondary { background: transparent; color: var(--text); border: 1px solid #323a4d; }
+
+.pk-card {
+  background: var(--card); color: var(--text); padding: 24px; border-radius: var(--radius);
+  box-shadow: var(--shadow); margin: 28px auto;
+}
+.pk-bullets, .pk-list { margin: 10px 0 0 18px; color: var(--muted); }
+.pk-list li { margin: 6px 0; }
+
+.pk-grid {
+  display: grid; gap: 18px; margin: 12px 0 8px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.pk-socials { color: var(--muted); margin-top: 8px; }
+
+.pk-video-wrap { position: relative; width: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.pk-video-wrap video { width: 100%; height: auto; display: block; background: #000; }
+
+.pk-placeholder { text-align: center; color: var(--muted); }
+.pk-contact a { color: var(--accent); text-decoration: none; }
+.pk-note { color: var(--muted); margin-top: 8px; }
+
+/* Print styles for clean PDF */
+@media print {
+  body { background: #fff; }
+  #pk-hero { background: #fff; color: #000; padding-bottom: 16px; }
+  .pk-btn, .pk-video-wrap, .pk-placeholder { display: none !important; }
+  .pk-card { box-shadow: none; border: 1px solid #ddd; }
+  a { color: #000; text-decoration: underline; }
+}
+
+.pk-media-img, #pk-media video {
+  width: 100%;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
