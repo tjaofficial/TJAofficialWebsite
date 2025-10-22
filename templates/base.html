@@ -49,8 +49,8 @@
         <meta property="og:type" content="website">
         <meta property="og:url" content="https://www.tjaofficial.com/">
         <meta property="og:site_name" content="TJAofficial">
-        <meta property="og:image" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
-        <meta property="og:image:secure_url" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/full_tour_logo.png' %}">
+        <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/full_tour_logo.png' %}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:image:alt" content="TJA — Day N Night Tour artwork">
@@ -60,7 +60,7 @@
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="TJAofficial | Music, Merch & Day N Night Tour">
         <meta name="twitter:description" content="Stream music, shop merch, and catch the latest tour dates.">
-        <meta name="twitter:image" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/full_tour_logo.png' %}">
         <meta name="twitter:site" content="@TJAofficial">
         <meta name="twitter:creator" content="@TJAofficial">
 
