@@ -4,24 +4,75 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- SEO Basics -->
+        <title>TJA – {% block title %}{% endblock %}</title>
         <meta name="description" content="Official website of TJA. Stream new music, shop merch, view tour dates, and stay updated with the latest news.">
         <meta name="keywords" content="TJAofficial, TJA, music, tour, merch, official site, hiphop, alternative, flint michigan, anthony ackerman">
         <meta name="robots" content="index, follow">
-        <meta property="og:title" content="Your Band / Brand Name | Official Website">
-        <meta property="og:description" content="Stream music, shop merch, and catch the latest tour dates.">
-        <meta property="og:image" content="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ad/df/ee/addfee19-dd79-5ac3-10f5-85076a8b57f8/artwork.jpg/316x316bb.webp">
-        <meta property="og:url" content="https://www.tjaofficial.com">
-        <meta property="og:type" content="website">
 
+        <!-- JSON-LD: Organization + Website -->
+        <script type="application/ld+json">
+            {
+                "@context":"https://schema.org",
+                "@type":"Organization",
+                "name":"TJAofficial",
+                "url":"https://www.tjaofficial.com/",
+                "logo":"https://www.tjaofficial.com{% static 'img/tja_logo_gold.png' %}",
+                "sameAs":[
+                    "https://www.facebook.com/tjaofficial",
+                    "https://x.com/tjaofficial",
+                    "https://www.instagram.com/tjaofficial",
+                    "https://www.youtube.com/@tjaofficial",
+                    "https://www.tiktok.com/@tjaofficial",
+                    "https://soundcloud.com/tjaofficial"
+                ]
+            }
+        </script>
+        <script type="application/ld+json">
+            {
+                "@context":"https://schema.org",
+                "@type":"WebSite",
+                "url":"https://www.tjaofficial.com/",
+                "name":"TJAofficial",
+                "potentialAction":{
+                    "@type":"SearchAction",
+                    "target":"https://www.tjaofficial.com/search/?q={query}",
+                    "query-input":"required name=query"
+                }
+            }
+        </script>
+
+        <!-- Open Graph -->
+        <meta property="og:title" content="TJAofficial | Music, Merch & Day N Night Tour">
+        <meta property="og:description" content="Stream music, shop merch, and catch the latest tour dates.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://www.tjaofficial.com/">
+        <meta property="og:site_name" content="TJAofficial">
+        <meta property="og:image" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
+        <meta property="og:image:secure_url" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="TJA — Day N Night Tour artwork">
+        <meta property="og:locale" content="en_US">
+
+        <!-- X / Twitter -->
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="TJA / TJAofficial | Official Website">
+        <meta name="twitter:title" content="TJAofficial | Music, Merch & Day N Night Tour">
         <meta name="twitter:description" content="Stream music, shop merch, and catch the latest tour dates.">
-        <meta name="twitter:image" content="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ad/df/ee/addfee19-dd79-5ac3-10f5-85076a8b57f8/artwork.jpg/316x316bb.webp">
-        <link rel="icon" type="image/png" href="{% static 'img/tja_logo_gold.png' %}">
+        <meta name="twitter:image" content="{{ request.build_absolute_uri(static('img/full_tour_logo.png')) }}">
+        <meta name="twitter:site" content="@TJAofficial">
+        <meta name="twitter:creator" content="@TJAofficial">
+
+        <!-- Icons -->
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/tja_logo_gold.png' %}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/tja_logo_gold.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'img/tja_logo_gold.png' %}">
+        <link rel="mask-icon" href="{% static 'img/tja_logo_gold.png' %}" color="#0b0b0f">
+        <meta name="theme-color" content="#0b0b0f">
         <link rel="canonical" href="https://www.tjaofficial.com/">
         
-        <title>TJA – {% block title %}{% endblock %}</title>
-        <meta name="theme-color" content="#0b0b0f">
+        <!-- Your assets -->
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <script defer src="{% static 'js/main.js' %}"></script>
         {% block extra_head %}{% endblock %}

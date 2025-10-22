@@ -175,7 +175,7 @@ def signup(request):
         send_activation_email(user, request=request)
         send_notification_update('rewards', newAccount, request=request)
         messages.success(request, "Check your email to activate your account.")
-        return redirect("rewards:signup")  # or a “check your email” page
+        return redirect("control:accounts:login")  # or a “check your email” page
 
     return render(request, "rewards/signup.html", {"form": form})
 
