@@ -1,0 +1,139 @@
+{# templates/setbuilder/build_show.html #}
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/setbuilder.css' %}">
+    <script defer src="{% static 'js/setbuilder.js' %}"></script>
+{% endblock %}
+{% block title %}{% if editing %}Edit Show — {{ editing.label }}{% else %}Build a Show{% endif %}{% endblock %}
+
+{% block content %}
+<h1>{% if editing %}Edit Show{% else %}Build a Show{% endif %}</h1>
+
+<div class="sb-top">
+  <label>Show Label:
+    <input type="text" id="sbLabel" value="{{ editing.label|default:'' }}">
+  </label>
+  <label>Vibe:
+    <select id="sbVibe">
+      <option value="intimate" {% if editing and editing.vibe == 'intimate' %}selected{% endif %}>Intimate</option>
+      <option value="hype" {% if editing and editing.vibe == 'hype' %}selected{% endif %}>Hype/Energetic</option>
+      <option value="mixed" {% if not editing or editing.vibe == 'mixed' %}selected{% endif %}>Mixed</option>
+    </select>
+  </label>
+  <div class="sb-actions">
+    <button class="btn" id="sbAdd">Add Item</button>
+    <button class="btn btn-primary" id="sbSave" disabled>Save Show</button>
+    <a class="btn" href="{% url 'control:setbuilder:shows_list' %}">All Shows</a>
+  </div>
+</div>
+
+<table class="sb-table" id="sbTable" data-slug="{{ editing.slug|default:'' }}">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Artist Name</th>
+      <th>Song Title</th>
+      <th>Collab</th>
+      <th>Time</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="sbBody">
+    {% for it in items %}
+      <tr draggable="true" data-kind="{{ it.kind }}" data-artist="{{ it.artist_id|default:'' }}" data-song="{{ it.song_id|default:'' }}" data-duration="{{ it.duration_seconds }}">
+        <td class="drag">↕</td>
+        <td>{{ it.artist.name|default:it.display_name }}</td>
+        <td>{% if it.song %}{{ it.song.title }}{% else %}{% if it.kind == "BREAK" %}Break{% elif it.kind == "INTERMISSION" %}Intermission{% elif it.kind == "OPENER" %}Opener{% else %}—{% endif %}{% endif %}</td>
+        <td>{% if it.kind == "COLLAB" %}Yes{% else %}—{% endif %}</td>
+        <td data-col="dur"></td>
+        <td><button class="link" data-remove>Delete</button></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="4" class="muted right">Total</td>
+      <td id="sbTotal">0:00</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+{# Modal #}
+<dialog id="sbModal">
+  <form method="dialog" class="sb-modal">
+    <h3>Add Item</h3>
+    <label>Type
+      <select id="mKind">
+        <option value="OPENER">Opener</option>
+        <option value="HEADLINER">Headliner</option>
+        <option value="COLLAB">Collaboration</option>
+        <option value="BREAK">Break</option>
+        <option value="INTERMISSION">Intermission</option>
+      </select>
+    </label>
+
+    <div class="m-row" data-show="OPENER">
+      <label>Choose Opener
+        <select id="mOpener">
+          <option value="">— pick opener —</option>
+          {% for a in openers %}
+            <option value="{{ a.id }}">{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Minutes
+        <input type="number" id="mOpenerMin" value="10" min="1">
+      </label>
+    </div>
+
+    <div class="m-row" data-show="HEADLINER">
+      <label>Headliner
+        <select id="mHeadliner">
+          <option value="">— pick headliner —</option>
+          {% for a in headliners %}
+            <option value="{{ a.id }}">{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Song
+        <select id="mHeadSong" disabled>
+          <option value="">— select song —</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="m-row" data-show="COLLAB">
+      <label>Artists (hold Ctrl/Cmd for multi-select)
+        <select id="mCollabArtists" multiple size="5">
+          {% for a in headliners %}
+            <option value="{{ a.id }}">{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Song
+        <select id="mCollabSong" disabled>
+          <option value="">— select collab song —</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="m-row" data-show="BREAK">
+      <label>Break Minutes
+        <input type="number" id="mBreakMin" value="10" min="1">
+      </label>
+    </div>
+
+    <div class="m-row" data-show="INTERMISSION">
+      <label>Intermission Minutes
+        <input type="number" id="mInterMin" value="15" min="1">
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn btn-primary" id="mSave" value="default">Save</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

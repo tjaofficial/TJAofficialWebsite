@@ -1,0 +1,36 @@
+{# templates/setbuilder/songs_list.html #}
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}My Songs{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/songs_list.css' %}">
+<script defer src="{% static 'js/songs_list.js' %}"></script>
+{% endblock %}
+{% block content %}
+<h1>My Songs</h1>
+
+<p><a class="btn" href="{% url 'control:setbuilder:song_new' %}">Add Song</a></p>
+
+<table class="cp-table">
+  <thead><tr><th>Title</th><th>Artist</th><th>Collab</th><th>Genre</th><th>Feeling</th><th>Duration</th><th></th></tr></thead>
+  <tbody>
+    {% for s in songs %}
+      <tr>
+        <td>{{ s.title }}</td>
+        <td>{{ s.primary_artist.name }}</td>
+        <td>{% if s.is_collab %}Yes{% else %}No{% endif %}</td>
+        <td>{{ s.get_genre_display|default:"" }}</td>
+        <td>{{ s.feeling }}</td>
+        <td>{{ s.duration_label }}</td>
+        <td>
+          <a href="{% url 'control:setbuilder:song_edit' s.id %}">Edit</a> •
+          <form method="post" action="{% url 'control:setbuilder:song_delete' s.id %}" style="display:inline">
+            {% csrf_token %}<button class="link" onclick="return confirm('Delete song?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="muted">No songs yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

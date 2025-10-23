@@ -1,0 +1,116 @@
+/* ===== Set Builder – visual polish only (no structural changes) ===== */
+:root{
+  --ink:#f4f4f4; --muted:#bdbdbd; --bg:#0b0b0b; --card:#121212; --line:#272727;
+  --brand:#6a86ff; --brand-2:#9bb4ff; --ok:#2ad39a; --danger:#ff6b6b; --warn:#ffb84d;
+}
+
+body { color: var(--ink); }
+
+/* Top bar */
+.sb-top{
+  display:grid; grid-template-columns: 1.2fr 0.8fr auto; gap:10px; align-items:end;
+  background:linear-gradient(180deg,#131313,#0f0f0f);
+  border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:14px;
+}
+@media (max-width: 900px){ .sb-top{grid-template-columns:1fr; align-items:center;} }
+
+.sb-top label{display:grid; gap:6px; font-weight:600; color:#eaeaea;}
+.sb-top input[type="text"], .sb-top select{
+  padding:10px 12px; border-radius:10px; border:1px solid #343434;
+  background:#181818; color:#fff; outline:none;
+}
+.sb-top input[type="text"]:focus, .sb-top select:focus{
+  border-color:#4a4a4a; box-shadow:0 0 0 2px rgba(155,180,255,.15);
+}
+.sb-actions{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap}
+.btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 14px;
+  border-radius:12px; border:1px solid #2b2b2b; background:#191919; color:#fff;
+  text-decoration:none; cursor:pointer; transition:transform .06s ease, background .15s ease;
+}
+.btn:hover{ background:#202020; }
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--brand); border-color:var(--brand); color:#121212; }
+.btn-primary:hover{ filter:brightness(1.05); }
+
+/* Table */
+.sb-table{
+  width:100%; border-collapse:separate; border-spacing:0;
+  background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+}
+.sb-table thead th{
+  text-align:left; font-weight:700; padding:10px; background:#151515; border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:1;
+}
+.sb-table tbody td{ padding:10px; border-bottom:1px solid #1b1b1b; }
+.sb-table tfoot td{ padding:10px; background:#121212; border-top:1px solid var(--line); font-weight:700; }
+.sb-table .muted{ color:var(--muted); }
+.sb-table .right{ text-align:right; }
+.sb-table tbody tr:hover{ background:#101010; }
+.sb-table button.link{
+  background:none; border:none; color:#9fbdff; cursor:pointer; padding:0;
+}
+.sb-table button.link:hover{ text-decoration:underline; }
+
+/* Drag handle cell */
+.sb-table td.drag{
+  width: 36px; text-align:center; cursor:grab; user-select:none; font-size:1.1rem; color:#b9b9b9;
+}
+.sb-table tr:active td.drag{ cursor:grabbing; }
+
+/* Duration column accent */
+.sb-table td[data-col="dur"]{
+  font-weight:700; color:#e9efff; letter-spacing:.02em;
+}
+
+/* Empty state (if you ever render zero rows) */
+.sb-empty{
+  padding:16px; color:var(--muted);
+}
+
+/* Modal (uses <dialog id="sbModal"> you already have) */
+#sbModal{
+  border:none; padding:0; background:transparent;
+}
+#sbModal::backdrop{
+  background:rgba(0,0,0,.6); backdrop-filter: blur(4px);
+}
+.sb-modal{
+  width:min(680px, calc(100vw - 24px)); max-height: 80vh; overflow:auto;
+  background:linear-gradient(180deg,#141414,#0e0e0e); color:#fff;
+  border:1px solid var(--line); border-radius:14px; padding:14px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.03) inset;
+}
+.sb-modal h3{ margin:4px 0 10px; font-size:1.25rem; }
+.sb-modal label{ display:grid; gap:6px; margin:8px 0; }
+.sb-modal input[type="number"], .sb-modal select{
+  padding:10px 12px; border-radius:10px; border:1px solid #333; background:#181818; color:#fff;
+}
+.sb-modal .m-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width: 780px){ .sb-modal .m-row{ grid-template-columns:1fr; } }
+.sb-modal .actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+
+/* Subtle “unsaved changes” pulse on Save button when enabled by your JS */
+#sbSave:not([disabled]){
+  box-shadow: 0 0 0 0 rgba(106,134,255,.45);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%{ box-shadow:0 0 0 0 rgba(106,134,255,.45); }
+  70%{ box-shadow:0 0 0 12px rgba(106,134,255,0); }
+  100%{ box-shadow:0 0 0 0 rgba(106,134,255,0); }
+}
+
+/* Responsive table labels */
+@media (max-width: 820px){
+  .sb-table thead{ display:none; }
+  .sb-table tr{ display:grid; grid-template-columns: 1fr; padding:10px; border-bottom:1px solid #1b1b1b; }
+  .sb-table td{ display:flex; justify-content:space-between; gap:10px; border:none; padding:6px 4px; }
+  .sb-table td::before{ content: attr(data-th); color:var(--muted); }
+  .sb-table td.drag{ order:-1; justify-content:flex-start; }
+}
+
+/* Small helpers if your JS toggles classes */
+.is-new { outline: 2px dashed rgba(106,134,255,.35); outline-offset: -4px; }
+.is-removed { background:#190f0f; }
+.is-changed { background: linear-gradient(90deg, rgba(155,180,255,.10), transparent); }

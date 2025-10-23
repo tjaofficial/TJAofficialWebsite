@@ -15,5 +15,6 @@ urlpatterns = [
     path("booking/", include("bookingstack.urls", namespace="bookingstack")),
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("rewards/", include("rewards.urls_control", namespace="rewards_control")),
+    path("setbuilder/", include(("setbuilder.urls_control", "setbuilder"), namespace="setbuilder")),
     # path("music/", include("musiclib.urls")),
 ]

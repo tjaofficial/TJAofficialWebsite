@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'bookingstack',
     'accounts',
     "rewards.apps.RewardsConfig",
+    "setbuilder",
 ]
 
 MIDDLEWARE = [

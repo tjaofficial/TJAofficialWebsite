@@ -1,0 +1,28 @@
+{# templates/setbuilder/shows_list.html #}
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Saved Shows{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/shows_list.css' %}">
+  <script defer src="{% static 'js/shows_list.js' %}"></script>
+{% endblock %}
+{% block content %}
+<h1>Saved Shows</h1>
+<p><a class="btn" href="{% url 'control:setbuilder:build_show' %}">Create Show</a></p>
+
+<table class="cp-table">
+  <thead><tr><th>Show Label</th><th>Vibe</th><th>Duration</th><th>Saved</th><th></th></tr></thead>
+  <tbody>
+    {% for s in rows %}
+      <tr>
+        <td>{{ s.label }}</td>
+        <td>{{ s.get_vibe_display }}</td>
+        <td>{{ s.total_label }}</td>
+        <td>{{ s.created_at|date:"Y-m-d H:i" }}</td>
+        <td><a href="{% url 'control:setbuilder:show_edit' s.slug %}">Edit</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="muted">No saved shows yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

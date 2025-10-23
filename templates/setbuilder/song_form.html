@@ -1,0 +1,115 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}{{ mode|title }} Song{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/song_form.css' %}">
+<script defer src="{% static 'js/song_form.js' %}"></script>
+{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:10px">{{ mode|title }} Song</h1>
+
+<form method="post" class="cp-form sf-form" novalidate>
+  {% csrf_token %}
+
+  <!-- TITLE + DURATION -->
+  <div class="sf-row">
+    <div class="sf-field">
+      <div class="sf-label">Title</div>
+      <div class="sf-control">{{ form.title }}</div>
+      {% if form.title.errors %}<div class="sf-error">{{ form.title.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="sf-field">
+      <div class="sf-label">Duration</div>
+      <div class="sf-duration">
+        <div class="sf-mini">
+          <span>duration in seconds</span>
+          {{ form.duration_seconds }}
+        </div>
+      </div>
+      {% if form.duration_seconds.errors %}<div class="sf-error">{{ form.duration_seconds.errors.0 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- ARTIST / GENRE / FEELING -->
+  <div class="sf-row sf-cols-3">
+    <div class="sf-field">
+      <div class="sf-label">Primary Artist</div>
+      <div class="sf-control">{{ form.primary_artist }}</div>
+      {% if form.primary_artist.errors %}<div class="sf-error">{{ form.primary_artist.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="sf-field">
+      <div class="sf-label">Genre</div>
+      <div class="sf-control">
+        {# genre is a <select> from choices #}
+        {{ form.genre }}
+        <div class="sf-pillset" data-genres>
+          <button type="button" class="pill" data-val="hiphop" aria-pressed="false">Hip-Hop</button>
+          <button type="button" class="pill" data-val="rnb" aria-pressed="false">R&amp;B</button>
+          <button type="button" class="pill" data-val="pop" aria-pressed="false">Pop</button>
+          <button type="button" class="pill" data-val="edm" aria-pressed="false">EDM</button>
+          <button type="button" class="pill" data-val="trap" aria-pressed="false">Trap</button>
+          <button type="button" class="pill" data-val="alt" aria-pressed="false">Alt/Indie</button>
+          <button type="button" class="pill" data-val="other" aria-pressed="false">Other</button>
+        </div>
+        <div class="sf-hint">Pick a pill or use the dropdown.</div>
+      </div>
+      {% if form.genre.errors %}<div class="sf-error">{{ form.genre.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="sf-field">
+      <div class="sf-label">Feeling / Vibe (short)</div>
+      <div class="sf-control">{{ form.feeling }}</div>
+      {% if form.feeling.errors %}<div class="sf-error">{{ form.feeling.errors.0 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- COLLAB TOGGLE -->
+  <div class="sf-row">
+    <div class="sf-field">
+      <div class="sf-label">Collaboration?</div>
+      <div class="sf-toggle">
+        {{ form.is_collab }}
+        <span>Yes, this is a collab</span>
+      </div>
+      {% if form.is_collab.errors %}<div class="sf-error">{{ form.is_collab.errors.0 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <hr class="sf-hr">
+
+  <!-- COLLAB DETAILS -->
+  <div data-collab-wrap class="sf-collab" style="display:none">
+    <div class="sf-row">
+      <div class="sf-field">
+        <div class="sf-label">Collab Kind</div>
+        {# choices: headliners / other #}
+        <div class="sf-control">{{ form.collab_kind }}</div>
+        <div class="sf-hint">Choose “Headliners” to select artists; choose “Other” to type names.</div>
+        {% if form.collab_kind.errors %}<div class="sf-error">{{ form.collab_kind.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="sf-row">
+      <div class="sf-field sf-block" data-collab-headliners>
+        <div class="sf-label">Headliner Collaborators</div>
+        <div class="sf-control">{{ form.collaborator_artists }}</div>
+        <div class="sf-hint">Hold ⌘/Ctrl to select multiple.</div>
+        {% if form.collaborator_artists.errors %}<div class="sf-error">{{ form.collaborator_artists.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="sf-field sf-block" data-collab-other>
+        <div class="sf-label">Other Collaborators</div>
+        <div class="sf-control">{{ form.collab_other }}</div>
+        <div class="sf-hint">Comma-separated list of non-headliner names.</div>
+        {% if form.collab_other.errors %}<div class="sf-error">{{ form.collab_other.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="sf-actions">
+    <a class="btn ghost" href="{% url 'control:setbuilder:songs' %}">Cancel</a>
+    <button class="btn" type="submit">Save Song</button>
+  </div>
+</form>
+{% endblock %}

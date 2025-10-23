@@ -47,6 +47,12 @@
 				<ul>
 					<li><a href="{% url 'control:equipment:list' %}">List</a></li>
 				</ul>
+				<a href="#">Show Builder</a>
+				<ul>
+					<li><a href="{% url 'control:setbuilder:shows_list' %}">Headliner Sets</a></li>
+					<li><a href="{% url 'control:setbuilder:build_show' %}">Create New Set</a></li>
+					<li><a href="{% url 'control:setbuilder:songs' %}">My Song List</a></li>
+				</ul>
 				<a href="#">Tickets</a>
 				<ul>
 					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}

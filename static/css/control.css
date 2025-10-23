@@ -4,7 +4,7 @@
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto}
 .a{color:var(--accent)} a{color:var(--ink);text-decoration:none}
 .cp-shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
-.cp-sidebar{background:var(--panel);padding:16px;position:sticky;top:0;height:100vh}
+.cp-sidebar{background:var(--panel);padding:16px;position:sticky;top:0;}
 .cp-brand{font-weight:700;margin-bottom:16px}
 .cp-nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--muted)}
 .cp-nav a:hover{background:#1a1f27;color:var(--ink)}
