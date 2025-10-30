@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static music_extras %}
+{% block title %}Music{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/music.css' %}">
+    <script defer src="{% static 'js/music.js' %}"></script>
+{% endblock  %}
+{% block hero %}
+    <section class="hero reveal">
+        <div class="container">
+            <h1 class="hero-title">Discography</h1>
+            <p class="hero-sub">Albums, EPs, and Singles — newest first.</p>
+            <div class="hero-actions">
+                <a class="btn ghost" href="/music/">Discography</a>
+                <a class="btn ghost" href="{% url 'exclusive_music' %}">Exclusive Music</a>
+            </div>
+        </div>
+        <canvas id="orb" aria-hidden="true"></canvas>
+    </section>
+{% endblock %}
+
+{% block content %}
+    <section class="reveal" style="margin-top: 40px;">
+        <!-- Filter -->
+        <div class="music-controls">
+            <input type="search" id="musicFilter" placeholder="Filter by title or track… (e.g., toxic, night)" aria-label="Filter discography">
+        </div>
+
+        {% if releases %}
+            <div class="discography" id="discography">
+                {% for r in releases %}
+                    <article class="release-card" data-title="{{ r.title|lower }}" data-type="{{ r.release_type }}">
+                        <div class="rel-media">
+                            {% if r.cover_url %}
+                                <img src="{{ r.cover_url }}" alt="{{ r.title }} cover art">
+                            {% else %}
+                                <div class="img-ph">TJA</div>
+                            {% endif %}
+                        </div>
+                        <div class="rel-body">
+                            <header class="rel-head">
+                                <h2 class="rel-title">{{ r.title }}</h2>
+                                <div class="rel-meta">
+                                    <span class="pill">{{ r.type_label }}</span>
+                                    <span class="muted">{{ r.release_date|date:"F j, Y" }}</span>
+                                </div>
+                                {% if r.description %}<p class="rel-desc">{{ r.description }}</p>{% endif %}
+                            </header>
+
+                            <ol class="tracklist">
+                                {% if r.release_type == "single" %}
+                                    {% with t=r.tracks.first %}
+                                        {% if t %}
+                                            <li class="track" data-track="{{ t.title|lower }}">
+                                                <span class="t-num">1</span>
+                                                <span class="t-title">{{ t.title }}</span>
+                                                <span class="t-dur">{{ t.duration_seconds|mmss }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="track"><span class="t-title">Single</span></li>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% for t in r.tracks.all %}
+                                        <li class="track" data-track="{{ t.title|lower }}">
+                                            <span class="t-num">{{ t.track_number }}</span>
+                                            <span class="t-title">{{ t.title }}</span>
+                                            <span class="t-dur">{{ t.duration_seconds|mmss }}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li class="track"><span class="t-title">Tracklist coming soon</span></li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ol>
+
+                            <footer class="rel-foot">
+                                {% if r.links_url %}
+                                    <a class="btn" href="{{ r.links_url }}" target="_blank" rel="noopener">All Platforms</a>
+                                {% else %}
+                                    <a class="btn ghost" href="/links/">All Platforms</a>
+                                {% endif %}
+                                <button class="btn ghost rel-collapse" data-collapse>Collapse</button>
+                            </footer>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="card">No exclusive releases yet. Come back soon!</p>
+        {% endif %}
+    </section>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+{% endblock %}

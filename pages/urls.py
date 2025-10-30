@@ -22,6 +22,7 @@ urlpatterns = [
     path("checkout/cancel/", views.checkout_cancel, name="checkout_cancel"),
     path("webhooks/stripe/", views.stripe_webhook, name="stripe_webhook"),
     path('music/', views.music, name='music'),
+    path('music/exclusive/', views.exclusive_music, name='exclusive_music'),
     path('shows/', views.shows, name='shows'),
     path("shows/new/", views.add_show, name="add_show"),
     path('videos/', views.videos, name='videos'),
