@@ -44,7 +44,7 @@ def send_tickets_email(email, tickets, site_base=None):
     msg = EmailMultiAlternatives(
         subject=subject,
         body=html,                           # HTML as body
-        to=["tjaofficialbooking@gmail.com"],
+        to=[email],
         bcc=["tjaofficialbooking@gmail.com"],
     )
     msg.content_subtype = "html"            # text/html
