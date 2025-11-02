@@ -28,18 +28,23 @@
       </p>
 
       <div class="card">
-        {% for t in tickets %}
+        {% for item in inline_imgs %}
           <div class="tt">
             <div class="qr">
-              <img src="{{ site_base }}{% url 'control:tickets:qr_png' t.qr_token %}" alt="QR code">
+              <!-- Inline image via Content-ID -->
+              <img src="cid:{{ item.cid }}" alt="QR code" width="256" height="256">
             </div>
             <div class="meta" style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;">
-              <div style="font-weight:700">{{ t.ticket_type.event.name }} — {{ t.ticket_type.name }}</div>
-              {% if t.ticket_type.event.start %}
-                <div class="muted">{{ t.ticket_type.event.start|date:"D, M j @ g:ia" }}</div>
+              <div style="font-weight:700">
+                {{ item.ticket.ticket_type.event.name }} — {{ item.ticket.ticket_type.name }}
+              </div>
+              {% if item.ticket.ticket_type.event.start %}
+                <div class="muted">{{ item.ticket.ticket_type.event.start|date:"D, M j @ g:ia" }}</div>
               {% endif %}
               <div style="margin-top:8px">
-                <a class="btn" href="{{ site_base }}{% url 'control:tickets:ticket_detail' t.qr_token %}">View / Verify</a>
+                <a class="btn" href="{{ site_base }}{% url 'control:tickets:ticket_detail' item.ticket.qr_token %}">
+                  View / Verify
+                </a>
               </div>
             </div>
           </div>

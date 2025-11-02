@@ -5,6 +5,9 @@ from django.urls import reverse
 from django.conf import settings
 from tickets.utils import qr_png_bytes
 from django.utils import timezone
+import qrcode
+from io import BytesIO
+from email.mime.image import MIMEImage
 
 def enqueue_mass_email(subscribers, subject, body, from_email=None):
     messages = []
@@ -12,26 +15,51 @@ def enqueue_mass_email(subscribers, subject, body, from_email=None):
         messages.append((subject, body, from_email, [s.email]))
     send_mass_mail(messages, fail_silently=False)
 
+def qr_png_bytes(data: str) -> bytes:
+    qr = qrcode.QRCode(box_size=8, border=2)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
 def send_tickets_email(email, tickets, site_base=None):
     site_base = settings.SITE_BASE_URL
     subject = "Your Tickets"
-    context = {"tickets": tickets, "site_base": site_base}
-    html = render_to_string("tickets/email_tickets.html", context)
 
-    msg = EmailMultiAlternatives(
-        subject, 
-        "Your tickets are attached.", 
-        to=[email],
-        bcc=["tjaofficialbooking@gmail.com"],
-    )
-    msg.attach_alternative(html, "text/html")
-
-    # Attach one PNG per ticket
+    # Prepare inline images (cid + bytes)
+    inline_imgs = []
     for t in tickets:
+        cid = f"qr_{t.qr_token}"  # referenced as src="cid:qr_..."
         verify_url = f"{site_base}{reverse('control:tickets:ticket_detail', args=[t.qr_token])}"
         png = qr_png_bytes(verify_url)
-        filename = f"ticket_{t.qr_token}.png"
-        msg.attach(filename, png, "image/png")
+        inline_imgs.append({"ticket": t, "cid": cid, "png": png})
+
+    # Render HTML that uses the cid values
+    context = {"inline_imgs": inline_imgs, "site_base": site_base}
+    html = render_to_string("tickets/email_tickets.html", context)
+
+    # Make HTML the main body; mark message as multipart/related
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=html,                           # HTML as body
+        to=["tjaofficialbooking@gmail.com"],
+        bcc=["tjaofficialbooking@gmail.com"],
+    )
+    msg.content_subtype = "html"            # text/html
+    msg.mixed_subtype = "related"           # so inline images bind to this HTML
+
+    # Attach inline images with Content-ID headers
+    for item in inline_imgs:
+        img = MIMEImage(item["png"])
+        img.add_header("Content-ID", f"<{item['cid']}>")  # angle brackets required
+        img.add_header("Content-Disposition", "inline",
+                      filename=f"ticket_{item['ticket'].qr_token}.png")
+        msg.attach(img)
+
+        # Optional: also attach a downloadable copy
+        # msg.attach(f"ticket_{item['ticket'].qr_token}.png", item["png"], "image/png")
 
     msg.send(fail_silently=False)
 
