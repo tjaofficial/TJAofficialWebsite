@@ -136,32 +136,28 @@ def stripe_webhook(request):
     if event.get("type") in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
         session = event["data"]["object"]
         session_id = session.get("id")
-
         md = session.get("metadata") or {}
         ids = [int(x) for x in (md.get("reservation_ids") or "").split(",") if x.strip().isdigit()]
 
-        # buyer details (prefer customer_details, fall back to metadata)
         cd = session.get("customer_details") or {}
         email = cd.get("email") or md.get("purchaser_email", "")
         name  = cd.get("name")  or md.get("purchaser_name", "")
         sold_by_artist_id = md.get("sold_by_artist_id")
 
-        GRACE = timedelta(minutes=5)
-
         with transaction.atomic():
+            # Primary match: the exact reservations from metadata, still unfulfilled
             holds = (TicketReservation.objects
                      .select_for_update()
-                     .filter(
-                         id__in=ids,
-                         stripe_session_id=session_id,
-                         fulfilled=False,
-                         # if the browser took a bit to return from Stripe, allow lateness
-                         expires_at__gt=timezone.now() - GRACE
-                     ))
+                     .filter(id__in=ids, fulfilled=False))
+
+            # If nothing found, try by session_id as a fallback (handles metadata edge cases)
+            if not holds.exists() and session_id:
+                holds = (TicketReservation.objects
+                         .select_for_update()
+                         .filter(stripe_session_id=session_id, fulfilled=False))
 
             if not holds.exists():
-                # likely already fulfilled (idempotent) or expired/unknown session
-                logger.info("No holds to fulfill for session %s (ids=%s)", session_id, ids)
+                logger.info("No holds to fulfill for session %s (ids=%s). Possibly already processed or not found.", session_id, ids)
                 return HttpResponse(status=200)
 
             tickets_created = []
@@ -175,7 +171,6 @@ def stripe_webhook(request):
                         payment_method="card",
                     )
                     tickets_created.append(t)
-
                 h.fulfilled = True
                 h.save(update_fields=["fulfilled"])
 
@@ -187,6 +182,7 @@ def stripe_webhook(request):
                 logger.exception("Ticket email send failed for session %s to %s", session_id, email)
 
     return HttpResponse(status=200)
+
 
 
 @login_required
