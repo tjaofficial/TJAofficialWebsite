@@ -11,7 +11,8 @@ urlpatterns = [
      # QR + scan/check-in
     path("scan/", views.scan_page, name="scan"),
     path("scan/check/", views.scan_check, name="scan_check"),
-    path("ticket/<uuid:token>/", views.ticket_detail, name="ticket_detail"),
+    path("ticket/<uuid:token>/", views.public_ticket, name="ticket_detail"),
+    path("admin-ticket/<uuid:token>/", views.admin_ticket, name="admin_ticket"),
     path("ticket/<uuid:token>/checkin/", views.ticket_checkin, name="ticket_checkin"),
     path("ticket/<uuid:token>/resend/", views.ticket_resend_email, name="ticket_resend"),
     path("qr/<uuid:token>.png", views.qr_png, name="qr_png"),

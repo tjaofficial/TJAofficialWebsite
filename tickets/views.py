@@ -93,9 +93,12 @@ def _extract_token(text: str):
 
 # --- Ticket detail ---
 @is_super
-def ticket_detail(request, token):
+def admin_ticket(request, token):
     t = get_object_or_404(Ticket.objects.select_related("ticket_type","ticket_type__event"), qr_token=token)
     return render(request, "tickets/ticket_detail.html", {"t": t})
+
+def public_ticket(request, token):
+    return redirect("ticket_detail", token)
 
 # --- Ticket check-in ---
 @require_POST
