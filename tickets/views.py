@@ -124,65 +124,70 @@ def issue_tickets(request):
     
 @csrf_exempt
 def stripe_webhook(request):
-    GRACE = timedelta(minutes=5)
-
-    holds = (TicketReservation.objects
-            .select_for_update()
-            .filter(
-                id__in=ids,
-                stripe_session_id=session_id,
-                fulfilled=False,
-                expires_at__gt=timezone.now() - GRACE  # <-- allow slight lateness
-            ))
     payload = request.body
     sig = request.META.get("HTTP_STRIPE_SIGNATURE")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig, settings.STRIPE_WEBHOOK_SECRET)
-    except Exception as e:
+    except Exception:
+        logger.exception("Stripe webhook signature/parse failed")
         return HttpResponse(status=400)
 
-    if event["type"] == "checkout.session.completed":
+    if event.get("type") in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
         session = event["data"]["object"]
         session_id = session.get("id")
-        email = (session.get("customer_details") or {}).get("email") or session.get("metadata", {}).get("purchaser_email", "")
-        name  = (session.get("customer_details") or {}).get("name") or session.get("metadata", {}).get("purchaser_name", "")
-        artist_id_meta = (session.get("metadata") or {}).get("sold_by_artist_id")
-        reservation_ids = (session.get("metadata") or {}).get("reservation_ids", "")
-        ids = [int(x) for x in reservation_ids.split(",") if x.strip().isdigit()]
 
-        # fulfill under transaction; ignore if already done (idempotent)
-        from django.db import transaction
+        md = session.get("metadata") or {}
+        ids = [int(x) for x in (md.get("reservation_ids") or "").split(",") if x.strip().isdigit()]
+
+        # buyer details (prefer customer_details, fall back to metadata)
+        cd = session.get("customer_details") or {}
+        email = cd.get("email") or md.get("purchaser_email", "")
+        name  = cd.get("name")  or md.get("purchaser_name", "")
+        sold_by_artist_id = md.get("sold_by_artist_id")
+
+        GRACE = timedelta(minutes=5)
+
         with transaction.atomic():
             holds = (TicketReservation.objects
                      .select_for_update()
-                     .filter(id__in=ids, stripe_session_id=session_id, fulfilled=False, expires_at__gt=timezone.now()))
-            if not holds:
+                     .filter(
+                         id__in=ids,
+                         stripe_session_id=session_id,
+                         fulfilled=False,
+                         # if the browser took a bit to return from Stripe, allow lateness
+                         expires_at__gt=timezone.now() - GRACE
+                     ))
+
+            if not holds.exists():
+                # likely already fulfilled (idempotent) or expired/unknown session
+                logger.info("No holds to fulfill for session %s (ids=%s)", session_id, ids)
                 return HttpResponse(status=200)
+
             tickets_created = []
             for h in holds:
-                # issue h.qty tickets
                 for _ in range(h.qty):
                     t = Ticket.objects.create(
                         ticket_type=h.ticket_type,
                         purchaser_email=email,
                         purchaser_name=name or h.purchaser_name,
-                        sold_by_artist_id = int(artist_id_meta) if artist_id_meta else None,
-                        payment_method = "card"
+                        sold_by_artist_id=int(sold_by_artist_id) if sold_by_artist_id else None,
+                        payment_method="card",
                     )
                     tickets_created.append(t)
+
                 h.fulfilled = True
                 h.save(update_fields=["fulfilled"])
 
-        # email the QR links (or images)
         if tickets_created and email:
             try:
                 send_tickets_email(email, tickets_created, site_base=settings.SITE_BASE_URL)
-                send_notification_update('tickets', tickets_created, request=request)
-            except Exception as e:
+                send_notification_update("tickets", tickets_created, request=request)
+            except Exception:
                 logger.exception("Ticket email send failed for session %s to %s", session_id, email)
 
-
     return HttpResponse(status=200)
+
 
 @login_required
 def scan_foh(request):
