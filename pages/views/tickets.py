@@ -39,3 +39,23 @@ def ticket_detail(request, token):
         "share_url": request.build_absolute_uri(),
     }
     return render(request, "tickets/public_ticket_detail.html", ctx)
+
+# from tickets.models import TicketReservation, Ticket
+# from coreutils.mailer import send_tickets_email
+# from django.conf import settings
+
+# SESSION_ID = "cs_live_a1ObMQnGcTDUdZPEfQjGJhCu427frVMsIuEvuqrf8XodAbja13GYL2Jq72"
+
+# res = TicketReservation.objects.filter(stripe_session_id=SESSION_ID).first()
+# buyer_email = ((res.purchaser_email or "").strip() if res else "")
+# print("Buyer email:", buyer_email or "(none)")
+
+# qs = (Ticket.objects.filter(purchaser_email__iexact=buyer_email)
+#       .select_related("ticket_type","ticket_type__event")) if buyer_email else Ticket.objects.none()
+# tickets = list(qs)
+# print("Tickets found:", len(tickets))
+
+# bool(tickets) and send_tickets_email(buyer_email, tickets, site_base=settings.SITE_BASE_URL)
+# print(("No tickets to send","Done")[bool(tickets)])
+
+

@@ -13,7 +13,7 @@
   <body>
     <div class="cp-shell">
 		<aside class="cp-sidebar">
-			<div class="cp-brand"><a href="{% url 'control:home' %}">TJA Control</a></div>
+			<div class="cp-brand"><h2>{{user.artist_dashboard.name}}</h2></div>
 			<nav class="cp-nav">
 				{% if not request.user.is_superuser %}<a href="{% url 'control:pages:artist_dashboard' request.user.artist_dashboard.id %}">Dashboard</a>{% endif %}
 				{% if request.user.is_superuser %}
@@ -36,35 +36,45 @@
 						<li><a href="{% url 'control:pages:artist_list' %}">Artist List</a></li>
 					</ul>
 				{% endif %}
-				<a href="#">Events</a>
-				<ul>
-					<li><a href="{% url 'control:events:list' %}">Events</a></li>
-					<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
-					<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
-					{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
-				</ul>
-				<a href="#">Equipment</a>
-				<ul>
-					<li><a href="{% url 'control:equipment:list' %}">List</a></li>
-				</ul>
-				<a href="#">Show Builder</a>
-				<ul>
-					<li><a href="{% url 'control:setbuilder:shows_list' %}">Headliner Sets</a></li>
-					<li><a href="{% url 'control:setbuilder:build_show' %}">Create New Set</a></li>
-					<li><a href="{% url 'control:setbuilder:songs' %}">My Song List</a></li>
-				</ul>
-				<a href="#">Tickets</a>
-				<ul>
-					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
-					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
-					<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
-					{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
-				</ul>
-				<a href="#">Booking</a>
-				<ul>
-					<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
-					<li><a href="{% url 'presskit_daynnight' %}">Tour PressKit</a></li>
-				</ul>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Events</h4>
+					<ul>
+						<li><a href="{% url 'control:events:list' %}">Events</a></li>
+						<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
+						<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
+						{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
+					</ul>
+				</div>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Equipment</h4>
+					<ul>
+						<li><a href="{% url 'control:equipment:list' %}">List</a></li>
+					</ul>
+				</div>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Show Builder</h4>
+					<ul>
+						<li><a href="{% url 'control:setbuilder:shows_list' %}">Headliner Sets</a></li>
+						<li><a href="{% url 'control:setbuilder:build_show' %}">Create New Set</a></li>
+						<li><a href="{% url 'control:setbuilder:songs' %}">My Song List</a></li>
+					</ul>
+				</div>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Tickets</h4>
+					<ul>
+						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
+						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
+						<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
+						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
+					</ul>
+				</div>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Booking</h4>
+					<ul>
+						<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
+						<li><a href="{% url 'presskit_daynnight' %}">Tour PressKit</a></li>
+					</ul>
+				</div>
 				<form action="{% url 'control:accounts:logout' %}" method="post" style="display:inline">
 					{% csrf_token %}
 					<button type="submit">Logout</button>
@@ -73,7 +83,7 @@
 				<a href="{% url 'equipment:list' %}">Equipment</a> {% endcomment %}
 			</nav>
 		</aside>
-      <main class="cp-main">
+		<main class="cp-main">
 			<header class="cp-topbar" style="align-items: center;justify-content: space-between;">
 				<h3 style="margin: 0px;">{% block header %}{% endblock %}</h3>
 				<form method="get" action="" class="cp-quicksearch">
@@ -90,7 +100,7 @@
 				{% endif %}
 				{% block content %}{% endblock %}
 			</section>
-      </main>
+		</main>
     </div>
     <script src="{% static 'js/control.js' %}"></script>
     {% block scripts %}{% endblock %}

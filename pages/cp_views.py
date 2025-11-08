@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from pages.models import Artist
 from tickets.models import Ticket
-from events.models import ArtistSaleLink, ArtistLinkHit
+from events.models import ArtistSaleLink, ArtistLinkHit, EventArtist
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 
@@ -100,6 +100,7 @@ def artist_dashboard(request, artist_id):
         # sales attributed to ARTIST for that EVENT (card/cash/comp)
         sales_qs = base.filter(ticket_type__event_id=link.event_id, issued_at__gte=since)
         sales_total = sales_qs.count()
+        slot_id = EventArtist.objects.get(event=link.event_id, artist=request.user.artist_dashboard).id
         conv_rows.append({
             "event_id": link.event_id,
             "event_name": link.event.name,
@@ -108,6 +109,7 @@ def artist_dashboard(request, artist_id):
             "hits": hits,
             "sales": sales_total,
             "rate": (sales_total / hits * 100.0) if hits else None,
+            "slot_id": slot_id,
         })
 
     # --- Recent 30-day timeline (simple counts per day) ---

@@ -6,6 +6,7 @@ from .utils import ensure_event_checklist
 from .forms import EventForm, VenueForm, Event, TechPersonForm, EventTechAssignForm, EventMediaForm
 from tickets.models import TicketType, TicketReservation, Ticket
 from pages.models import Artist
+from events.models import ArtistSaleLink
 from django.db import transaction
 import stripe
 from datetime import timedelta
@@ -338,7 +339,7 @@ def event_artist_remove(request, event_id, slot_id):
     slot.delete()
     return redirect("control:events:event_artists", event_id=ev.id)
 
-@is_super
+@login_required
 def event_artist_link(request, event_id, slot_id):
     ev = get_object_or_404(Event, pk=event_id)
     slot = get_object_or_404(EventArtist.objects.select_related("artist"), id=slot_id, event=ev)
@@ -350,7 +351,7 @@ def event_artist_link(request, event_id, slot_id):
         "event": ev, "slot": slot, "link": link, "purchase_url": purchase_url
     })
 
-@is_super
+@login_required
 def artist_link_qr(request, event_id, token):
     base = request.build_absolute_uri("/").rstrip("/")
     purchase_url = f"{base}{reverse('control:tickets:public_purchase', args=[event_id])}?artist={token}"

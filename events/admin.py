@@ -48,3 +48,6 @@ class EventChecklistItemInline(admin.TabularInline):
 @admin.register(EventChecklist)
 class EventChecklistAdmin(admin.ModelAdmin):
     inlines = [EventChecklistItemInline]
+
+admin.site.register(EventArtist)
+admin.site.register(ArtistSaleLink)

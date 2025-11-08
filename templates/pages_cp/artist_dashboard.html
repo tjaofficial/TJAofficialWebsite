@@ -4,9 +4,57 @@
 <h1>Artist Dashboard — {{ artist.name }}</h1>
 <div class="kpi">
   <div class="card"><h2>Total Sold</h2><div style="font-size:28px">{{ kpi.total }}</div></div>
-  <div class="card"><h2>Card</h2><div style="font-size:28px">{{ kpi.card }}</div></div>
-  <div class="card"><h2>Cash</h2><div style="font-size:28px">{{ kpi.cash }}</div></div>
+  {% comment %} <div class="card"><h2>Card</h2><div style="font-size:28px">{{ kpi.card }}</div></div>
+  <div class="card"><h2>Cash</h2><div style="font-size:28px">{{ kpi.cash }}</div></div> {% endcomment %}
   <div class="card"><h2>Comp</h2><div style="font-size:28px">{{ kpi.comp }}</div></div>
+</div>
+<div class="card">
+	<h3>Events</h3>
+	<p>Conversion by Link (last {{ days }} days)</p>
+	<form method="get" style="margin-bottom:10px;">
+		<div class="form-row">
+			Filter Last <input class="input" type="number" name="days" min="1" value="{{ days }}" style="width: 67px;"> Days
+			<button class="btn">Apply</button>
+		</div>
+	</form>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Event</th>
+				<th>Date</th>
+				<th>Share URL</th>
+				<th>Hits</th>
+				<th>Sales</th>
+				<th>Conv%</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for r in conv_rows %}
+				<tr>
+				<td>{{ r.event_name }}</td>
+				<td>{{ r.event_start|date:"Y-m-d H:i" }}</td>
+				<td>
+					<!-- “tracked” share URL (logs hit, then redirects) -->
+					<a class="btn" href="{% url 'control:events:event_artist_link' r.event_id r.slot_id %}">Get Link or QR</a></td>
+					{% comment %} <a href="{% url 'control:events:artist_link_redirect' r.token %}" target="_blank">
+						{% url 'control:events:artist_link_redirect' r.token %}
+					</a> {% endcomment %}
+				</td>
+				<td>{{ r.hits }}</td>
+				<td>{{ r.sales }}</td>
+				<td>{% if r.rate is not None %}{{ r.rate|floatformat:1 }}%{% else %}—{% endif %}</td>
+				<td>
+					<a href="{% url 'control:events:artist_link_redirect' r.token %}">Card</a>
+					<a href="{% url 'control:events:artist_cash_sale' r.event_id request.user.artist_dashboard.id %}">Cash</a></td>
+				</tr>
+			{% empty %}
+				<tr>
+					<td colspan="6" class="muted">No links yet.</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 </div>
 <div class="card">
   <h3>Top Events</h3>
@@ -29,42 +77,9 @@
   </table>
 </div>
 
-<div class="card">
-  <h3>Conversion by Link (last {{ days }} days)</h3>
-  <form method="get" style="margin-bottom:10px;">
-    <div class="form-row">
-      <input class="input" type="number" name="days" min="1" value="{{ days }}">
-      <button class="btn">Apply</button>
-    </div>
-  </form>
-  <table class="table">
-    <thead><tr><th>Event</th><th>Date</th><th>Share URL</th><th>Hits</th><th>Sales</th><th>Conv%</th><th>Actions</th></tr></thead>
-    <tbody>
-      {% for r in conv_rows %}
-        <tr>
-          <td>{{ r.event_name }}</td>
-          <td>{{ r.event_start|date:"Y-m-d H:i" }}</td>
-          <td>
-            <!-- “tracked” share URL (logs hit, then redirects) -->
-            <a href="{% url 'control:events:artist_link_redirect' r.token %}" target="_blank">
-              {% url 'control:events:artist_link_redirect' r.token %}
-            </a>
-          </td>
-          <td>{{ r.hits }}</td>
-          <td>{{ r.sales }}</td>
-          <td>{% if r.rate is not None %}{{ r.rate|floatformat:1 }}%{% else %}—{% endif %}</td>
-		  <td>
-			<a href="{% url 'control:events:artist_link_redirect' r.token %}">Card</a>
-			<a href="{% url 'control:events:artist_cash_sale' r.event_id request.user.artist_dashboard.id %}">Cash</a></td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="6" class="muted">No links yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
 
-<div class="card">
+
+{% comment %} <div class="card">
   <h3>Last 30 Days — Tickets per Day</h3>
   <table class="table">
     <thead><tr><th>Date</th><th>Tickets</th></tr></thead>
@@ -74,7 +89,7 @@
       {% endfor %}
     </tbody>
   </table>
-</div>
+</div> {% endcomment %}
 
 <div class="card">
   <h3>Quick Links</h3>

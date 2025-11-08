@@ -21,8 +21,8 @@
       <td>
         {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:edit' e.id %}">Edit</a>{% endif %}
         <a class="btn" href="{% url 'control:events:dashboard' e.id %}">View</a>
+        <a class="btn ghost" href="{% url 'control:events:event_artist_assign' e.id %}">Assign Artists</a>
         <a class="btn ghost" href="{% url 'control:events:event_checklist' e.id %}">Checklist</a>
-
     </td>
     </tr>
   {% empty %}

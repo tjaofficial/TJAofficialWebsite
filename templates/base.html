@@ -89,7 +89,11 @@
 
                 <nav class="nav" data-nav>
                     {% if user.is_authenticated %}
-                        <a class="nav-link" href="/rewards/dashboard/">Dashboard</a>
+                        {% if user.artist_dashboard %}
+                            <a class="nav-link" href="{% url 'control:pages:artist_dashboard' user.artist_dashboard.id %}">Dashboard</a>
+                        {% else %}
+                            <a class="nav-link" href="/rewards/dashboard/">Dashboard</a>
+                        {% endif %}
                     {% else %}
                         <a class="nav-link" href="/">Home</a>
                     {% endif %}
