@@ -4,9 +4,9 @@
 <h1>Artist Dashboard — {{ artist.name }}</h1>
 <div class="kpi">
   <div class="card"><h2>Total Sold</h2><div style="font-size:28px">{{ kpi.total }}</div></div>
-  {% comment %} <div class="card"><h2>Card</h2><div style="font-size:28px">{{ kpi.card }}</div></div>
-  <div class="card"><h2>Cash</h2><div style="font-size:28px">{{ kpi.cash }}</div></div> {% endcomment %}
+  <div class="card"><h2>Cash</h2><div style="font-size:28px">{{ kpi.cash }}</div></div>
   <div class="card"><h2>Comp</h2><div style="font-size:28px">{{ kpi.comp }}</div></div>
+  {% comment %} <div class="card"><h2>Card</h2><div style="font-size:28px">{{ kpi.card }}</div></div> {% endcomment %}
 </div>
 <div class="card">
 	<h3>Events</h3>
@@ -45,8 +45,8 @@
 				<td>{{ r.sales }}</td>
 				<td>{% if r.rate is not None %}{{ r.rate|floatformat:1 }}%{% else %}—{% endif %}</td>
 				<td>
-					<a href="{% url 'control:events:artist_link_redirect' r.token %}">Card</a>
-					<a href="{% url 'control:events:artist_cash_sale' r.event_id request.user.artist_dashboard.id %}">Cash</a></td>
+					{% comment %} <a href="{% url 'control:events:artist_link_redirect' r.token %}">Card</a> {% endcomment %}
+					<a class="btn" href="{% url 'control:events:artist_cash_sale' r.event_id request.user.artist_dashboard.id %}">Issue Cash Tickets</a></td>
 				</tr>
 			{% empty %}
 				<tr>

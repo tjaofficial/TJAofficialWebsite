@@ -1,4 +1,4 @@
-{% extends 'controlpanel/dashboard.html' %}
+{% extends 'controlpanel/dashboard.html' %}{% load static shop_extras %}
 {% block title %}Cash Sale — {{ artist.name }} / {{ event.name }}{% endblock %}
 {% block content %}
 <h1>Cash Sale — {{ artist.name }} / {{ event.name }}</h1>
@@ -16,7 +16,7 @@
       {% for tt in types %}
       <tr>
         <td>{{ tt.name }}</td>
-        <td>${{ tt.price_cents|floatformat:-2 }}</td>
+        <td>{{ tt.price_cents|money }}</td>
         <td>{{ tt.remaining }}</td>
         <td><input class="input" type="number" min="0" max="{{ tt.remaining }}" name="qty_{{ tt.id }}" value="0"></td>
       </tr>

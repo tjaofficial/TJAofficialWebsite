@@ -63,7 +63,7 @@
               <input class="qty-in" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantity">
               <button class="qty-btn" data-inc aria-label="Increase">+</button>
             </div>
-            <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %}>Add to Cart</button>
+            {% comment %} <button class="btn addCart" {% if p.inventory == 0 %}disabled{% endif %}>Add to Cart</button> {% endcomment %}
           </div>
         </article>
       {% endfor %}

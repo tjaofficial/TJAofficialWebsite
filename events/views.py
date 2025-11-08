@@ -369,7 +369,7 @@ def artist_cash_sale(request, event_id, artist_id):
     ev = get_object_or_404(Event, pk=event_id)
     artist = get_object_or_404(Artist, pk=artist_id)
     types = TicketType.objects.filter(event=ev, active=True).order_by("price_cents")
-
+    print(types)
     if request.method == "POST":
         purchaser_name  = request.POST.get("purchaser_name","").strip()
         purchaser_email = request.POST.get("purchaser_email","").strip()
