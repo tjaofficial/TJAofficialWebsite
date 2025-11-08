@@ -131,7 +131,7 @@ def stripe_webhook(request):
     sig = request.META.get("HTTP_STRIPE_SIGNATURE")
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig, settings.STRIPE_WEBHOOK_SECRET)
+        event = stripe.Webhook.construct_event(payload, sig, settings.STRIPE_WEBHOOK_SECRET_TICKETS)
     except Exception:
         logger.exception("Stripe webhook signature/parse failed")
         return HttpResponse(status=400)

@@ -14,6 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from ..order_utils import create_order_from_cart, mark_order_paid
 from django.db.models import F
 from coreutils.mailer import send_notification_update
+from django.conf import settings
 
 def shop(request):
     q = (request.GET.get("q") or "").strip()
@@ -394,10 +395,9 @@ def stripe_webhook(request):
 
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
-    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    webhook_secret = settings.STRIPE_WEBHOOK_SECRET_SHOP
     if not webhook_secret:
         return HttpResponse(status=200)  # no secret configured yet
-
     try:
         event = stripe.Webhook.construct_event(payload=payload, sig_header=sig_header, secret=webhook_secret)
     except Exception:
