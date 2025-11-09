@@ -16,8 +16,9 @@ from django.views.decorators.csrf import csrf_exempt
 from coreutils.mailer import send_tickets_email
 import stripe, json
 from django.utils import timezone
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, Subquery, OuterRef
 import csv
+from django.db import models
 from django.contrib import messages
 from django.urls import reverse
 from datetime import timedelta
@@ -298,18 +299,51 @@ def tickets_sold(request):
     ev_base = Event.objects.all()
     if event_id:
         ev_base = ev_base.filter(id=event_id)
+        print(ev_base)
+    
+    # Subquery for correct capacity
+    capacity_subq = (
+        TicketType.objects.filter(event=OuterRef("pk"))
+        .values("event")
+        .annotate(total_cap=Sum("quantity"))
+        .values("total_cap")
+    )
 
-    # pull quantities and realized tickets for each event
-    ev_qs = (ev_base
-             .annotate(total_capacity=Sum("ticket_types__quantity"),
-                       sold=Count("ticket_types__tickets"),
-                       checked_in=Count("ticket_types__tickets",
-                                        filter=Q(ticket_types__tickets__checked_in_at__isnull=False)))
-             .order_by("-start"))
+    # Subquery for sold tickets
+    sold_subq = (
+        Ticket.objects.filter(ticket_type__event=OuterRef("pk"))
+        .values("ticket_type__event")
+        .annotate(sold_count=Count("id"))
+        .values("sold_count")
+    )
+
+    # Subquery for checked-in tickets
+    checked_subq = (
+        Ticket.objects.filter(
+            ticket_type__event=OuterRef("pk"),
+            checked_in_at__isnull=False
+        )
+        .values("ticket_type__event")
+        .annotate(checked_count=Count("id"))
+        .values("checked_count")
+    )
+
+    ev_qs = (
+        ev_base
+        .annotate(
+            total_capacity=Subquery(capacity_subq, output_field=models.IntegerField()),
+            sold=Subquery(sold_subq, output_field=models.IntegerField()),
+            checked_in=Subquery(checked_subq, output_field=models.IntegerField()),
+        )
+        .order_by("-start")
+    )
+    
+    print(ev_qs)
 
     events_summary = []
     for ev in ev_qs:
         cap = ev.total_capacity or 0
+        print(cap)
         sold = ev.sold or 0
         remaining = max(0, cap - sold)
         events_summary.append({
@@ -330,7 +364,7 @@ def tickets_sold(request):
         "q": {"event": event_id, "from": date_from, "to": date_to,
               "name": name_q, "email": email_q, "checked": checked},
         "summary": {"total": total, "checked_in": checked_in},
-        "events_summary": events_summary,   # <-- add
+        "events_summary": events_summary,
     }
     return render(request, "tickets/sales.html", ctx)
 

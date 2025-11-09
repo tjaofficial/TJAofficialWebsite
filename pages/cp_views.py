@@ -13,18 +13,18 @@ from .forms import ArtistCPForm, VideosFormSet
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 
-class ArtistCPForm(forms.ModelForm):
-    # Add a headliner/opener selector at the Artist level as a DEFAULT preference (optional)
-    ROLE_CHOICES = [("headliner","Headliner"), ("opener","Opener"), ("guest","Guest")]
-    default_role = forms.ChoiceField(choices=ROLE_CHOICES, required=False, initial="opener",
-                                     help_text="Default role suggestion when assigning to events")
+# class ArtistCPForm(forms.ModelForm):
+#     # Add a headliner/opener selector at the Artist level as a DEFAULT preference (optional)
+#     ROLE_CHOICES = [("headliner","Headliner"), ("opener","Opener"), ("guest","Guest")]
+#     default_role = forms.ChoiceField(choices=ROLE_CHOICES, required=False, initial="opener",
+#                                      help_text="Default role suggestion when assigning to events")
 
-    class Meta:
-        model = Artist
-        fields = [
-            "name","short_tag","genre","hometown","bio","avatar","hero_image","is_public","sort",
-            "website_url","instagram_url","tiktok_url","youtube_url","spotify_url","apple_url","contact_email",
-        ]
+#     class Meta:
+#         model = Artist
+#         fields = [
+#             "name","short_tag","genre","hometown","bio","avatar","hero_image","is_public","sort",
+#             "website_url","instagram_url","tiktok_url","youtube_url","spotify_url","apple_url","contact_email",
+#         ]
 
 @is_super
 def artist_list(request):
