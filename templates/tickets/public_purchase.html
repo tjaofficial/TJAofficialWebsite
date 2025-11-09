@@ -23,6 +23,10 @@
 							{% if event.venue.city %} — {{ event.venue.city }}{% if event.venue.state %}, {{ event.venue.state }}{% endif %}{% endif %}
 						</span>
 					{% endif %}
+					{% if event.is_21_plus %}
+						<span class="dot">•</span>
+						Ages 21+
+					{% endif %}
 				</div>
 			</div>
 		</header>

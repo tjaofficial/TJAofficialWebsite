@@ -81,7 +81,7 @@ def events_list(request):
 
 @is_super
 def event_add(request):
-    form = EventForm(request.POST or None)
+    form = EventForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
         form.save()
         return redirect("control:events:list")
@@ -90,7 +90,7 @@ def event_add(request):
 @is_super
 def event_edit(request, pk):
     ev = get_object_or_404(Event, pk=pk)
-    form = EventForm(request.POST or None, instance=ev)
+    form = EventForm(request.POST or None, request.FILES or None, instance=ev)
     if request.method == "POST" and form.is_valid():
         form.save()
         return redirect("control:events:list")

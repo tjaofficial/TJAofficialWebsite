@@ -20,15 +20,27 @@
 							<h1 class="events-hero__title" style="text-align: center;">{{ next_show.name|default:"Upcoming Event" }}</h1>
 							<div class="events-hero__line">
 								<span class="events-hero__date">
-									{% if next_show.start %}{{ next_show.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}
+									{% if next_show.start %}
+										{{ next_show.start|date:"D, M j @ g:ia" }}
+									{% else %}
+										TBD
+									{% endif %}
 								</span>
 								{% if next_show.venue.name %}
 									<span class="events-hero__dot">•</span>
 									<span class="events-hero__venue">{{ next_show.venue.name }}</span>
 								{% endif %}
+							</div>
+							<div class="events-hero__line">
 								{% if next_show.venue.city or next_show.venue.state %}
 									<span class="events-hero__citystate">
 										{% if next_show.venue.city %}{{ next_show.venue.city }}{% endif %}{% if next_show.venue.state %}{% if next_show.venue.city %}, {% endif %}{{ next_show.venue.state }}{% endif %}
+									</span>
+								{% endif %}
+								{% if next_show.is_21_plus %}
+									<span class="events-hero__dot">•</span>
+									<span class="events-hero__citystate">
+										Ages 21+ 
 									</span>
 								{% endif %}
 							</div>
@@ -123,16 +135,27 @@
 					<div class="evt-card__body">
 						<h3 class="evt-card__title">{{ e.name|default:"Event" }}</h3>
 						<div class="evt-card__meta">
-							<span class="evt-card__date">{% if e.start %}{{ e.start|date:"D, M j @ g:ia" }}{% else %}TBD{% endif %}</span>
-							{% if e.venue_name %}
-								<span class="sep">•</span> <span>{{ e.venue_name }}</span>
-							{% endif %}
-							{% if e.city or e.state %}
-								<span class="sep">•</span>
+							<span class="evt-card__date">
+								{% if e.start %}
+									{{ e.start|date:"D, M j @ g:ia" }}
+								{% else %}
+									TBD
+								{% endif %}
+							</span>
+							{% if e.venue.city or e.venue.state %}
 								<span>
-									{% if e.city %}{{ e.city }}{% endif %}{% if e.state %}{% if e.city %}, {% endif %}{{ e.state }}{% endif %}
+									{% if e.venue.city %}{{ e.venue.city }}{% endif %}{% if e.venue.state %}{% if e.venue.city %}, {% endif %}{{ e.venue.state }}{% endif %}
 								</span>
 							{% endif %}
+							
+							<span style="margin-top: 15px;">
+								{% if e.venue.name %}
+									<span>{{ e.venue.name }}</span>
+								{% endif %}
+								{% if e.is_21_plus %}
+									<span class="sep">•</span> Ages 21+
+								{% endif %}
+							</span>
 						</div>
 						<div class="evt-card__actions">
 							{% for tt in e.prefetched_types %}

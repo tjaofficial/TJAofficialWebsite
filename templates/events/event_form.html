@@ -1,33 +1,143 @@
 {% extends 'controlpanel/dashboard.html' %}
+{% load static %}
 {% block title %}{{ mode|capfirst }} Event{% endblock %}
+
+{% block head %}
+	<link rel="stylesheet" href="{% static 'css/add_event.css' %}">
+	<script defer src="{% static 'js/add_event.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-<h1>{{ mode|capfirst }} Event</h1>
-<form method="post" class="card">
+<h1 class="page-title">{{ mode|capfirst }} Event</h1>
+
+<form id="event-form" method="post" enctype="multipart/form-data" class="card grid" novalidate>
   {% csrf_token %}
-  <div class="form-row">
-    <input class="input" name="name" placeholder="Event name" value="{{ form.name.value|default:'' }}">
-    <label><input type="checkbox" name="is_tour_stop" {% if form.is_tour_stop.value %}checked{% endif %}> Tour Stop</label>
-  </div>
-  <div class="form-row">
-    <input class="input" type="datetime-local" name="start" value="{{ form.start.value|default:'' }}" required>
-    <input class="input" type="datetime-local" name="end" value="{{ form.end.value|default:'' }}">
-    <select class="input" name="venue">
-      <option value="">— Venue —</option>
-      {% for v in form.fields.venue.queryset %}
-        <option value="{{ v.id }}" {% if form.venue.value == v.id|stringformat:'s' %}selected{% endif %}>{{ v.name }}</option>
+
+  {% if form.errors %}
+  <div class="form-errors">
+    <strong>Fix the following:</strong>
+    <ul>
+      {% for field, errs in form.errors.items %}
+        {% for err in errs %}
+          <li>{{ field|capfirst }} — {{ err }}</li>
+        {% endfor %}
       {% endfor %}
-    </select>
+    </ul>
   </div>
-  <div class="form-row">
-    <textarea class="input" name="afterparty_info" rows="2" placeholder="After party info">{{ form.afterparty_info.value|default:'' }}</textarea>
-    <textarea class="input" name="meet_greet_info" rows="2" placeholder="Meet & greet info">{{ form.meet_greet_info.value|default:'' }}</textarea>
+  {% endif %}
+  <div id="errors" class="form-errors"></div>
+
+  <div class="grid grid-3">
+    <div class="field">
+      <label class="label" for="id_name">Event Name</label>
+      <input id="id_name" class="control" name="name" maxlength="200"
+             placeholder="e.g., Day N Night – Detroit"
+             value="{{ form.name.value|default:'' }}" required data-count="200">
+      <div class="hint"><span class="help">This shows everywhere.</span><span class="counter">0/200</span></div>
+    </div>
+
+    <div class="field">
+      <label class="label">Tour Stop</label>
+      <label class="toggle">
+        <input id="toggle-tour" type="checkbox" name="is_tour_stop" {% if form.is_tour_stop.value %}checked{% endif %}>
+        <span class="track"><span class="thumb"></span></span>
+        <span class="small">Marks this as an official tour date.</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="label">21+ Only</label>
+      <label class="toggle">
+        <input type="checkbox" name="is_21_plus" {% if form.is_21_plus.value %}checked{% endif %}>
+        <span class="track"><span class="thumb"></span></span>
+        <span class="small">Display 21+ badge on listings.</span>
+      </label>
+    </div>
   </div>
-  <div class="form-row">
-    <label><input type="checkbox" name="published" {% if form.published.value %}checked{% endif %}> Published</label>
+
+  <div class="grid grid-3">
+    <div class="field">
+		<label class="label" for="{{ form.start.id_for_label }}">Start</label>
+		{{ form.start }}
+		<div class="hint"><span class="help">Required</span></div>
+    </div>
+
+    <div class="field">
+		<label class="label" for="{{ form.end.id_for_label }}">End</label>
+		<div class="row">
+			{{ form.end }}
+			<button type="button" class="btn small" id="copy-start">Copy</button>
+			<button type="button" class="btn small" id="add-3h">+3h</button>
+		</div>
+      	<div class="hint"><span class="help">Optional, but nice for calendar views.</span></div>
+    </div>
+
+    <div class="field select-wrap">
+		<label class="label" for="{{ form.venue.id_for_label }}">Venue</label>
+		<input id="venue-search" type="search" placeholder="Filter venues…" aria-label="Filter venues">
+		{{ form.venue }}
+		<div class="hint"><span class="help">Start typing to filter the list.</span></div>
+	</div>
   </div>
-  <div class="form-row">
-    <button class="btn primary">Save</button>
-    <a class="btn" href="{% url 'control:events:list' %}">Cancel</a>
+
+  <div id="tour-extras" class="grid grid-2" style="display:none;">
+    <div class="field">
+      <label class="label" for="id_meet">Meet & Greet Info</label>
+      <textarea id="id_meet" class="control" name="meet_greet_info" rows="4" data-count="500"
+                placeholder="Time, location, special instructions…">{{ form.meet_greet_info.value|default:'' }}</textarea>
+      <div class="hint"><span class="counter">0/500</span></div>
+    </div>
+    <div class="field">
+      <label class="label" for="id_after">Afterparty Info</label>
+      <textarea id="id_after" class="control" name="afterparty_info" rows="4" data-count="500"
+                placeholder="Venue, set time, RSVP details…">{{ form.afterparty_info.value|default:'' }}</textarea>
+      <div class="hint"><span class="counter">0/500</span></div>
+    </div>
+  </div>
+
+  <div class="uploader">
+    <div class="grid">
+      <div class="field">
+        <label class="label">Cover Image (Wide Hero)</label>
+        <div id="drop-cover" class="drop">
+          <div class="preview" id="preview-cover">
+            {% if form.instance.cover_image %}
+              <img src="{{ form.instance.cover_image.url }}" alt="Cover image">
+            {% else %}Drop image here or click below{% endif %}
+          </div>
+        </div>
+        <input id="id_cover_image" class="control" type="file" name="cover_image" accept="image/*">
+      </div>
+    </div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Flyer (Portrait)</label>
+        <div id="drop-flyer" class="drop">
+          <div class="preview portrait" id="preview-flyer">
+            {% if form.instance.flyer %}
+              <img src="{{ form.instance.flyer.url }}" alt="Flyer">
+            {% else %}Drop image here or click below{% endif %}
+          </div>
+        </div>
+        <input id="id_flyer" class="control" type="file" name="flyer" accept="image/*">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="field">
+      <label class="label">Published</label>
+      <label class="toggle">
+        <input type="checkbox" name="published" {% if form.published.value %}checked{% endif %}>
+        <span class="track"><span class="thumb"></span></span>
+        <span class="small">Visible on the site when enabled.</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'control:events:list' %}">Cancel</a>
+    <button class="btn primary" type="submit">Save Event</button>
   </div>
 </form>
 {% endblock %}

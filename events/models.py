@@ -25,6 +25,7 @@ class Venue(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=200, blank=True)
     is_tour_stop = models.BooleanField(default=False)
+    is_21_plus = models.BooleanField(default=False)
     start = models.DateTimeField()
     end = models.DateTimeField(null=True, blank=True)
     venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.SET_NULL)

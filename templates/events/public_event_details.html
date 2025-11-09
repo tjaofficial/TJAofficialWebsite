@@ -15,6 +15,9 @@
 
       <div class="hero-overlay">
         <h1 class="event-title">{{ event.name }}</h1>
+        {% if event.is_21_plus %}
+			Ages 21+
+		{% endif %}
         <div class="event-sub">
           {% if event.start %}
             <span class="event-when">{{ event.start|date:"D, M j @ g:ia" }}</span>
@@ -111,7 +114,13 @@
       <div class="panel">
         <h3>Venue</h3>
         {% if event.venue %}
-          <div class="venue-name">{{ event.venue.name }}</div>
+          	<div class="venue-name">
+				{{ event.venue.name }}
+				{% if event.is_21_plus %}
+					<span class="dot">•</span>
+					Ages 21+
+				{% endif %}
+			</div>
           {% if event.venue.address %}<div class="muted">{{ event.venue.address }}</div>{% endif %}
           <div class="muted">
             {% if event.venue.city %}{{ event.venue.city }}{% endif %}

@@ -1,30 +1,33 @@
 from django import forms
-from .models import Event, Venue
-
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ["name","is_tour_stop","start","end","venue","afterparty_info","meet_greet_info","published"]
-
-class VenueForm(forms.ModelForm):
-    class Meta:
-        model = Venue
-        fields = ["name","address","city","state","country","capacity",
-                  "owner_name","owner_email","entertainment_manager","entertainment_email","hours"]
-
-from django import forms
 from .models import Event, Venue, TechPerson, EventTechAssignment, EventMedia
+from django.utils.timezone import localtime
 
+# forms.py
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["name","is_tour_stop","start","end","venue","afterparty_info","meet_greet_info","published"]
+        fields = ["name","is_tour_stop","is_21_plus","start","end","venue",
+                  "afterparty_info","meet_greet_info","cover_image","flyer","published"]
+        widgets = {
+            "start": forms.DateTimeInput(attrs={"type":"datetime-local", "class":"control"}, format="%Y-%m-%dT%H:%M"),
+            "end":   forms.DateTimeInput(attrs={"type":"datetime-local", "class":"control"}, format="%Y-%m-%dT%H:%M"),
+            "venue": forms.Select(attrs={"class": "control", "id": "venue-select"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # accept browser format
+        self.fields["start"].input_formats = ["%Y-%m-%dT%H:%M"]
+        self.fields["end"].input_formats   = ["%Y-%m-%dT%H:%M"]
+
 
 class VenueForm(forms.ModelForm):
     class Meta:
         model = Venue
         fields = ["name","address","city","state","country","capacity",
                   "owner_name","owner_email","entertainment_manager","entertainment_email","hours"]
+
 
 class TechPersonForm(forms.ModelForm):
     class Meta:
