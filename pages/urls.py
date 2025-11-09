@@ -30,6 +30,7 @@ urlpatterns = [
     path('day-n-night/', views.tour, name='tour'),
     path("day-n-night-tour/", views.tour_home, name="tour_home"),
     path("tour/headliners/", views.tour_headliners, name="tour_headliners"),
+    path("tour/openers/", views.tour_openers, name="tour_openers"),
     path("tour/headliners/me/", views.tour_epk_edit_self, name="tour_epk_edit_self"),
     path("tour/headliners/<slug:slug>/", views.tour_epk_detail, name="tour_epk_detail"),
     path("tour/media/", views.tour_media, name="tour_media"),

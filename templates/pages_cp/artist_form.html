@@ -1,39 +1,185 @@
 {% extends 'controlpanel/dashboard.html' %}
+{% load static %}
 {% block title %}{{ mode|capfirst }} Artist{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/artist_form.css' %}">
+  <script defer src="{% static 'js/artist_form.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-<h1>{{ mode|capfirst }} Artist{% if artist %}: {{ artist.name }}{% endif %}</h1>
-<form method="post" enctype="multipart/form-data" class="card" style="width: 600px;">
+<h1 class="page-title">{{ mode|capfirst }} Artist{% if artist %}: {{ artist.name }}{% endif %}</h1>
+
+<form id="artist-form" method="post" enctype="multipart/form-data" class="card">
   {% csrf_token %}
-  <div class="form-row">
-    Artist Name: <input class="input" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
-    Short Tag(optional): <input class="input" name="short_tag" placeholder="Short tag" value="{{ form.short_tag.value|default:'' }}">
-    Genre: <input class="input" name="genre" placeholder="Genre" value="{{ form.genre.value|default:'' }}">
-    Hometown: <input class="input" name="hometown" placeholder="Hometown" value="{{ form.hometown.value|default:'' }}">
-    <label style="display:flex;align-items:center;gap:6px;">
-      <input type="checkbox" name="is_public" {% if form.is_public.value or form.is_public.value is None %}checked{% endif %}> Public
-    </label>
+
+  {% if form.errors or video_formset.non_form_errors %}
+  <div class="form-errors">
+    <strong>Fix the following:</strong>
+    <ul>
+      {% for field, errs in form.errors.items %}
+        {% for err in errs %}<li>{{ field|capfirst }} — {{ err }}</li>{% endfor %}
+      {% endfor %}
+      {% for err in video_formset.non_form_errors %}<li>Videos — {{ err }}</li>{% endfor %}
+    </ul>
   </div>
-  <div class="form-row">
-    <textarea class="input" name="bio" rows="3" placeholder="Bio">{{ form.bio.value|default:'' }}</textarea>
-  </div>
-  <div class="form-row">
-    Main Image: <input class="input" type="file" name="avatar" accept="image/*">
-    Cover Image: <input class="input" type="file" name="hero_image" accept="image/*">
-    Dont Change This: <input class="input" type="number" name="sort" placeholder="Sort" value="{{ form.sort.value|default:0 }}">
-  </div><br><br>
+  {% endif %}
+
+  <section class="grid-two">
+    <div class="field">
+      <label for="id_name">Artist Name</label>
+      {{ form.name }}
+    </div>
+    <div class="field">
+      <label for="id_short_tag">Short Tag (optional)</label>
+      {{ form.short_tag }}
+    </div>
+    <div class="field">
+      <label for="id_genre">Genre</label>
+      {{ form.genre }}
+    </div>
+    <div class="field">
+      <label for="id_hometown">Hometown</label>
+      {{ form.hometown }}
+    </div>
+    <div class="field checkbox">
+      <label>
+        {{ form.is_public }} <span>Public</span>
+      </label>
+    </div>
+    <div class="field">
+      <label for="id_sort">Sort (don’t change)</label>
+      {{ form.sort }}
+    </div>
+  </section>
+
+  <section>
+    <div class="field">
+      <label for="id_bio">Bio</label>
+      {{ form.bio }}
+    </div>
+  </section>
+
+  <section class="grid-two">
+    <div class="field">
+      <label for="id_avatar">Main Image</label>
+      {{ form.avatar }}
+      {% if artist and artist.avatar %}
+        <div class="thumb"><img src="{{ artist.avatar.url }}" alt="avatar"></div>
+      {% endif %}
+    </div>
+    <div class="field">
+      <label for="id_hero_image">Cover Image</label>
+      {{ form.hero_image }}
+      {% if artist and artist.hero_image %}
+        <div class="thumb"><img src="{{ artist.hero_image.url }}" alt="cover"></div>
+      {% endif %}
+    </div>
+  </section>
+
   <h3>Links</h3>
-  <div class="form-row">
-    Website: <input class="input" name="website_url" placeholder="Website" value="{{ form.website_url.value|default:'' }}">
-    Instagram: <input class="input" name="instagram_url" placeholder="Instagram" value="{{ form.instagram_url.value|default:'' }}">
-    TikTok:<input class="input" name="tiktok_url" placeholder="TikTok" value="{{ form.tiktok_url.value|default:'' }}">
+  <section class="grid-three">
+    <div class="field">
+      <label for="id_website_url">Website</label>
+      {{ form.website_url }}
+    </div>
+    <div class="field">
+      <label for="id_instagram_url">Instagram</label>
+      {{ form.instagram_url }}
+    </div>
+    <div class="field">
+      <label for="id_tiktok_url">TikTok</label>
+      {{ form.tiktok_url }}
+    </div>
+    <div class="field">
+      <label for="id_youtube_url">YouTube</label>
+      {{ form.youtube_url }}
+    </div>
+    <div class="field">
+      <label for="id_spotify_url">Spotify</label>
+      {{ form.spotify_url }}
+    </div>
+    <div class="field">
+      <label for="id_apple_url">Apple Music</label>
+      {{ form.apple_url }}
+    </div>
+    <div class="field">
+      <label for="id_contact_email">Music Email</label>
+      {{ form.contact_email }}
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <h3>Videos</h3>
+  {{ video_formset.management_form }}
+  <div id="video-rows" class="video-rows">
+    {% for vform in video_formset.forms %}
+      <div class="video-row" data-index="{{ forloop.counter0 }}">
+        <div class="handle" title="Drag to sort">⋮⋮</div>
+        <div class="row-grid">
+          <div class="field">
+            <label>Title</label>
+            {{ vform.title }}
+          </div>
+          <div class="field">
+            <label>URL (YouTube/Vimeo)</label>
+            {{ vform.url }}
+          </div>
+          <div class="field small">
+            <label>Sort</label>
+            {{ vform.sort }}
+          </div>
+          {% if vform.DELETE %}
+            <input type="hidden" name="{{ vform.prefix }}-id" value="{{ vform.instance.id|default_if_none:'' }}">
+            <button type="button" class="btn danger-outline delete-row" data-target="{{ vform.prefix }}">Delete</button>
+            {{ vform.DELETE }}
+          {% endif %}
+          <div class="preview">
+            {% if vform.instance and vform.instance.embed_src %}
+              <iframe src="{{ vform.instance.embed_src }}" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+            {% else %}
+              <div class="preview-empty">Embed preview will appear here</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
   </div>
-  <div class="form-row">
-    YouTube: <input class="input" name="youtube_url" placeholder="YouTube" value="{{ form.youtube_url.value|default:'' }}">
-    Spotify: <input class="input" name="spotify_url" placeholder="Spotify" value="{{ form.spotify_url.value|default:'' }}">
-    Apple Music: <input class="input" name="apple_url" placeholder="Apple Music" value="{{ form.apple_url.value|default:'' }}">
-    Music Email: <input class="input" type="email" name="contact_email" placeholder="Contact email" value="{{ form.contact_email.value|default:'' }}">
+
+  <!-- Empty form template -->
+  <template id="video-empty-form">
+    <div class="video-row" data-index="__index__">
+      <div class="handle" title="Drag to sort">⋮⋮</div>
+      <div class="row-grid">
+        <div class="field">
+          <label>Title</label>
+          __TITLE_INPUT__
+        </div>
+        <div class="field">
+          <label>URL (YouTube/Vimeo)</label>
+          __URL_INPUT__
+        </div>
+        <div class="field small">
+          <label>Sort</label>
+          __SORT_INPUT__
+        </div>
+        <button type="button" class="btn danger-outline delete-row" data-target="__PREFIX__">Delete</button>
+        __DELETE_INPUT__
+        <div class="preview">
+          <div class="preview-empty">Embed preview will appear here</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <div class="actions">
+    <button type="button" id="add-video" class="btn outline">+ Add Video</button>
   </div>
-  <div class="form-row">
+
+  <hr class="divider">
+
+  <div class="form-actions">
     <button class="btn primary">Save</button>
     {% if request.user.is_superuser %}
       <a class="btn" href="{% url 'control:pages:artist_list' %}">Cancel</a>

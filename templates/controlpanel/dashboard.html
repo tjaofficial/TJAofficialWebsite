@@ -40,41 +40,45 @@
 					<h4 onclick="expandCollapseNav(this)"><span>-</span> Events</h4>
 					<ul>
 						<li><a href="{% url 'control:events:list' %}">Events</a></li>
-						<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
-						<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
+						{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser %}
+							<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
+							<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
+						{% endif %}
 						{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
 					</ul>
 				</div>
-				<div>
-					<h4 onclick="expandCollapseNav(this)"><span>-</span> Equipment</h4>
-					<ul>
-						<li><a href="{% url 'control:equipment:list' %}">List</a></li>
-					</ul>
-				</div>
-				<div>
-					<h4 onclick="expandCollapseNav(this)"><span>-</span> Show Builder</h4>
-					<ul>
-						<li><a href="{% url 'control:setbuilder:shows_list' %}">Headliner Sets</a></li>
-						<li><a href="{% url 'control:setbuilder:build_show' %}">Create New Set</a></li>
-						<li><a href="{% url 'control:setbuilder:songs' %}">My Song List</a></li>
-					</ul>
-				</div>
-				<div>
-					<h4 onclick="expandCollapseNav(this)"><span>-</span> Tickets</h4>
-					<ul>
-						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
-						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
-						<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
-						{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
-					</ul>
-				</div>
-				<div>
-					<h4 onclick="expandCollapseNav(this)"><span>-</span> Booking</h4>
-					<ul>
-						<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
-						<li><a href="{% url 'presskit_daynnight' %}">Tour PressKit</a></li>
-					</ul>
-				</div>
+				{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser %}
+					<div>
+						<h4 onclick="expandCollapseNav(this)"><span>-</span> Equipment</h4>
+						<ul>
+							<li><a href="{% url 'control:equipment:list' %}">List</a></li>
+						</ul>
+					</div>
+					<div>
+						<h4 onclick="expandCollapseNav(this)"><span>-</span> Show Builder</h4>
+						<ul>
+							<li><a href="{% url 'control:setbuilder:shows_list' %}">Headliner Sets</a></li>
+							<li><a href="{% url 'control:setbuilder:build_show' %}">Create New Set</a></li>
+							<li><a href="{% url 'control:setbuilder:songs' %}">My Song List</a></li>
+						</ul>
+					</div>
+					<div>
+						<h4 onclick="expandCollapseNav(this)"><span>-</span> Tickets</h4>
+						<ul>
+							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
+							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
+							<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
+							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
+						</ul>
+					</div>
+					<div>
+						<h4 onclick="expandCollapseNav(this)"><span>-</span> Booking</h4>
+						<ul>
+							<li><a href="{% url 'control:bookingstack:dashboard' %}">Dashboard</a></li>
+							<li><a href="{% url 'presskit_daynnight' %}">Tour PressKit</a></li>
+						</ul>
+					</div>
+				{% endif %}
 				<form action="{% url 'control:accounts:logout' %}" method="post" style="display:inline">
 					{% csrf_token %}
 					<button type="submit">Logout</button>

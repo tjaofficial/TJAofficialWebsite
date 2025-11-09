@@ -6,7 +6,9 @@
   	{% if request.user.is_superuser %}
 		<a class="btn primary" href="{% url 'control:events:add' %}">Add Event</a>
 	{% endif %}
-   	<a class="btn" href="{% url 'control:events:venues' %}">Venues</a>
+	{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser%}
+   		<a class="btn" href="{% url 'control:events:venues' %}">Venues</a>
+	{% endif %}
 </p>
 <table class="table">
   <thead><tr><th>Start</th><th>Name</th><th>Venue</th><th>Tour</th><th>Published</th><th></th></tr></thead>
@@ -21,8 +23,10 @@
       <td>
         {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:edit' e.id %}">Edit</a>{% endif %}
         <a class="btn" href="{% url 'control:events:dashboard' e.id %}">View</a>
-        <a class="btn ghost" href="{% url 'control:events:event_artist_assign' e.id %}">Assign Artists</a>
-        <a class="btn ghost" href="{% url 'control:events:event_checklist' e.id %}">Checklist</a>
+		{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser %}
+			<a class="btn ghost" href="{% url 'control:events:event_artist_assign' e.id %}">Assign Artists</a>
+			<a class="btn ghost" href="{% url 'control:events:event_checklist' e.id %}">Checklist</a>
+		{% endif %}
     </td>
     </tr>
   {% empty %}

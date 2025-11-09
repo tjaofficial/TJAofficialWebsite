@@ -29,6 +29,7 @@
       <a href="{% url 'home' %}">Back to Main</a>
       <a href="{% url 'tour_home' %}" class="{% if request.path == '/tour/' %}active{% endif %}">The Stage</a>
       <a href="{% url 'tour_headliners' %}" class="{% if '/headliners' in request.path %}active{% endif %}">Headliners</a>
+      <a href="{% url 'tour_openers' %}" class="{% if '/openers' in request.path %}active{% endif %}">Openers</a>
       <a href="{% url 'tour_media' %}" class="{% if '/media' in request.path %}active{% endif %}">Media</a>
       <a href="{% url 'public_events' %}" class="{% if '/events' in request.path %}active{% endif %}">Shows</a>
       <a href="{% url 'rewards:dashboard' %}" class="{% if '/passport' in request.path %}active{% endif %} nav-link">Passport</a>

@@ -116,8 +116,12 @@ def tour_subscribe(request):
     return redirect("tour_home")
 
 def tour_headliners(request):
-    artists = Artist.objects.filter(is_public=True)
+    artists = Artist.objects.filter(is_public=True, default_role="headliner")
     return render(request, "tour/headliners.html", {"artists": artists})
+
+def tour_openers(request):
+    artists = Artist.objects.filter(is_public=True, default_role="opener")
+    return render(request, "tour/openers.html", {"artists": artists})
 
 def tour_epk_detail(request, slug):
     artist = get_object_or_404(Artist, slug=slug, is_public=True)

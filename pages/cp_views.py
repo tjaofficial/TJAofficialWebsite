@@ -8,6 +8,8 @@ from datetime import timedelta
 from pages.models import Artist
 from tickets.models import Ticket
 from events.models import ArtistSaleLink, ArtistLinkHit, EventArtist
+from .forms import ArtistCPForm, VideosFormSet
+
 
 is_super = user_passes_test(lambda u: u.is_superuser)
 
@@ -42,25 +44,50 @@ def artist_list(request):
         "q": {"q": q, "public": active},
     })
 
-@is_super
+@user_passes_test(is_super)
 def artist_add(request):
+    artist = None
     form = ArtistCPForm(request.POST or None, request.FILES or None)
-    if request.method == "POST" and form.is_valid():
-        form.save()
+    # Instantiate empty formset bound to a not-yet-saved instance (we'll save after)
+    video_formset = VideosFormSet(request.POST or None, prefix="videos", instance=artist)
+
+    if request.method == "POST" and form.is_valid() and video_formset.is_valid():
+        artist = form.save()
+        video_formset.instance = artist
+        video_formset.save()
         return redirect("control:pages:artist_list")
-    return render(request, "pages_cp/artist_form.html", {"form": form, "mode": "add"})
+
+    context = {
+        "form": form,
+        "video_formset": video_formset,
+        "mode": "add",
+        "artist": artist,
+    }
+    return render(request, "pages_cp/artist_form.html", context)
 
 @login_required
 def artist_edit(request, pk):
     obj = get_object_or_404(Artist, pk=pk)
     form = ArtistCPForm(request.POST or None, request.FILES or None, instance=obj)
-    if request.method == "POST" and form.is_valid():
-        form.save()
+    video_formset = VideosFormSet(request.POST or None, prefix="videos", instance=obj)
+
+    if request.method == "POST" and form.is_valid() and video_formset.is_valid():
+        artist = form.save()
+        video_formset.instance = artist
+        video_formset.save()
+
         if request.user == obj.user:
             return redirect("control:pages:artist_dashboard", obj.id)
         else:
             return redirect("control:pages:artist_list")
-    return render(request, "pages_cp/artist_form.html", {"form": form, "mode": "edit", "artist": obj})
+
+    context = {
+        "form": form,
+        "video_formset": video_formset,
+        "mode": "edit",
+        "artist": obj,
+    }
+    return render(request, "pages_cp/artist_form.html", context)
 
 @login_required
 def artist_dashboard(request, artist_id):

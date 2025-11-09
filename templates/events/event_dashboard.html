@@ -13,8 +13,8 @@
   <h3>Quick Actions</h3>
   <div class="form-row">
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:edit' event.id %}">Edit Event</a>{% endif %}
-    <a class="btn" href="{% url 'control:events:event_tech_list' event.id %}">Manage Tech</a>
-    <a class="btn" href="{% url 'control:equipment:event_equipment' event.id %}">Manage Equipment</a>
+    {% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser %}<a class="btn" href="{% url 'control:events:event_tech_list' event.id %}">Manage Tech</a>{% endif %}
+    {% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser %}<a class="btn" href="{% url 'control:equipment:event_equipment' event.id %}">Manage Equipment</a>{% endif %}
     <a class="btn" href="{% url 'control:events:event_media' event.id %}">Manage Media</a>
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:tickets:sales' %}?event={{ event.id }}">View Tickets Sold</a>{% endif %}
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:tickets' event.id %}">Sell Card Tickets</a>{% endif %}
@@ -22,7 +22,7 @@
     {% if request.user.is_superuser %}<a class="btn" href="{% url 'control:events:event_artists' event.id %}">Artists</a>{% endif %}
   </div>
 </div>
-
+{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser%}
 <div class="card">
   <h3>Assigned Tech</h3>
   <table class="table">
@@ -41,7 +41,8 @@
     </tbody>
   </table>
 </div>
-
+{% endif %}
+{% if user.artist_dashboard.default_role == "headliner" or request.user.is_superuser%}
 <div class="card">
   <h3>Equipment</h3>
   <table class="table">
@@ -60,7 +61,7 @@
     </tbody>
   </table>
 </div>
-
+{% endif %}
 <div class="card">
   <h3>Recent Media</h3>
   {% if media %}
