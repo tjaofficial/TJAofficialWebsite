@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111;">
+    <h2 style="margin:0 0 10px;">You’re on the lineup 🎤</h2>
+
+    <p style="margin:0 0 8px;">
+      You’ve been added to <strong>{{ event_name }}</strong>
+      {% if venue %} at <strong>{{ venue }}</strong>{% endif %}
+      {% if city %} (<strong>{{ city }}</strong>){% endif %}
+      {% if when_str %} on <strong>{{ when_str }}</strong>{% endif %}.
+    </p>
+
+    <p style="margin:10px 0 8px;">
+      Role: <strong>{{ role|title }}</strong>
+      {% if set_order %}&nbsp;&middot;&nbsp;Set Order: <strong>{{ set_order }}</strong>{% endif %}
+    </p>
+
+    <p style="margin:14px 0 14px;">
+      <a href="{{ purchase_url }}" style="display:inline-block;padding:10px 16px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;">
+        Start selling tickets
+      </a>
+    </p>
+
+    <p style="margin:6px 0 0;">
+      Or manage/view your link details here:
+      <a href="{{ manage_url }}">{{ manage_url }}</a>
+    </p>
+
+    <p style="margin:14px 0 0;">— {{ org_name }}</p>
+  </body>
+</html>

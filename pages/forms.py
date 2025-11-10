@@ -76,7 +76,7 @@ class ArtistCPForm(forms.ModelForm):
             "name","short_tag","genre","hometown","bio","avatar","hero_image",
             "is_public","sort",
             "website_url","instagram_url","tiktok_url",
-            "youtube_url","spotify_url","apple_url","contact_email",
+            "youtube_url","spotify_url","apple_url","contact_email","default_role",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class":"input", "placeholder":"Name", "required": True}),
@@ -95,6 +95,7 @@ class ArtistCPForm(forms.ModelForm):
             "spotify_url": forms.URLInput(attrs={"class":"input", "placeholder":"https://open.spotify.com/..."}),
             "apple_url": forms.URLInput(attrs={"class":"input", "placeholder":"https://music.apple.com/..."}),
             "contact_email": forms.EmailInput(attrs={"class":"input", "placeholder":"artist@email.com"}),
+            "default_role": forms.Select(attrs={"class":"input"})
         }
 
 

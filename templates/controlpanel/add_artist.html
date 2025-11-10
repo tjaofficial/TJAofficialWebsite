@@ -1,5 +1,198 @@
-<h1>Add Artist</h1>
-<form method="post">{% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Create</button>
-</form>
+{% extends 'controlpanel/dashboard.html' %}
+{% load static %}
+
+{% block title %}Add Artist{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/add_artist.css' %}">
+  <script defer src="{% static 'js/add_artist.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="add-artist">
+  <div class="page-head">
+    <h1>Add Artist</h1>
+    <p class="sub">Create the user, set their role, and add profile details.</p>
+  </div>
+
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for message in messages %}
+        <div class="flash {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if form.errors %}
+    <div class="form-errors">
+      <strong>Fix the following:</strong>
+      <ul>
+        {% for field, errs in form.errors.items %}
+          {% for err in errs %}
+            <li><b>{{ field|capfirst }}</b> — {{ err }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form id="add-artist-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <!-- SECTION: Account -->
+    <section class="card">
+      <header>
+        <h2>Account</h2>
+        <span class="hint">Creates a user with a password reset email.</span>
+      </header>
+      <div class="grid two">
+        <div class="field">
+          <label for="id_username">Username <span class="req">*</span></label>
+          <input id="id_username" name="username" type="text" required
+                 placeholder="e.g., tjaofficial"
+                 value="{{ form.data.username|default:'' }}">
+          <div class="assist">
+            <button type="button" class="link tiny" id="btn-suggest-username">Suggest from name</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="id_email">Email <span class="req">*</span></label>
+          <input id="id_email" name="email" type="email" required
+                 placeholder="artist@domain.com"
+                 value="{{ form.data.email|default:'' }}">
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Artist Profile -->
+    <section class="card">
+      <header>
+        <h2>Artist Profile</h2>
+        <span class="hint">Public EPK details.</span>
+      </header>
+
+      <div class="grid two">
+        <div class="field">
+          <label for="{{ form.name.id_for_label }}">Name <span class="req">*</span></label>
+          {{ form.name.as_widget|safe }}
+        </div>
+
+        <div class="field">
+          <label for="id_default_role">Default Role <span class="req">*</span></label>
+          <!-- If you add 'default_role' to the ModelForm, you can use {{ form.default_role }} instead -->
+          <select id="id_default_role" name="default_role" required>
+            <option value="headliner" {% if form.data.default_role == 'headliner' %}selected{% endif %}>Headliner</option>
+            <option value="opener" {% if form.data.default_role == 'opener' or not form.data.default_role %}selected{% endif %}>Opener</option>
+            <option value="guest" {% if form.data.default_role == 'guest' %}selected{% endif %}>Guest</option>
+          </select>
+          <small class="hint">Used as the artist’s default role on events/grids.</small>
+        </div>
+
+        <div class="field">
+          <label for="{{ form.genre.id_for_label }}">Genre</label>
+          {{ form.genre.as_widget|safe }}
+        </div>
+
+        <div class="field">
+          <label for="{{ form.hometown.id_for_label }}">Hometown</label>
+          {{ form.hometown.as_widget|safe }}
+        </div>
+      </div>
+
+      <div class="grid two">
+        <div class="field">
+          <label for="id_avatar">Avatar</label>
+          <input id="id_avatar" type="file" name="avatar" accept="image/*">
+          <div class="preview-wrap">
+            <img id="preview-avatar" alt="Avatar preview" class="preview hidden">
+          </div>
+          <small class="hint">Square image works best (e.g., 800×800).</small>
+        </div>
+
+        <div class="field">
+          <label for="id_hero_image">Hero Image</label>
+          <input id="id_hero_image" type="file" name="hero_image" accept="image/*">
+          <div class="preview-wrap">
+            <img id="preview-hero" alt="Hero preview" class="preview hidden">
+          </div>
+          <small class="hint">Wide banner image (e.g., 1600×900).</small>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="id_bio">Bio</label>
+        <textarea id="id_bio" name="bio" rows="6" placeholder="Short artist bio...">{{ form.data.bio|default_if_none:'' }}</textarea>
+        <div class="counter"><span id="bio-count">0</span> / 800</div>
+      </div>
+    </section>
+
+    <!-- SECTION: Socials (collapsible) -->
+    <section class="card collapsible" data-collapsed="true">
+      <header class="collapsible-head" role="button" tabindex="0" aria-expanded="false">
+        <h2>Socials & Links</h2>
+        <span class="hint">Optional</span>
+        <span class="chev" aria-hidden="true">▸</span>
+      </header>
+      <div class="collapsible-body">
+        <div class="grid two">
+          <div class="field">
+            <label for="website_url">Website</label>
+            <input id="website_url" type="url" name="website_url" placeholder="https://example.com"
+                   value="{{ form.data.website_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="instagram_url">Instagram</label>
+            <input id="instagram_url" type="url" name="instagram_url" placeholder="https://instagram.com/handle"
+                   value="{{ form.data.instagram_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="tiktok_url">TikTok</label>
+            <input id="tiktok_url" type="url" name="tiktok_url" placeholder="https://tiktok.com/@handle"
+                   value="{{ form.data.tiktok_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="youtube_url">YouTube</label>
+            <input id="youtube_url" type="url" name="youtube_url" placeholder="https://youtube.com/@channel"
+                   value="{{ form.data.youtube_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="spotify_url">Spotify</label>
+            <input id="spotify_url" type="url" name="spotify_url" placeholder="https://open.spotify.com/artist/..."
+                   value="{{ form.data.spotify_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="apple_url">Apple Music</label>
+            <input id="apple_url" type="url" name="apple_url" placeholder="https://music.apple.com/artist/..."
+                   value="{{ form.data.apple_url|default:'' }}">
+          </div>
+          <div class="field">
+            <label for="contact_email">Public Contact Email</label>
+            <input id="contact_email" type="email" name="contact_email" placeholder="booking@domain.com"
+                   value="{{ form.data.contact_email|default:'' }}">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Visibility -->
+    <section class="card">
+      <header>
+        <h2>Visibility</h2>
+      </header>
+      <div class="field switch">
+        <input id="id_is_public" type="checkbox" name="is_public" {% if form.data.is_public or form.initial.is_public %}checked{% else %}{% endif %}>
+        <label for="id_is_public">Public Profile</label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="submit" class="btn primary" id="btn-submit">
+        <span class="spinner" aria-hidden="true"></span>
+        Create Artist
+      </button>
+      <a href="{% url 'control:pages_cp:artist_list' %}" class="btn ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

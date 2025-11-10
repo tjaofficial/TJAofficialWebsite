@@ -8,6 +8,7 @@ from django.utils import timezone
 import qrcode
 from io import BytesIO
 from email.mime.image import MIMEImage
+from django.utils.timezone import localtime
 
 def enqueue_mass_email(subscribers, subject, body, from_email=None):
     messages = []
@@ -63,7 +64,6 @@ def send_tickets_email(email, tickets, site_base=None):
 
     msg.send(fail_silently=False)
 
-
 def send_notification_update(topic, extra, request=None):
     EMAIL_TOPICS = {
         "subscribers": {
@@ -116,3 +116,55 @@ def send_notification_update(topic, extra, request=None):
     msg.attach_alternative(html_body, "text/html")
 
     return msg.send(fail_silently=False)
+
+def _artist_recipient(artist):
+    if getattr(artist, "user", None) and getattr(artist.user, "email", ""):
+        return artist.user.email
+    return getattr(artist, "contact_email", "") or None
+
+def send_artist_added_to_event(*, artist, event, role, set_order, manage_url, purchase_url):
+    to_email = _artist_recipient(artist)
+    if not to_email:
+        return False, "No recipient email on artist"
+
+    name = getattr(event, "name", "Your Event")
+    venue = getattr(event, "venue", None) or getattr(event, "venue_name", None) or ""
+    city  = getattr(event, "city", None) or getattr(event, "location", None) or ""
+    dt    = getattr(event, "start", None) or getattr(event, "start_at", None) or getattr(event, "starts_at", None)
+
+    when_str = ""
+    if dt:
+        try:
+            when_str = localtime(dt).strftime("%A, %b %-d, %Y · %-I:%M %p")
+        except Exception:
+            when_str = dt.strftime("%A, %b %d, %Y · %I:%M %p")
+
+    ctx = {
+        "artist": artist,
+        "event_name": name,
+        "venue": venue,
+        "city": city,
+        "when_str": when_str,
+        "role": role,
+        "set_order": set_order,
+        "manage_url": manage_url,
+        "purchase_url": purchase_url,
+        "org_name": getattr(settings, "EMAIL_DISPLAY_NAME", None) or getattr(settings, "PROJECT_NAME", "TJAofficial"),
+    }
+
+    subject = f"You’ve been added to {name}" + (f" — {venue}" if venue else "")
+    text_body = render_to_string("emails/artist_event_added.txt", ctx)
+    html_body = render_to_string("emails/artist_event_added.html", ctx)
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        to=[to_email],
+    )
+    msg.attach_alternative(html_body, "text/html")
+    try:
+        msg.send()
+        return True, None
+    except Exception as exc:
+        return False, str(exc)

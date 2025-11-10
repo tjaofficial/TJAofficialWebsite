@@ -108,8 +108,16 @@
       {{ form.contact_email }}
     </div>
   </section>
+  	{% if request.user.is_superuser %}
+		<section class="grid-four">
+			<div class="field">
+				<label for="id_default_role">Default Role</label>
+				{{ form.default_role }}
+			</div>
+		</section>
+	{% endif %}
 
-  <hr class="divider">
+  	<hr class="divider">
 
   <h3>Videos</h3>
   {{ video_formset.management_form }}

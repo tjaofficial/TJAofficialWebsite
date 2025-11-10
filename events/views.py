@@ -18,6 +18,7 @@ from django.contrib import messages
 from django.urls import reverse
 from io import BytesIO
 import qrcode
+from coreutils import mailer 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 is_super = user_passes_test(lambda u: u.is_superuser)
@@ -316,17 +317,44 @@ def event_artists(request, event_id):
 @is_super
 def event_artist_assign(request, event_id):
     ev = get_object_or_404(Event, pk=event_id)
+
     if request.method == "POST":
         artist_id = request.POST.get("artist")
         role = request.POST.get("role") or "opener"
         set_order = int(request.POST.get("set_order") or 0)
+
         a = get_object_or_404(Artist, id=artist_id)
-        slot, created = EventArtist.objects.get_or_create(event=ev, artist=a, defaults={"role": role, "set_order": set_order})
+        slot, created = EventArtist.objects.get_or_create(
+            event=ev, artist=a,
+            defaults={"role": role, "set_order": set_order}
+        )
         if not created:
             slot.role = role
             slot.set_order = set_order
             slot.save()
-        ArtistSaleLink.objects.get_or_create(event=ev, artist=a)  # ensure link
+
+        link, _ = ArtistSaleLink.objects.get_or_create(event=ev, artist=a)  # ensure link
+
+        # -- EXACT pages/links you specified --
+        # 1) The “artist link” management page (your desired landing)
+        manage_url = request.build_absolute_uri(
+            reverse("control:events:event_artist_link", args=[ev.id, slot.id])
+        )
+
+        # 2) The direct public purchase URL with ?artist=<token> (same logic as your event_artist_link view)
+        base = request.build_absolute_uri("/").rstrip("/")
+        purchase_url = f"{base}{reverse('control:tickets:public_purchase', args=[ev.id])}?artist={link.token}"
+
+        ok, err = mailer.send_artist_added_to_event(
+            artist=a, event=ev, role=slot.role, set_order=slot.set_order,
+            manage_url=manage_url,  # where they can see their personal link page
+            purchase_url=purchase_url,  # the direct “start selling” link
+        )
+        if ok:
+            messages.success(request, f"{a.name} assigned and notified.")
+        else:
+            messages.warning(request, f"{a.name} assigned, but email not sent: {err or 'unknown error'}")
+
         return redirect("control:events:event_artists", event_id=ev.id)
 
     artists = Artist.objects.filter(is_public=True).order_by("name")

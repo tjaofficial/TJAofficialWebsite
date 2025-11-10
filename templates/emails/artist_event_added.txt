@@ -1,0 +1,12 @@
+Hey {{ artist.name }},
+
+You’ve been added to {{ event_name }}{% if venue %} at {{ venue }}{% endif %}{% if city %} ({{ city }}){% endif %}{% if when_str %} on {{ when_str }}{% endif %}.
+Role: {{ role|title }}{% if set_order %} (Set Order: {{ set_order }}){% endif %}
+
+Start selling tickets now:
+{{ purchase_url }}
+
+You can also view your ticket link and details here:
+{{ manage_url }}
+
+— {{ org_name }}

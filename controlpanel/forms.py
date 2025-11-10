@@ -10,7 +10,10 @@ class CreateArtistWithUserForm(forms.ModelForm):
 
     class Meta:
         model = Artist
-        fields = ["name", "genre", "hometown"]  # add/adjust your Artist fields
+        fields = ["name", "genre", "hometown", "default_role", "bio",
+                  "avatar", "hero_image", "website_url", "instagram_url",
+                  "tiktok_url", "youtube_url", "spotify_url", "apple_url",
+                  "contact_email", "is_public"]
 
     def clean_username(self):
         u = self.cleaned_data["username"]
