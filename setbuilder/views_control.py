@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import transaction
 from django.contrib import messages
-from django.forms import ModelForm
+from .forms import SongForm
 from django.db.models import Q
 from pages.models import Artist  # your Artist model
 from .models import Song, ShowSet, ShowItem
@@ -16,12 +16,6 @@ def is_headliner(u):
 
 headliner_required = user_passes_test(is_headliner)
 
-# ---------- Forms ----------
-class SongForm(ModelForm):
-    class Meta:
-        model = Song
-        fields = ["title","duration_seconds","is_collab","collab_kind","collaborator_artists","collab_other","genre","feeling","primary_artist"]
-
 # ---------- Songs CRUD ----------
 @headliner_required
 def my_songs(request):
@@ -32,13 +26,20 @@ def my_songs(request):
 @headliner_required
 def song_new(request):
     my_artist = Artist.objects.filter(user=request.user).first()
-    form = SongForm(request.POST or None, initial={"primary_artist": my_artist})
+    form = SongForm(
+        request.POST or None, 
+        initial={"primary_artist": my_artist}
+    )
     form.fields["primary_artist"].queryset = Artist.objects.filter(Q(user=request.user)|Q(default_role="headliner"))
+    print(form.errors)
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Song added.")
         return redirect("control:setbuilder:songs")
-    return render(request, "setbuilder/song_form.html", {"form": form, "mode":"new"})
+    return render(request, "setbuilder/song_form.html", {
+        "form": form, 
+        "mode":"new"
+    })
 
 @headliner_required
 def song_edit(request, pk):
@@ -83,7 +84,6 @@ def build_show(request, slug=None):
 def save_show(request):
     if request.method != "POST":
         return HttpResponseBadRequest("POST required")
-
     import json
     try:
         payload = json.loads(request.body.decode("utf-8"))
@@ -99,12 +99,14 @@ def save_show(request):
         return HttpResponseBadRequest("Label required")
 
     if slug:
+        print("CHECK 2")
         show = get_object_or_404(ShowSet, slug=slug)
         show.label = label
         show.vibe = vibe
         show.save(update_fields=["label","vibe"])
         show.items.all().delete()
     else:
+        print("CHECK 2")
         show = ShowSet.objects.create(label=label, vibe=vibe, created_by=request.user)
 
     # Recreate items in order
@@ -131,7 +133,7 @@ def save_show(request):
 # ---------- Saved shows list ----------
 @headliner_required
 def shows_list(request):
-    rows = ShowSet.objects.filter(created_by=request.user).order_by("-created_at")
+    rows = ShowSet.objects.order_by("-created_at")
     return render(request, "setbuilder/shows_list.html", {"rows": rows})
 
 # ---------- API helpers ----------
