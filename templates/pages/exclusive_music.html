@@ -25,7 +25,15 @@
         <div class="music-controls">
             <input type="search" id="musicFilter" placeholder="Filter by title or track… (e.g., toxic, night)" aria-label="Filter discography">
         </div>
-
+        <div class="card">
+            <h3>Throwbacks</h3>
+            <div>
+                <p>I Need To Know - <a target="_blank" href="https://soundcloud.com/tjaofficial/tja-i-need-to-know-original/s-S5hm3DsqZJf?si=f0a3faf101394cd8a6b33208f544d09f&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing">Click to Listen<a></p>   
+            </div>
+            <div>
+                <p>Floor Falls - <a target="_blank" href="https://soundcloud.com/tjaofficial/tja-fluhore-fawls-floor-falls/s-TdNAw9hSvOn?si=e1d8fec3a18c484cb2fc6342064d6d3e&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing">Click to Listen<a></p>
+            </div>
+        </div>
         {% if releases %}
             <div class="discography" id="discography">
                 {% for r in releases %}
@@ -86,7 +94,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p class="card">No exclusive releases yet. Come back soon!</p>
+            <p class="card">No other exclusive releases yet. Come back soon!</p>
         {% endif %}
     </section>
 
