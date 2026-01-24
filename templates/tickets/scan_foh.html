@@ -16,7 +16,10 @@
     .foh-card {padding:16px;border:1px solid #1a1f27;border-radius:12px;background:#0f1318;margin-top:16px}
     .foh-kv {display:grid;grid-template-columns:140px 1fr;gap:8px}
     .foh-kv div{padding:2px 0}
+    #qrReader video { border-radius: 12px; }
   </style>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
 {% endblock %}
 {% block content %}
 <div class="foh-wrap">
@@ -32,6 +35,24 @@
     </div>
     <div class="foh-sub">Tip: Most USB scanners act like a keyboard and ‘type’ the code, then press Enter.</div>
   </div>
+
+  <div class="foh-card">
+    <div class="foh-row" style="align-items:center;">
+      <button id="camStart" class="btn">Start Camera</button>
+      <button id="camStop" class="btn" disabled>Stop</button>
+      <div class="foh-sub" id="camStatus" style="margin:0;">Camera: idle</div>
+    </div>
+
+    <div id="qrWrap" class="foh-card" style="margin-top:12px;">
+      <div id="qrReader" style="width: 100%; max-width: 520px;"></div>
+      <div class="foh-sub" style="margin-top:8px;">
+        Tip: Camera scanning works best over HTTPS (or localhost).
+      </div>
+    </div>
+  </div>
+
+
+
 
   <div class="foh-stage" id="stage">
     <div id="flash" class="foh-flash"></div>
@@ -100,8 +121,10 @@
       input.value = '';
       show(idle);
       input.focus();
+      if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
     }, 900);
   }
+
 
   async function doScan(raw){
     if(!raw) return;
@@ -161,6 +184,88 @@
   // keep focus for scanners
   window.addEventListener('click', ()=> input.focus());
   input.focus();
+
+    // --- Camera QR Scanner (html5-qrcode) ---
+  const camStartBtn = document.getElementById('camStart');
+  const camStopBtn  = document.getElementById('camStop');
+  const camStatus   = document.getElementById('camStatus');
+
+  let html5Qr = null;
+  let scanning = false;
+  let lastCode = null;
+  let lastAt = 0;
+
+  function canScanAgain(code){
+    // prevent rapid double-fires if camera keeps seeing the same QR
+    const now = Date.now();
+    if(code === lastCode && (now - lastAt) < 1500) return false;
+    lastCode = code;
+    lastAt = now;
+    return true;
+  }
+
+  async function startCamera(){
+    if(scanning) return;
+    if(typeof Html5Qrcode === "undefined"){
+      camStatus.textContent = "Camera: scanner library not loaded";
+      return;
+    }
+
+    html5Qr = html5Qr || new Html5Qrcode("qrReader");
+    camStatus.textContent = "Camera: starting...";
+    try{
+      scanning = true;
+      camStartBtn.disabled = true;
+      camStopBtn.disabled = false;
+
+      // Prefer rear camera when available
+      const config = { fps: 12, qrbox: { width: 280, height: 280 } };
+
+      await html5Qr.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          const code = (decodedText || "").trim();
+          if(!code) return;
+          if(!canScanAgain(code)) return;
+
+          camStatus.textContent = "Camera: scanned ✅";
+          doScan(code); // uses your existing API flow
+        },
+        () => { /* ignore per-frame decode errors */ }
+      );
+
+      camStatus.textContent = "Camera: scanning…";
+    }catch(err){
+      scanning = false;
+      camStartBtn.disabled = false;
+      camStopBtn.disabled = true;
+      camStatus.textContent = "Camera: failed to start (check permissions / HTTPS)";
+      console.error(err);
+    }
+  }
+
+  async function stopCamera(){
+    if(!html5Qr || !scanning) return;
+    camStatus.textContent = "Camera: stopping...";
+    try{
+      await html5Qr.stop();
+      document.getElementById("qrReader").innerHTML = "";
+      html5Qr = null;
+    }catch(e){
+      console.warn(e);
+    }finally{
+      scanning = false;
+      camStartBtn.disabled = false;
+      camStopBtn.disabled = true;
+      camStatus.textContent = "Camera: stopped";
+    }
+  }
+
+
+  camStartBtn && camStartBtn.addEventListener("click", (e)=>{ e.preventDefault(); startCamera(); });
+  camStopBtn && camStopBtn.addEventListener("click", (e)=>{ e.preventDefault(); stopCamera(); });
+
 })();
 </script>
 {% endblock %}

@@ -189,7 +189,7 @@ def stripe_webhook(request):
 
 
 
-@login_required
+@is_super
 def scan_foh(request):
     """
     Front-of-house continuous scanner UI.
@@ -258,6 +258,7 @@ def scan_api(request):
             "event": t.ticket_type.event.name if t.ticket_type and t.ticket_type.event else "",
             "type": t.ticket_type.name if t.ticket_type else "",
             "email": t.purchaser_email,
+            "name": t.purchaser_name,  # ✅ add this
             "checked_in_at": t.checked_in_at.isoformat() if t.checked_in_at else None,
             "token": str(t.qr_token),
         }
