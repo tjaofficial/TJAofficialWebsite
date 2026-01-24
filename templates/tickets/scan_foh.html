@@ -117,6 +117,12 @@
   const okSnd  = document.getElementById('snd_ok');
   const errSnd = document.getElementById('snd_err');
 
+  let camStatus = null;
+  let scanning = false;
+  let lastCode = null;
+  let lastAt = 0;
+
+
   function extractUuid(text){
     const m = (text || "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
     return m ? m[0].toLowerCase() : null;
@@ -241,12 +247,10 @@
     // --- Camera QR Scanner (html5-qrcode) ---
   const camStartBtn = document.getElementById('camStart');
   const camStopBtn  = document.getElementById('camStop');
-  const camStatus   = document.getElementById('camStatus');
+  camStatus = document.getElementById('camStatus');
+
 
   let html5Qr = null;
-  let scanning = false;
-  let lastCode = null;
-  let lastAt = 0;
 
   function canScanAgain(code){
     // prevent rapid double-fires if camera keeps seeing the same QR
@@ -333,9 +337,10 @@
 
     if(!pendingCode) return;
 
-    console.log("Redeeming token:", pendingCode);
+    redeemBtn.disabled = true;
+    redeemBtn.textContent = "Checking in...";
 
-    const body = JSON.stringify({ code: pendingCode, autocheckin: false, redeem: true });
+    const body = JSON.stringify({ code: pendingCode, redeem: true });
 
     try{
       const res = await fetch("{% url 'control:tickets:scan_api' %}", {
@@ -348,27 +353,57 @@
       const data = await res.json();
       console.log("Redeem response:", data);
 
-      if(data.status === 'already'){
+      if(data.status === 'ok'){
+        // update check-in time from server
+        document.getElementById('ok_checkin').textContent =
+          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
+
+        flashColor('foh-green');
+        okSnd && okSnd.play().catch(()=>{});
+
+      } else if (data.status === 'already') {
+        // show already state (idempotent)
+        document.getElementById('al_name').textContent = data.ticket.name || '';
+        document.getElementById('al_event').textContent = data.ticket.event || '';
+        document.getElementById('al_type').textContent  = data.ticket.type || '';
+        document.getElementById('al_email').textContent = data.ticket.email || '';
+        document.getElementById('al_checkin').textContent =
+          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : '';
+
         show(already);
         flashColor('foh-red');
         errSnd && errSnd.play().catch(()=>{});
-      }else if(data.status === 'ok'){
-        document.getElementById('ok_checkin').textContent =
-          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
-        flashColor('foh-green');
-        okSnd && okSnd.play().catch(()=>{});
-      }else{
+      } else {
         document.getElementById('bad_msg').textContent = data.message || 'Redeem failed';
         show(bad);
         flashColor('foh-red');
         errSnd && errSnd.play().catch(()=>{});
       }
-    }catch(e){
+
+    } catch (err) {
+      console.error(err);
       document.getElementById('bad_msg').textContent = 'Network error';
       show(bad);
       flashColor('foh-red');
       errSnd && errSnd.play().catch(()=>{});
+    } finally {
+      redeemBtn.disabled = false;
+      redeemBtn.textContent = "Redeem / Check In";
+
+      pendingCode = null;
+      lastCode = null;
+      lastAt = 0;
+
+      redeemBtn.classList.add('foh-hide');
+      cancelBtn.classList.add('foh-hide');
+
+      resetSoon(true);
     }
+  });
+
+  cancelBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
 
     pendingCode = null;
     lastCode = null;
@@ -376,8 +411,11 @@
 
     redeemBtn.classList.add('foh-hide');
     cancelBtn.classList.add('foh-hide');
+
+    if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
     resetSoon(true);
   });
+
 
 
 })();
