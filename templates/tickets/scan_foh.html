@@ -178,7 +178,7 @@
 
         // If autocheck is OFF, wait for user action
         if(!autoc.checked){
-          pendingCode = raw;
+          pendingCode = extractUuid(raw) || raw; // store clean token if possible
           redeemBtn.classList.remove('foh-hide');
           cancelBtn.classList.remove('foh-hide');
           if (camStatus && scanning) camStatus.textContent = "Camera: waiting for Redeem…";
@@ -225,14 +225,18 @@
     }
   });
 
-  // keep focus for scanners
   window.addEventListener('click', (e) => {
-    // Don't steal focus when clicking buttons/inputs
+    // If we're waiting for Redeem/Cancel, DO NOT steal focus (prevents jump)
+    if (pendingCode) return;
+
+    // Don't steal focus when clicking buttons/inputs/camera
     if (e.target.closest('button, input, label, #qrWrap, #qrReader')) return;
-    input.focus();
+
+    input.focus({ preventScroll: true });
   });
 
-  input.focus();
+  input.focus({ preventScroll: true });
+
 
     // --- Camera QR Scanner (html5-qrcode) ---
   const camStartBtn = document.getElementById('camStart');
@@ -324,70 +328,57 @@
   camStopBtn && camStopBtn.addEventListener("click", (e)=>{ e.preventDefault(); stopCamera(); });
 
   redeemBtn.addEventListener('click', async (e)=>{
-      e.preventDefault();
-      if(!pendingCode) return;
+    e.preventDefault();
+    e.stopPropagation();
 
-      // call same API, but force redeem
-      const body = JSON.stringify({ code: pendingCode, autocheckin: false, redeem: true });
+    if(!pendingCode) return;
 
-      try{
-        const res = await fetch("{% url 'control:tickets:scan_api' %}", {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        });
-        const data = await res.json();
+    console.log("Redeeming token:", pendingCode);
 
-        if(data.status === 'already'){
-          show(already);
-          flashColor('foh-red');
-          errSnd && errSnd.play().catch(()=>{});
-        }else if(data.status === 'ok'){
-          // now it should come back checked in
-          document.getElementById('ok_checkin').textContent =
-            data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
-          flashColor('foh-green');
-          okSnd && okSnd.play().catch(()=>{});
-          redeemBtn.classList.add('foh-hide');
-          cancelBtn.classList.add('foh-hide');
-          pendingCode = null;
-          lastCode = null;
-          lastAt = 0;
+    const body = JSON.stringify({ code: pendingCode, autocheckin: false, redeem: true });
 
+    try{
+      const res = await fetch("{% url 'control:tickets:scan_api' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body
+      });
 
-        }else{
-          document.getElementById('bad_msg').textContent = data.message || 'Unknown code';
-          show(bad);
-          flashColor('foh-red');
-          errSnd && errSnd.play().catch(()=>{});
-        }
-      }catch(e){
-        document.getElementById('bad_msg').textContent = 'Network error';
+      const data = await res.json();
+      console.log("Redeem response:", data);
+
+      if(data.status === 'already'){
+        show(already);
+        flashColor('foh-red');
+        errSnd && errSnd.play().catch(()=>{});
+      }else if(data.status === 'ok'){
+        document.getElementById('ok_checkin').textContent =
+          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
+        flashColor('foh-green');
+        okSnd && okSnd.play().catch(()=>{});
+      }else{
+        document.getElementById('bad_msg').textContent = data.message || 'Redeem failed';
         show(bad);
         flashColor('foh-red');
         errSnd && errSnd.play().catch(()=>{});
       }
+    }catch(e){
+      document.getElementById('bad_msg').textContent = 'Network error';
+      show(bad);
+      flashColor('foh-red');
+      errSnd && errSnd.play().catch(()=>{});
+    }
 
-      // clear pending + reset
-      pendingCode = null;
-      lastCode = null;
-      lastAt = 0;
+    pendingCode = null;
+    lastCode = null;
+    lastAt = 0;
 
-      redeemBtn.classList.add('foh-hide');
-      cancelBtn.classList.add('foh-hide');
-      resetSoon(true);
-    });
+    redeemBtn.classList.add('foh-hide');
+    cancelBtn.classList.add('foh-hide');
+    resetSoon(true);
+  });
 
-    cancelBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      pendingCode = null;
-      lastCode = null;
-      lastAt = 0;
-
-      redeemBtn.classList.add('foh-hide');
-      cancelBtn.classList.add('foh-hide');
-      resetSoon(true);
-    });
 
 })();
 </script>
