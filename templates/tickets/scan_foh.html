@@ -62,6 +62,7 @@
     </div>
     <div id="ok" class="foh-hide">
       <p class="foh-big">VALID ✅</p>
+
       <div class="foh-kv">
         <div>Purchaser:</div><div id="ok_name"></div>
         <div>Event:</div><div id="ok_event"></div>
@@ -69,7 +70,13 @@
         <div>Email:</div><div id="ok_email"></div>
         <div>Checked-in:</div><div id="ok_checkin"></div>
       </div>
+
+      <div class="foh-row" style="justify-content:center;margin-top:14px;">
+        <button id="redeemBtn" class="btn primary foh-hide">Redeem / Check In</button>
+        <button id="cancelBtn" class="btn foh-hide">Cancel</button>
+      </div>
     </div>
+
     <div id="already" class="foh-hide">
       <p class="foh-big">ALREADY CHECKED-IN ⚠️</p>
       <div class="foh-kv">
@@ -92,6 +99,10 @@
 
 <script>
 (function(){
+  const redeemBtn = document.getElementById('redeemBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  let pendingCode = null;
+
   const input = document.getElementById('scanInput');
   const btn   = document.getElementById('scanBtn');
   const stage = document.getElementById('stage');
@@ -106,6 +117,11 @@
   const okSnd  = document.getElementById('snd_ok');
   const errSnd = document.getElementById('snd_err');
 
+  function extractUuid(text){
+    const m = (text || "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+    return m ? m[0].toLowerCase() : null;
+  }
+
   function show(which){
     [idle, ok, already, bad].forEach(el => el.classList.add('foh-hide'));
     which.classList.remove('foh-hide');
@@ -116,14 +132,19 @@
     setTimeout(()=> flash.classList.remove('show'), 180);
   }
 
-  function resetSoon(){
+  function resetSoon(force=false){
+    if(!force && pendingCode) return; // waiting for Redeem/Cancel
     setTimeout(()=>{
       input.value = '';
       show(idle);
+      pendingCode = null;
+      redeemBtn.classList.add('foh-hide');
+      cancelBtn.classList.add('foh-hide');
       input.focus();
       if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
     }, 900);
   }
+
 
 
   async function doScan(raw){
@@ -138,16 +159,37 @@
       const data = await res.json();
 
       if(data.status === 'ok'){
-        document.getElementById('ok_name').textContent = data.ticket.name || '';
+        if (camStatus && scanning) camStatus.textContent = "Camera: VALID ✅";
+
+        document.getElementById('ok_name').textContent  = data.ticket.name || '';
         document.getElementById('ok_event').textContent = data.ticket.event || '';
         document.getElementById('ok_type').textContent  = data.ticket.type || '';
         document.getElementById('ok_email').textContent = data.ticket.email || '';
-        document.getElementById('ok_checkin').textContent = data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : (autoc.checked ? 'now' : 'not yet');
+        document.getElementById('ok_checkin').textContent =
+          data.ticket.checked_in_at
+            ? new Date(data.ticket.checked_in_at).toLocaleString()
+            : (autoc.checked ? 'now' : 'not yet');
+
         show(ok);
+
+        // Green feedback always for a valid ticket
         flashColor('foh-green');
         okSnd && okSnd.play().catch(()=>{});
+
+        // If autocheck is OFF, wait for user action
+        if(!autoc.checked){
+          pendingCode = raw;
+          redeemBtn.classList.remove('foh-hide');
+          cancelBtn.classList.remove('foh-hide');
+          if (camStatus && scanning) camStatus.textContent = "Camera: waiting for Redeem…";
+          return;
+        }
+
+        // Autocheck is ON, so reset for next scan
         resetSoon();
+
       }else if(data.status === 'already'){
+        if (camStatus && scanning) camStatus.textContent = "Camera: already checked-in ⚠️";
         document.getElementById('al_name').textContent = data.ticket.name || '';
         document.getElementById('al_event').textContent = data.ticket.event || '';
         document.getElementById('al_type').textContent  = data.ticket.type || '';
@@ -158,6 +200,7 @@
         errSnd && errSnd.play().catch(()=>{});
         resetSoon();
       }else{
+        if (camStatus && scanning) camStatus.textContent = "Camera: INVALID ❌";
         document.getElementById('bad_msg').textContent = data.message || 'Unknown code';
         show(bad);
         flashColor('foh-red');
@@ -165,6 +208,7 @@
         resetSoon();
       }
     }catch(e){
+      if (camStatus && scanning) camStatus.textContent = "Camera: network error";
       document.getElementById('bad_msg').textContent = 'Network error';
       show(bad);
       flashColor('foh-red');
@@ -225,13 +269,21 @@
         { facingMode: "environment" },
         config,
         (decodedText) => {
-          const code = (decodedText || "").trim();
-          if(!code) return;
-          if(!canScanAgain(code)) return;
+          const text = (decodedText || "").trim();
+          if (!text) return;
 
-          camStatus.textContent = "Camera: scanned ✅";
-          doScan(code); // uses your existing API flow
+          // If we're waiting on Redeem/Cancel, pause scanning.
+          if (pendingCode) return;
+
+          // Debounce on UUID when possible (more stable than full URL text)
+          const token = extractUuid(text) || text;
+
+          if (!canScanAgain(token)) return;
+
+          camStatus.textContent = "Camera: checking…";
+          doScan(text);
         },
+
         () => { /* ignore per-frame decode errors */ }
       );
 
@@ -265,6 +317,72 @@
 
   camStartBtn && camStartBtn.addEventListener("click", (e)=>{ e.preventDefault(); startCamera(); });
   camStopBtn && camStopBtn.addEventListener("click", (e)=>{ e.preventDefault(); stopCamera(); });
+
+  redeemBtn.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      if(!pendingCode) return;
+
+      // call same API, but force redeem
+      const body = JSON.stringify({ code: pendingCode, autocheckin: false, redeem: true });
+
+      try{
+        const res = await fetch("{% url 'control:tickets:scan_api' %}", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body
+        });
+        const data = await res.json();
+
+        if(data.status === 'already'){
+          show(already);
+          flashColor('foh-red');
+          errSnd && errSnd.play().catch(()=>{});
+        }else if(data.status === 'ok'){
+          // now it should come back checked in
+          document.getElementById('ok_checkin').textContent =
+            data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
+          flashColor('foh-green');
+          okSnd && okSnd.play().catch(()=>{});
+          redeemBtn.classList.add('foh-hide');
+          cancelBtn.classList.add('foh-hide');
+          pendingCode = null;
+          lastCode = null;
+          lastAt = 0;
+
+
+        }else{
+          document.getElementById('bad_msg').textContent = data.message || 'Unknown code';
+          show(bad);
+          flashColor('foh-red');
+          errSnd && errSnd.play().catch(()=>{});
+        }
+      }catch(e){
+        document.getElementById('bad_msg').textContent = 'Network error';
+        show(bad);
+        flashColor('foh-red');
+        errSnd && errSnd.play().catch(()=>{});
+      }
+
+      // clear pending + reset
+      pendingCode = null;
+      lastCode = null;
+      lastAt = 0;
+
+      redeemBtn.classList.add('foh-hide');
+      cancelBtn.classList.add('foh-hide');
+      resetSoon(true);
+    });
+
+    cancelBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      pendingCode = null;
+      lastCode = null;
+      lastAt = 0;
+
+      redeemBtn.classList.add('foh-hide');
+      cancelBtn.classList.add('foh-hide');
+      resetSoon(true);
+    });
 
 })();
 </script>

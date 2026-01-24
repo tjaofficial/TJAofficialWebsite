@@ -233,6 +233,9 @@ def scan_api(request):
 
     # If autocheckin requested, mark as checked in (idempotent)
     autocheck = bool(data.get("autocheckin"))
+    redeem = bool(data.get("redeem"))
+    should_checkin = autocheck or redeem
+
     if t.checked_in_at:
         return JsonResponse({
             "status": "already",
@@ -247,9 +250,10 @@ def scan_api(request):
             }
         })
 
-    if autocheck:
+    if should_checkin:
         t.checked_in_at = timezone.now()
         t.save(update_fields=["checked_in_at"])
+
 
     return JsonResponse({
         "status": "ok",
