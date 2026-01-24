@@ -72,8 +72,8 @@
       </div>
 
       <div class="foh-row" style="justify-content:center;margin-top:14px;">
-        <button id="redeemBtn" class="btn primary foh-hide">Redeem / Check In</button>
-        <button id="cancelBtn" class="btn foh-hide">Cancel</button>
+        <button id="redeemBtn" type="button" class="btn primary foh-hide">Redeem / Check In</button>
+        <button id="cancelBtn" type="button" class="btn foh-hide">Cancel</button>
       </div>
     </div>
 
@@ -226,7 +226,12 @@
   });
 
   // keep focus for scanners
-  window.addEventListener('click', ()=> input.focus());
+  window.addEventListener('click', (e) => {
+    // Don't steal focus when clicking buttons/inputs
+    if (e.target.closest('button, input, label, #qrWrap, #qrReader')) return;
+    input.focus();
+  });
+
   input.focus();
 
     // --- Camera QR Scanner (html5-qrcode) ---
