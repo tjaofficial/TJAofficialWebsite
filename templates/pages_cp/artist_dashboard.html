@@ -95,6 +95,7 @@
   <h3>Quick Links</h3>
   <div class="form-row">
     <a class="btn" href="{% url 'control:pages:artist_edit' artist.id %}">Edit Artist</a>
+	<a class="btn" href="{% url 'tour_openers_detail' slug=artist.slug %}">View Profile</a>
     {% if request.user != artist.user %}
         <a class="btn" href="{% url 'control:events:event_artists' 0 %}" onclick="event.preventDefault();history.back();">Event Artists</a>
     {% endif %}

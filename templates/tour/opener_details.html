@@ -1,0 +1,80 @@
+{% extends "tour/base_tour.html" %}{% load static %}
+{% block title %}{{ a.name }} — EPK{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/epk.css' %}">
+    <script defer src="{% static 'js/epk_opener.js' %}"></script>
+{% endblock %}
+{% block content %}
+<section class="tour-section epk">
+  <div class="epk-hero">
+    {% if a.hero_image %}<img src="{{ a.hero_image.url }}" alt="{{ a.name }}">{% endif %}
+    <h1>{{ a.name }}</h1>
+    <div class="muted">
+      {% if a.genre %}{{ a.genre }} • {% endif %}
+      {% if a.hometown %}{{ a.hometown }}{% endif %}
+    </div>
+    {% if a.contact_email %}<div class="muted">Press: {{ a.contact_email }}</div>{% endif %}
+  </div>
+
+  {% if a.bio %}<p class="epk-bio">{{ a.bio|linebreaksbr }}</p>{% endif %}
+
+  <div class="epk-links">
+    {% if a.website_url %}<a class="btn ghost" href="{{ a.website_url }}" target="_blank" rel="noopener">Website</a>{% endif %}
+    {% if a.instagram_url %}<a class="btn ghost" href="{{ a.instagram_url }}" target="_blank" rel="noopener">Instagram</a>{% endif %}
+    {% if a.tiktok_url %}<a class="btn ghost" href="{{ a.tiktok_url }}" target="_blank" rel="noopener">TikTok</a>{% endif %}
+    {% if a.youtube_url %}<a class="btn ghost" href="{{ a.youtube_url }}" target="_blank" rel="noopener">YouTube</a>{% endif %}
+    {% if a.spotify_url %}<a class="btn ghost" href="{{ a.spotify_url }}" target="_blank" rel="noopener">Spotify</a>{% endif %}
+    {% if a.apple_url %}<a class="btn ghost" href="{{ a.apple_url }}" target="_blank" rel="noopener">Apple Music</a>{% endif %}
+  </div>
+
+  {% if a.videos.all %}
+    <h2>Videos</h2>
+    <div class="epk-videos">
+      {% for v in a.videos.all %}
+        <div class="video-embed">
+          {% if v.embed_src %}
+            <iframe
+              src="{{ v.embed_src }}"
+              title="{{ v.title|default:a.name }}"
+              loading="lazy"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          {% else %}
+            <a class="btn" href="{{ v.url }}" target="_blank" rel="noopener">{{ v.title|default:"Watch" }}</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+{% if a.photos.all %}
+  <h2>Photos</h2>
+  <div class="epk-photos" id="epk-photos">
+    {% for p in a.photos.all %}
+      {% with srcs=p.sources %}
+        <figure class="epk-photo">
+          <a href="{{ p.image.url }}"
+            data-full="{{ p.image.url }}"
+            data-caption="{{ p.caption|default:a.name }}">
+            <picture>
+              {% if srcs.avif %}
+                <source type="image/avif" srcset="{{ srcs.avif }}" sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 33vw">
+              {% endif %}
+              {% if srcs.webp %}
+                <source type="image/webp" srcset="{{ srcs.webp }}" sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 33vw">
+              {% endif %}
+              <img
+                src="{{ srcs.fallback }}"
+                loading="lazy" decoding="async" alt="{{ p.caption|default:a.name }}">
+            </picture>
+          </a>
+          {% if p.caption %}<figcaption class="muted">{{ p.caption }}</figcaption>{% endif %}
+        </figure>
+      {% endwith %}
+    {% endfor %}
+  </div>
+{% endif %}
+</section>
+{% endblock %}

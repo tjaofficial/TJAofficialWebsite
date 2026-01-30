@@ -12,6 +12,7 @@
   <div class="artists-grid">
     {% for a in artists %}
       <article class="artist-card">
+        <a href="{% url 'tour_openers_detail' slug=a.slug %}">
           <div class="ac-media">
             {% if a.avatar %}
                 <img src="{{ a.avatar.url }}" alt="{{ a.name }}">
@@ -25,6 +26,7 @@
             <h3>{{ a.short_tag|default:a.name }}</h3>
             {% if a.genre %}<div class="muted">{{ a.genre }}</div>{% endif %}
           </div>
+        </a>
       </article>
     {% empty %}
       <p class="card">No openers announced yet.</p>

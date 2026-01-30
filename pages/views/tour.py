@@ -123,6 +123,10 @@ def tour_openers(request):
     artists = Artist.objects.filter(is_public=True, default_role="opener")
     return render(request, "tour/openers.html", {"artists": artists})
 
+def tour_openers_detail(request, slug):
+    artist = get_object_or_404(Artist, slug=slug, is_public=True)
+    return render(request, "tour/opener_details.html", {"a": artist})
+
 def tour_epk_detail(request, slug):
     artist = get_object_or_404(Artist, slug=slug, is_public=True)
     return render(request, "tour/epk_detail.html", {"a": artist})
