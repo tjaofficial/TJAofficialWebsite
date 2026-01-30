@@ -1,0 +1,150 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Manage Album{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/media_album_edit.css' %}">
+    <script defer src="{% static 'js/media_album_edit.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+    <h1>Manage Album</h1>
+    <a class="btn ghost" href="{% url 'control:media_albums_list' %}">← Back</a>
+  </div>
+
+  <div class="grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+    <div class="card">
+      <h3>Album Details</h3>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="row-actions">
+          <button class="btn" name="action" value="save" type="submit">Save</button>
+          <button class="btn danger" name="action" value="delete" type="submit"
+                  onclick="return confirm('Delete this album and ALL items?')">
+            Delete Album
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Add Media Item</h3>
+
+      <form method="post" action="{% url 'control:media_item_add' album.id %}" enctype="multipart/form-data" class="add-item-form">
+        {% csrf_token %}
+        {% if add_form.errors %}
+          <div class="errorbox">
+            <strong>Fix these:</strong>
+            {{ add_form.non_field_errors }}
+            {% for field in add_form %}
+              {% for err in field.errors %}
+                <div>• {{ field.label }} — {{ err }}</div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+
+        <div class="form-grid">
+          <label class="field">
+            <span class="label">Type</span>
+            {{ add_form.kind }}
+          </label>
+
+          <label class="field" data-field="images">
+            <span class="label">Upload photos</span>
+
+            <div class="drop" id="dropZone">
+              {{ add_form.images }}
+              <div class="drop-ui">
+                <div class="drop-title">Drop files here</div>
+                <div class="drop-sub muted">or click to browse • multiple allowed</div>
+              </div>
+            </div>
+
+            <div class="filelist" id="fileList"></div>
+          </label>
+
+
+          <label class="field is-hidden" data-field="url">
+            <span class="label">Video URL</span>
+            {{ add_form.url }}
+          </label>
+
+          <label class="field">
+            <span class="label">Caption</span>
+            {{ add_form.caption }}
+          </label>
+
+          <label class="field">
+            <span class="label">Sort</span>
+            {{ add_form.sort }}
+          </label>
+        </div>
+
+        <button class="btn" type="submit">Add</button>
+      </form>
+
+
+      <div class="muted" style="margin-top:10px;">
+        Tip: For “video”, paste YouTube/Vimeo link. For “photo”, upload image.
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Items ({{ items|length }})</h3>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Preview</th>
+          <th>Type</th>
+          <th>Caption</th>
+          <th>Sort</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for it in items %}
+        <tr>
+          <td class="media-preview">
+            {% if it.kind == "photo" and it.image %}
+              <img src="{{ it.image.url }}" style="width:140px; border-radius:10px; border:1px solid #2c2c2c;">
+            {% else %}
+              <div class="url-pill">
+                {{ it.url }}
+              </div>
+            {% endif %}
+          </td>
+            <td>
+                <span class="type-badge {% if it.kind == 'video' %}video{% endif %}">
+                    <span class="dot"></span>
+                    {{ it.kind|title }}
+                </span>
+            </td>
+
+          <td class="caption-cell">{{ it.caption|default:"—" }}</td>
+          <td>{{ it.sort }}</td>
+          <td style="text-align:right;">
+            <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                <a class="btn ghost" href="{% url 'control:media_item_edit' album.id it.id %}">Edit</a>
+                <form method="post" action="{% url 'control:media_item_delete' album.id it.id %}">
+                    {% csrf_token %}
+                    <button class="btn danger" type="submit" onclick="return confirm('Delete this item?')">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </td>
+
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No items yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

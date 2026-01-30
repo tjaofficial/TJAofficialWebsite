@@ -1,49 +1,128 @@
-{% extends "tour/base_tour.html" %}
-{% load static %}
+{% extends "tour/base_tour.html" %}{% load static %}
 {% block title %}{{ album.title }} — Media{% endblock %}
-
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/tour_media.css' %}">
-    <script defer src="{% static 'js/tour_media.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'css/media_album.css' %}">
+	<script defer src="{% static 'js/media_album.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-<section class="tour-section">
-  <h1>{{ album.title }}</h1>
-  <p class="muted">
-    {% if album.date %}{{ album.date|date:"F j, Y" }}{% endif %}
-    {% if album.city %} • {{ album.city }}{% endif %}
-    {% if album.state %}, {{ album.state }}{% endif %}
-  </p>
+	{% with cover=album.cover_item|default:album.items.first %}
+		<section class="media-hero" {% if cover and cover.image %}style="--hero:url('{{ cover.image.url }}')"{% endif %}>
+			<div class="media-hero__bg"></div>
+			<div class="media-hero__grain"></div>
 
-  <div class="gallery-grid" id="galleryGrid">
-    {% for it in album.items.all %}
-      {% if it.kind == "photo" and it.image %}
-        <a href="{{ it.image.url }}" class="g-item" data-kind="photo" data-caption="{{ it.caption|escape }}">
-          <img src="{{ it.image.url }}" alt="{{ it.caption|default:album.title }}">
-        </a>
-      {% elif it.kind == "video" and it.embed_src %}
-        <button class="g-item g-video" data-kind="video" data-embed="{{ it.embed_src }}" aria-label="Play video: {{ it.caption|default:album.title }}">
-          <div class="v-thumb">
-            <span>▶</span>
-          </div>
-        </button>
-      {% endif %}
-    {% endfor %}
-  </div>
+			<div class="media-hero__content tour-section">
+				<div class="media-hero__top">
+					<a class="btn ghost" href="{% url 'tour_media' %}">← Back</a>
+					<a class="btn" href="{% url 'tour_media_submit' %}?album={{ album.slug }}">Submit media</a>
+				</div>
 
-  <div class="form-actions" style="margin-top:12px">
-    <a class="btn ghost" href="{% url 'tour_media' %}">Back to albums</a>
-    <a class="btn" href="{% url 'tour_shows' %}">See tour dates</a>
-  </div>
-</section>
+				<h1 class="media-hero__title">
+					{% if album.city %}{{ album.city }}{% endif %}{% if album.state %}, {{ album.state }}{% endif %}
+				</h1>
 
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" hidden>
-  <button class="lb-close" aria-label="Close">×</button>
-  <button class="lb-prev" aria-label="Previous">‹</button>
-  <button class="lb-next" aria-label="Next">›</button>
-  <div class="lb-stage" id="lbStage"></div>
-  <div class="lb-caption" id="lbCaption"></div>
-</div>
+				<div class="media-hero__meta">
+					{% if album.date %}<span>{{ album.date|date:"M j, Y" }}</span>{% endif %}
+					<span class="dot">•</span>
+					<span class="badge">{{ items|length }} media</span>
+					{% if album.title %}<span class="dot">•</span><span class="muted">{{ album.title }}</span>{% endif %}
+				</div>
+
+				<div class="media-hero__actions">
+					<div class="search-wrap">
+						<input id="mediaSearch" class="search" type="text" placeholder="Search captions…">
+					</div>
+
+					<div class="filter-pills">
+						<button class="pill active" data-filter="all">All</button>
+						<button class="pill" data-filter="photo">Photos</button>
+						<button class="pill" data-filter="video">Videos</button>
+					</div>
+				</div>
+			</div>
+		</section>
+	{% endwith %}
+
+	<section class="tour-section">
+	{% if items %}
+		<div id="masonry" class="masonry">
+			{% for it in items %}
+				{% if it.kind == "photo" and it.image %}
+					<a class="m-item"
+					href="{{ it.image.url }}"
+					data-kind="photo"
+					data-caption="{{ it.caption|default_if_none:''|escape }}"
+					data-id="{{ it.id }}"
+					aria-label="Open photo"
+					id="m-{{ it.id }}"
+					>
+					<img loading="lazy" src="{{ it.image.url }}" alt="{{ it.caption|default:album.title }}">
+					<div class="m-overlay">
+						<div class="m-caption">{{ it.caption|default:"" }}</div>
+						<div class="m-reactions" data-id="{{ it.id }}">
+						<button class="rxn" data-emoji="fire" title="🔥">🔥 <span class="rxn-count" data-k="fire">0</span></button>
+						<button class="rxn" data-emoji="trophy" title="🏆">🏆 <span class="rxn-count" data-k="trophy">0</span></button>
+						</div>
+					</div>
+					</a>
+				{% else %}
+					<a class="m-item m-video"
+					href="#"
+					data-kind="video"
+					data-embed="{{ it.embed_src }}"
+					data-caption="{{ it.caption|default_if_none:''|escape }}"
+					data-id="{{ it.id }}"
+					data-url="{{ it.url|default:''|escape }}"
+					aria-label="Open video"
+					id="m-{{ it.id }}"
+					>
+					<div class="v-card">
+						<div class="v-play">▶</div>
+						<div class="v-meta">
+						<div class="v-title">{{ it.caption|default:"Video" }}</div>
+						<div class="v-sub muted">Tap to play</div>
+						</div>
+					</div>
+
+					<div class="m-reactions v-reactions" data-id="{{ it.id }}">
+						<button class="rxn" data-emoji="fire" title="🔥">🔥 <span class="rxn-count" data-k="fire">0</span></button>
+						<button class="rxn" data-emoji="trophy" title="🏆">🏆 <span class="rxn-count" data-k="trophy">0</span></button>
+					</div>
+					</a>
+				{% endif %}
+			{% endfor %}
+
+		</div>
+	{% else %}
+		<div class="card">
+		No media yet for this show.
+		<div style="margin-top:10px;">
+			<a class="btn" href="{% url 'tour_media_submit' %}?album={{ album.slug }}">Be the first to submit</a>
+		</div>
+		</div>
+	{% endif %}
+	</section>
+
+	<!-- Lightbox -->
+	<div id="lightbox" class="lightbox" hidden>
+		<div class="lb-shell" role="dialog" aria-modal="true" aria-label="Media viewer">
+			<div class="lb-topbar">
+			<div class="lb-actions">
+				<button class="lb-btn lb-close" aria-label="Close">Close ✕</button>
+				<button class="lb-btn lb-copy" aria-label="Copy link">Copy link</button>
+			</div>
+			<div class="muted lb-status" id="lbStatus">1 / 1</div>
+			</div>
+
+			<div class="lb-stage" id="lbStage">
+			<div class="lb-nav">
+				<button class="lb-prev" aria-label="Previous">‹</button>
+				<button class="lb-next" aria-label="Next">›</button>
+			</div>
+			</div>
+
+			<div class="lb-caption" id="lbCaption"></div>
+		</div>
+	</div>
+
 {% endblock %}

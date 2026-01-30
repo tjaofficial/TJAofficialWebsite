@@ -214,6 +214,11 @@
       artistName = 'Intermission';
       songTitle  = 'Intermission';
       duration   = mToSeconds($('#mInterMin')?.value);
+    } else if (kind === 'TALKING') {
+      const a = $('#mtHeadliner')?.selectedOptions?.[0];
+      if (!a || !a.value) return;
+      artistName = a.textContent;
+      songTitle  = 'Talking';
     }
 
     // Build row

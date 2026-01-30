@@ -230,12 +230,24 @@ class ArtistVideo(models.Model):
 class MediaAlbum(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=220, unique=True, blank=True)
-    show = models.ForeignKey("pages.Show", null=True, blank=True, on_delete=models.SET_NULL, related_name="media_albums")
+    show = models.ForeignKey(
+        "events.Event", 
+        null=True, 
+        blank=True, 
+        on_delete=models.SET_NULL, 
+        related_name="media_album"
+    )
     city = models.CharField(max_length=120, blank=True)
     state = models.CharField(max_length=10, blank=True)
     date = models.DateField(null=True, blank=True)
     is_public = models.BooleanField(default=True)
     sort = models.PositiveIntegerField(default=0)
+    cover_item = models.ForeignKey(
+        "MediaItem",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="cover_for_albums"
+    )
 
     class Meta:
         ordering = ["sort", "-date", "-id"]
@@ -246,11 +258,15 @@ class MediaAlbum(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)[:220]
-        # default city/state/date from show if present
+
+        # default city/state/date from show (events.Event) if present
         if self.show:
-            self.city = self.city or self.show.city
-            self.state = self.state or self.show.state
-            self.date = self.date or self.show.date.date() if hasattr(self.show.date, "date") else self.show.date
+            # Event has venue + start
+            if self.show.venue:
+                self.city = self.city or (self.show.venue.city or "")
+                self.state = self.state or (self.show.venue.state or "")
+            self.date = self.date or (self.show.start.date() if self.show.start else None)
+
         super().save(*args, **kwargs)
 
 class MediaItem(models.Model):
@@ -313,3 +329,29 @@ class UserBadge(models.Model):
     class Meta:
         unique_together = [("user", "badge", "show")]  # same badge can exist across different shows
 
+# models.py
+class MediaSubmission(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("declined", "Declined"),
+    )
+
+    album = models.ForeignKey("MediaAlbum", on_delete=models.CASCADE, related_name="submissions")
+    name = models.CharField(max_length=120, blank=True)
+    email = models.EmailField(blank=True)
+
+    image = models.ImageField(upload_to="media_submissions/", blank=True, null=True)
+    video_url = models.URLField(blank=True)  # youtube/ig/tiktok link
+
+    caption = models.CharField(max_length=220, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        # enforce either image or video_url
+        from django.core.exceptions import ValidationError
+        if not self.image and not self.video_url:
+            raise ValidationError("Please upload a photo or paste a video link.")
+        if self.image and self.video_url:
+            raise ValidationError("Choose either a photo OR a video link, not both.")

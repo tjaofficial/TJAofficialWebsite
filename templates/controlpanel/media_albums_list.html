@@ -1,0 +1,72 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Media Albums{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/media_albums_list.css' %}">
+    <script defer src="{% static 'js/media_albums_list.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="page">
+    <h1>Media Albums</h1>
+
+    <form method="get" class="card" style="margin:10px 0 14px;">
+        <div class="filters">
+            <div class="field">
+                <label class="muted">Search</label>
+                <input type="text" name="q" value="{{ q }}" placeholder="City, title, show name...">
+            </div>
+            <div>
+                <label class="muted">Status</label>
+                <select name="status">
+                    <option value="all" {% if status == "all" %}selected{% endif %}>All</option>
+                    <option value="public" {% if status == "public" %}selected{% endif %}>Public</option>
+                    <option value="private" {% if status == "private" %}selected{% endif %}>Private</option>
+                </select>
+            </div>
+            <div>
+                <button class="btn" type="submit">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                <th>Album</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Public</th>
+                <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in albums %}
+                <tr>
+                <td>
+                    <div class="album-title">{{ a.title }}</div>
+                    <div class="album-meta">
+                        {% if a.city %}{{ a.city }}{% endif %}{% if a.state %}, {{ a.state }}{% endif %}
+                    </div>
+                </td>
+                <td>{% if a.date %}{{ a.date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                <td><span class="count-badge">{{ a.item_count }}</span></td>
+                <td>
+                    <form method="post" action="{% url 'control:media_album_toggle_public' a.id %}">
+                        {% csrf_token %}
+                        <button class="btn ghost toggle" data-state="{% if a.is_public %}public{% else %}private{% endif %}" type="submit">
+                            {% if a.is_public %}✅ Public{% else %}🚫 Private{% endif %}
+                        </button>
+                    </form>
+                </td>
+                <td style="text-align:right;">
+                    <a class="btn manage-btn" href="{% url 'control:media_album_edit' a.id %}">Manage</a>
+                </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">No albums found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

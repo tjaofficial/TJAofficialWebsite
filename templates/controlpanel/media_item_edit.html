@@ -1,0 +1,65 @@
+{% extends "controlpanel/dashboard.html" %}{% load static %}
+{% block title %}Edit Media Item{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/media_item_edit.css' %}">
+    <script defer src="{% static 'js/media_item_edit.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+    <div>
+      <h1>Edit Media Item</h1>
+      <div class="muted">{{ album.title }}</div>
+    </div>
+    <a class="btn ghost" href="{% url 'control:media_album_edit' album.id %}">← Back to Album</a>
+  </div>
+
+  <div class="grid" style="display:grid; grid-template-columns: 1.15fr .85fr; gap:16px; margin-top:12px;">
+    <div class="card">
+      <h3>Preview</h3>
+
+      {% if item.kind == "photo" and item.image %}
+        <img src="{{ item.image.url }}" style="width:100%; border-radius:12px; border:1px solid #2c2c2c;">
+      {% elif item.kind == "video" %}
+        <div class="muted">Video URL:</div>
+        <div class="video-url">{{ item.url }}</div>
+      {% else %}
+        <div class="muted">No preview available.</div>
+      {% endif %}
+        <div class="kind-chip">
+            <span class="dot"></span>
+            <span>{{ item.kind|title }}</span>
+        </div>
+
+      {% if item.kind == "photo" and item.image %}
+        <form method="post" style="margin-top:12px;">
+          {% csrf_token %}
+          <button class="btn danger" name="action" value="delete_image"
+                  onclick="return confirm('Remove image file from this item?')">
+            Remove Image File
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Edit Fields</h3>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="actions sticky-actions">
+            <button class="btn" name="action" value="save" type="submit">Save</button>
+            <a class="btn ghost" href="{% url 'control:media_album_edit' album.id %}">Cancel</a>
+        </div>
+
+      </form>
+
+      <div class="muted" style="margin-top:10px;">
+        Tip: If switching to “video”, paste the link and save. If switching to “photo”, upload an image.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

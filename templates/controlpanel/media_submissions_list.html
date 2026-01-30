@@ -1,0 +1,60 @@
+{% extends "controlpanel/dashboard.html" %}
+{% block title %}Media Submissions{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>Media Submissions</h1>
+
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 16px;">
+    <a class="btn {% if status == 'pending' %}active{% endif %}" href="?status=pending">
+      Pending ({{ counts.pending }})
+    </a>
+    <a class="btn ghost {% if status == 'approved' %}active{% endif %}" href="?status=approved">
+      Approved ({{ counts.approved }})
+    </a>
+    <a class="btn ghost {% if status == 'declined' %}active{% endif %}" href="?status=declined">
+      Declined ({{ counts.declined }})
+    </a>
+    <form method="post" action="{% url 'control:media_backfill_albums' %}" style="margin: 10px 0 16px;">
+    {% csrf_token %}
+    <button class="btn ghost"
+            type="submit"
+            onclick="return confirm('Create missing Media Albums for older events? They will be PRIVATE (not public).')">
+        Backfill Media Albums (Private)
+    </button>
+</form>
+
+  </div>
+
+  <div class="card">
+    {% if subs %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Submitted</th>
+            <th>Album</th>
+            <th>Type</th>
+            <th>Caption</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subs %}
+            <tr>
+              <td>{{ s.created_at|date:"M j, Y g:i A" }}</td>
+              <td>{{ s.album.title }}</td>
+              <td>{% if s.image %}Photo{% else %}Video{% endif %}</td>
+              <td style="max-width:420px;">{{ s.caption|default:"—" }}</td>
+              <td style="text-align:right;">
+                <a class="btn" href="{% url 'control:media_submission_review' s.id %}">Review</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No submissions.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -61,17 +61,18 @@
 
 {# Modal #}
 <dialog id="sbModal">
-  <form method="dialog" class="sb-modal">
-    <h3>Add Item</h3>
-    <label>Type
-      <select id="mKind">
-        <option value="OPENER">Opener</option>
-        <option value="HEADLINER">Headliner</option>
-        <option value="COLLAB">Collaboration</option>
-        <option value="BREAK">Break</option>
-        <option value="INTERMISSION">Intermission</option>
-      </select>
-    </label>
+	<form method="dialog" class="sb-modal">
+		<h3>Add Item</h3>
+		<label>Type
+			<select id="mKind">
+				<option value="OPENER">Opener</option>
+				<option value="HEADLINER">Headliner</option>
+				<option value="COLLAB">Collaboration</option>
+				<option value="BREAK">Break</option>
+				<option value="INTERMISSION">Intermission</option>
+				<option value="TALKING">Talking</option>
+			</select>
+		</label>
 
     <div class="m-row" data-show="OPENER">
       <label>Choose Opener
@@ -128,6 +129,17 @@
       <label>Intermission Minutes
         <input type="number" id="mInterMin" value="15" min="1">
       </label>
+    </div>
+
+	<div class="m-row" data-show="TALKING">
+		<label>Headliner
+			<select id="mtHeadliner">
+				<option value="">— pick headliner —</option>
+				{% for a in headliners %}
+					<option value="{{ a.id }}">{{ a.name }}</option>
+				{% endfor %}
+			</select>
+		</label>
     </div>
 
     <div class="actions">

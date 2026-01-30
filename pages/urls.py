@@ -45,6 +45,9 @@ urlpatterns = [
     path("ticket/<uuid:token>/", views.ticket_detail, name="ticket_detail"),
     path("subscribe/", views.tour_subscribe, name="tour_subscribe"),
     path("presskit/daynnight/", views.presskit_daynnight, name="presskit_daynnight"),
+    path("tour/media/submit/", views.tour_media_submit, name="tour_media_submit"),
+    path("tour/media/album/<slug:slug>", views.tour_media_album, name="tour_media_album"),
+
     #control panel
     
 ]

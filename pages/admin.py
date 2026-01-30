@@ -69,3 +69,35 @@ class UserBadgeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Subscriber)
+
+
+@admin.register(MediaSubmission)
+class MediaSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("album", "status", "name", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("name", "email", "caption", "album__title", "album__city", "album__state")
+    actions = ("approve_selected", "decline_selected")
+
+    def approve_selected(self, request, queryset):
+        for sub in queryset.filter(status="pending"):
+            item = MediaItem(album=sub.album, caption=sub.caption or "", sort=0)
+            if sub.image:
+                item.kind = "photo"
+                item.image = sub.image
+            else:
+                item.kind = "video"
+                item.url = sub.video_url
+            item.save()
+
+            # optionally auto set album cover if none yet
+            if sub.album.cover_item_id is None and item.kind == "photo" and item.image:
+                sub.album.cover_item = item
+                sub.album.save(update_fields=["cover_item"])
+
+            sub.status = "approved"
+            sub.save(update_fields=["status"])
+    approve_selected.short_description = "Approve selected (creates MediaItems)"
+
+    def decline_selected(self, request, queryset):
+        queryset.delete()
+    decline_selected.short_description = "Decline selected (delete)"

@@ -1,0 +1,46 @@
+{% extends "controlpanel/dashboard.html" %}
+{% block title %}Review Submission{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+    <h1>Review Submission</h1>
+    <a class="btn ghost" href="{% url 'control:media_submissions_list' %}">← Back</a>
+  </div>
+
+  <div class="grid" style="display:grid; grid-template-columns: 1.2fr .8fr; gap:16px;">
+    <div class="card">
+      <h3>Preview</h3>
+
+      {% if sub.image %}
+        <img src="{{ sub.image.url }}" style="width:100%; border-radius:12px; border:1px solid #2c2c2c;">
+      {% else %}
+        <div class="muted" style="margin-top:10px;">Video URL:</div>
+        <div style="word-break:break-word;">{{ sub.video_url }}</div>
+      {% endif %}
+
+      <div class="muted" style="margin-top:14px;">
+        Submitted: {{ sub.created_at|date:"M j, Y g:i A" }} • Status: <b>{{ sub.status }}</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Edit Details</h3>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <button class="btn ghost" name="action" value="save" type="submit">Save</button>
+          <button class="btn" name="action" value="approve" type="submit">Approve</button>
+          <button class="btn danger" name="action" value="deny" type="submit"
+                  onclick="return confirm('Deny and delete this submission?')">
+            Deny
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

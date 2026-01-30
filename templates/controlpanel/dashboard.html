@@ -44,6 +44,10 @@
 							<li><a href="{% url 'control:events:venues' %}">Venues</a></li>
 							<li><a href="{% url 'control:events:tech_list' %}">Event Tech</a></li>
 						{% endif %}
+						{% if request.user.is_superuser %}
+							<li><a href="{% url 'control:media_submissions_list' %}">Media Submissions</a></li>
+							<li><a href="{% url 'control:media_albums_list' %}">Media Albums</a></li>
+						{% endif %}
 						{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
 					</ul>
 				</div>

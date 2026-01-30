@@ -65,6 +65,7 @@ class ShowItem(models.Model):
         ("COLLAB","Collaboration"),
         ("BREAK","Break"),
         ("INTERMISSION","Intermission"),
+        ("TALKING","Talking"),
     ]
     show = models.ForeignKey(ShowSet, on_delete=models.CASCADE, related_name="items")
     sort = models.PositiveIntegerField(default=0)

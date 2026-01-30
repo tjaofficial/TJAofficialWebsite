@@ -1,0 +1,82 @@
+{% extends "tour/base_tour.html" %}{% load static %}
+{% block title %}Submit Media — Day N Night{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/tour_media.css' %}">
+<script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+        const photo = document.querySelector("#id_image");
+        const video = document.querySelector("#id_video_url");
+        const hint  = document.querySelector(".submit-hint");
+
+        const sync = () => {
+            const hasPhoto = photo && photo.files && photo.files.length > 0;
+            const hasVideo = video && video.value.trim().length > 0;
+
+            if (hasPhoto && hasVideo) hint.textContent = "Pick one: photo OR video link (not both).";
+            else if (hasPhoto) hint.textContent = "Photo selected. Leave video link empty.";
+            else if (hasVideo) hint.textContent = "Video link added. Leave photo empty.";
+            else hint.textContent = "Upload a photo OR paste a video link.";
+        };
+
+        if (photo) photo.addEventListener("change", sync);
+        if (video) video.addEventListener("input", sync);
+        sync();
+    });
+</script>
+{% endblock %}
+{% block content %}
+<section class="tour-section">
+  <h1>Submit your media</h1>
+  <p class="muted">Drop your best shots or clips. Submissions are reviewed before they go live.</p>
+
+  <form method="post" enctype="multipart/form-data" class="card form media-submit">
+    {% csrf_token %}
+
+    <div class="form-grid">
+      <label class="field">
+        <span class="label">Which show were you at?</span>
+        {{ form.album }}
+      </label>
+
+      <label class="field">
+        <span class="label">Name (optional)</span>
+        {{ form.name }}
+      </label>
+
+      <label class="field">
+        <span class="label">Email (optional)</span>
+        {{ form.email }}
+      </label>
+
+      <label class="field">
+        <span class="label">Upload photo</span>
+        {{ form.image }}
+      </label>
+
+      <label class="field">
+        <span class="label">OR video link (YouTube/Vimeo)</span>
+        {{ form.video_url }}
+      </label>
+
+      <label class="field" style="grid-column: 1/-1;">
+        <span class="label">Caption (optional)</span>
+        {{ form.caption }}
+      </label>
+    </div>
+
+    <div class="submit-hint muted" style="margin-top:10px;"></div>
+
+    <div class="form-actions" style="margin-top:14px;">
+      <button class="btn" type="submit">Submit</button>
+      <a class="btn ghost" href="{% url 'tour_media' %}">Back to media</a>
+    </div>
+
+    {% if form.errors %}
+      <div class="card" style="margin-top:12px;border:1px solid rgba(255,0,0,0.25);">
+        {{ form.errors }}
+      </div>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

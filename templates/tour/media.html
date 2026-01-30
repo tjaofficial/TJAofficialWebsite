@@ -1,67 +1,97 @@
-{% extends "tour/base_tour.html" %}
-{% load static %}
+{% extends "tour/base_tour.html" %}{% load static %}
 {% block title %}Day N Night — Media{% endblock %}
-
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/tour_media.css' %}">
     <script defer src="{% static 'js/tour_media.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-<section class="tour-section">
-  <h1>Media</h1>
-  <p>Photos & videos from the Day N Night Tour — grouped by show.</p>
+<section class="tour-section media-page">
+	<header class="media-hero">
+		<div class="media-hero__bg"></div>
+		<div class="media-hero__grain"></div>
 
-  <form class="form card media-filters" method="get" action="">
-    <div class="form-grid">
-      <label class="field">
-        <span class="label">City</span>
-        <input type="text" name="city" value="{{ filters.city }}">
-      </label>
-      <label class="field">
-        <span class="label">State</span>
-        <input type="text" name="state" value="{{ filters.state }}" placeholder="e.g., MI, CA">
-      </label>
-      <label class="field">
-        <span class="label">Year</span>
-        <select name="year">
-          <option value="">All years</option>
-          {% for y in distinct_years %}
-            <option value="{{ y }}" {% if filters.year|add:'' == y|add:'' %}selected{% endif %}>{{ y }}</option>
-          {% endfor %}
-        </select>
-      </label>
-    </div>
-    <div class="form-actions">
-      <button class="btn" type="submit">Filter</button>
-      <a class="btn ghost" href="{% url 'tour_media' %}">Reset</a>
-    </div>
-  </form>
+		<div class="media-hero__inner">
+			<div class="media-hero__titlewrap">
+				<h1 class="media-title">Media</h1>
+				<p class="media-subtitle">Photos & videos from the Day N Night Tour — grouped by show.</p>
+			</div>
+
+			<div class="media-hero__actions">
+				<a class="btn primary" href="{% url 'tour_media_submit' %}">Submit your media</a>
+
+				<div class="search-wrap">
+					<input id="albumSearch" class="search" type="text" placeholder="Search city, state, date, media count…" autocomplete="off">
+					<div class="search-hint">Tip: try “Detroit”, “MI”, or “2026”.</div>
+				</div>
+
+				<div class="pill-group" role="tablist" aria-label="Album view filters">
+					<button class="pill active" data-view="all" type="button">All</button>
+					<button class="pill" data-view="has-media" type="button">Has media</button>
+					<button class="pill" data-view="empty" type="button">Empty</button>
+				</div>
+			</div>
+		</div>
+	</header>
+  	<div class="year-chips" id="yearChips">
+		<a class="chip {% if not filters.year %}active{% endif %}" href="{% url 'tour_media' %}">All</a>
+		{% for y in distinct_years %}
+			<a class="chip {% if filters.year|add:'' == y|add:'' %}active{% endif %}"
+				href="?city={{ filters.city|urlencode }}&state={{ filters.state|urlencode }}&year={{ y }}">
+				{{ y }}
+			</a>
+		{% endfor %}
+	</div>
+	<section class="topshots card" id="topShots" hidden>
+		<div class="topshots__head">
+			<h2>Top shots this week</h2>
+			<div class="muted">Freshest uploads across all albums.</div>
+		</div>
+		<div class="topshots__rail" id="topShotsRail"></div>
+	</section>
+
+
 
   {% for y, albums in year_groups %}
-    <h2 style="margin-top:18px">{{ y|default:"Undated" }}</h2>
+    <h2 class="year-heading" data-year="{{ y|default:'undated' }}">{{ y|default:"Undated" }}</h2>
     <div class="albums-grid">
       {% for a in albums %}
-        <article class="album-card">
-          <a class="album-link" href="{% url 'tour_media_album' slug=a.slug %}">
-            <div class="album-thumb">
-              {% with first=a.items.first %}
-                {% if first and first.image %}
-                  <img src="{{ first.image.url }}" alt="{{ a.title }}">
-                {% else %}
-                  <div class="img-ph">Album</div>
-                {% endif %}
-              {% endwith %}
-            </div>
-            <div class="album-meta">
-              <h3 class="album-title">{{ a.title }}</h3>
-              <div class="muted">
-                {% if a.date %}{{ a.date|date:"M j, Y" }} • {% endif %}
-                {% if a.city %}{{ a.city }}{% endif %}{% if a.state %}, {{ a.state }}{% endif %}
-              </div>
-            </div>
-          </a>
-        </article>
+        <article class="show-card"
+			{% with cover=a.cover_item %}
+				{% if not cover %}
+					{% with cover=a.items.first %}
+					{% endwith %}
+				{% endif %}
+			{% endwith %}
+			{% with cover=a.cover_item|default:a.items.first %}
+				{% if cover and cover.image %}
+					style="--bg:url('{{ cover.image.url }}')"
+				{% endif %}
+			{% endwith %}
+			data-title="{{ a.title|default:''|escape }}"
+			data-city="{{ a.city|default:''|escape }}"
+			data-state="{{ a.state|default:''|escape }}"
+			data-date="{% if a.date %}{{ a.date|date:'Y-m-d' }}{% endif %}"
+			data-year="{% if a.date %}{{ a.date|date:'Y' }}{% endif %}"
+			data-count="{{ a.item_count }}"
+		>
+			<a class="show-card__link" href="{% url 'tour_media_album' slug=a.slug %}">
+				<div class="show-card__overlay"></div>
+				<div class="show-card__content">
+					<div class="show-card__top">
+						<h3 class="show-card__title">
+						{% if a.city %}{{ a.city }}{% endif %}{% if a.state %}, {{ a.state }}{% endif %}
+						</h3>
+						<div class="show-card__meta">
+							{% if a.date %}{{ a.date|date:"M j, Y" }}{% endif %}
+							<span class="dot">•</span>
+							<span>{{ a.item_count }} media</span>
+						</div>
+					</div>
+					<div class="show-card__cta">View album →</div>
+				</div>
+			</a>
+		</article>
       {% endfor %}
     </div>
   {% empty %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Show, Subscriber, Artist, ArtistVideo
+from .models import Show, Subscriber, Artist, ArtistVideo, MediaSubmission, MediaAlbum
 import time
 from django.forms import inlineformset_factory
 
@@ -144,6 +144,14 @@ class ArtistPhotoUploadForm(forms.Form):
                 raise forms.ValidationError("Each image must be under 8MB.")
         return files
 
+class MediaSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = MediaSubmission
+        fields = ["album", "name", "email", "image", "video_url", "caption"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["album"].queryset = MediaAlbum.objects.filter(is_public=True).order_by("-date")
+        self.fields["album"].empty_label = "Select the show you attended…"
 
 

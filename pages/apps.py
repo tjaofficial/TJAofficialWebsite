@@ -9,7 +9,8 @@ class PagesConfig(AppConfig):
         from django.contrib.auth.signals import user_logged_in
         from django.dispatch import receiver
         from .cart_utils import merge_session_into_user_cart
-
+        import pages.signals
+        
         @receiver(user_logged_in)
         def on_login(sender, user, request, **kwargs):
             merge_session_into_user_cart(request, user)
