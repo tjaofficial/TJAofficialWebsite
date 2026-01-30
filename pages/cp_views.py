@@ -71,15 +71,21 @@ def artist_edit(request, pk):
     form = ArtistCPForm(request.POST or None, request.FILES or None, instance=obj)
     video_formset = VideosFormSet(request.POST or None, prefix="videos", instance=obj)
 
-    if request.method == "POST" and form.is_valid() and video_formset.is_valid():
-        artist = form.save()
-        video_formset.instance = artist
-        video_formset.save()
+    if request.method == "POST":
+        copyPOST = request.POST.copy()
+        copyPOST['default_role'] = obj.default_role
+        form = ArtistCPForm(copyPOST, request.FILES or None, instance=obj)
+        video_formset = VideosFormSet(copyPOST, prefix="videos", instance=obj)
 
-        if request.user == obj.user:
-            return redirect("control:pages:artist_dashboard", obj.id)
-        else:
-            return redirect("control:pages:artist_list")
+        if form.is_valid() and video_formset.is_valid():
+            artist = form.save()
+            video_formset.instance = artist
+            video_formset.save()
+
+            if request.user == obj.user:
+                return redirect("control:pages:artist_dashboard", obj.id)
+            else:
+                return redirect("control:pages:artist_list")
 
     context = {
         "form": form,

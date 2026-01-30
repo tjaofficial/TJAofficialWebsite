@@ -108,14 +108,18 @@
       {{ form.contact_email }}
     </div>
   </section>
-  	{% if request.user.is_superuser %}
+  {% if request.user.is_superuser %}
 		<section class="grid-four">
 			<div class="field">
 				<label for="id_default_role">Default Role</label>
-				{{ form.default_role }}
-			</div>
-		</section>
-	{% endif %}
+        
+        {{ form.default_role }}
+      </div>
+    </section>
+  {% else %}
+    <input type="hidden" name="default_role" id="id_default_role" value="opener">
+  {% endif %}
+	
 
   	<hr class="divider">
 
