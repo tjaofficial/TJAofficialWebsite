@@ -8,6 +8,8 @@ from coreutils.images import generate_derivatives
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from coreutils.images import sources_for
+from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlencode
 
 User = get_user_model()
 
@@ -119,6 +121,7 @@ class Video(models.Model):
         m = re.search(r"/embed/([A-Za-z0-9_-]{6,})", url)
         if m: return m.group(1)
         return ""
+    
 
 class Subscriber(models.Model):
     email = models.EmailField(unique=True)
@@ -213,19 +216,36 @@ class ArtistVideo(models.Model):
     class Meta:
         ordering = ["sort", "id"]
 
+    def _youtube_id(self, u: str) -> str:
+        u = (u or "").strip()
+        if not u: return ""
+
+        parsed = urlparse(u)
+        qs = parse_qs(parsed.query)
+
+        # watch?v=
+        if qs.get("v"):
+            return qs["v"][0][:11]
+
+        # youtu.be/ID
+        if "youtu.be" in parsed.netloc:
+            return parsed.path.lstrip("/")[:11]
+
+        # /embed/ID /shorts/ID /live/ID
+        m = re.search(r"/(embed|shorts|live)/([A-Za-z0-9_-]{11})", parsed.path)
+        return m.group(2) if m else ""
+
+    def _vimeo_id(self, u: str) -> str:
+        m = re.search(r"vimeo\.com/(?:video/)?(\d+)", (u or ""))
+        return m.group(1) if m else ""
+
     @property
-    def embed_src(self) -> str:
-        u = self.url
-        # YouTube watch?v or youtu.be
-        m = re.search(r"[?&]v=([A-Za-z0-9_-]{6,})", u) or re.search(r"youtu\.be/([A-Za-z0-9_-]{6,})", u)
-        if m:
-            return f"https://www.youtube-nocookie.com/embed/{m.group(1)}"
-        # Vimeo
-        m = re.search(r"vimeo\.com/(?:video/)?(\d+)", u)
-        if m:
-            return f"https://player.vimeo.com/video/{m.group(1)}"
-        # Fallback: open URL
-        return ""
+    def youtube_id(self) -> str:
+        return self._youtube_id(self.url)
+
+    @property
+    def vimeo_id(self) -> str:
+        return self._vimeo_id(self.url)
 
 class MediaAlbum(models.Model):
     title = models.CharField(max_length=200)

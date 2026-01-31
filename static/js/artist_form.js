@@ -93,38 +93,46 @@
   }
 
   function renderPreview(previewEl, url) {
-    // Try YouTube first
-    const yt = youtubeEmbedUrls(url);
-    if (yt) {
-      previewEl.innerHTML = `
-        <div class="embed-wrapper" data-mode="yt" data-primary="1">
-          <iframe src="${yt.primary}" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen loading="lazy"></iframe>
-          <div class="embed-actions">
-            <button type="button" class="btn outline try-alt" data-alt="${yt.fallback}">Try alternate embed</button>
-            <a class="btn" href="${yt.watch}" target="_blank" rel="noopener">Open on YouTube</a>
-          </div>
-        </div>
-      `;
-      wireAltButton(previewEl);
-      return;
-    }
+  const yt = youtubeEmbedUrls(url); // you can keep parseYouTubeId()
+  const vid = parseYouTubeId(url);
 
-    // Vimeo
-    const v = vimeoEmbedUrl(url);
-    if (v) {
-      previewEl.innerHTML = `
-        <div class="embed-wrapper" data-mode="vimeo">
-          <iframe src="${v}" allow="autoplay; fullscreen; picture-in-picture"
-                  allowfullscreen loading="lazy"></iframe>
+  if (vid) {
+    const thumb = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
+    previewEl.innerHTML = `
+      <a class="video-card" href="${yt.watch}" target="_blank" rel="noopener">
+        <div class="video-thumb">
+          <img src="${thumb}" alt="YouTube preview" loading="lazy">
+          <div class="play-badge">▶</div>
         </div>
-      `;
-      return;
-    }
-
-    // Fallback empty
-    previewEl.innerHTML = `<div class="preview-empty">Embed preview will appear here</div>`;
+        <div class="video-meta">
+          <div class="video-title">Open on YouTube</div>
+          <div class="muted">${yt.watch}</div>
+        </div>
+      </a>
+    `;
+    return;
   }
+
+  const v = vimeoEmbedUrl(url);
+  if (v) {
+    previewEl.innerHTML = `
+      <a class="video-card" href="${url}" target="_blank" rel="noopener">
+        <div class="video-thumb">
+          <div class="vimeo-badge">Vimeo</div>
+          <div class="play-badge">▶</div>
+        </div>
+        <div class="video-meta">
+          <div class="video-title">Open on Vimeo</div>
+          <div class="muted">${url}</div>
+        </div>
+      </a>
+    `;
+    return;
+  }
+
+  previewEl.innerHTML = `<div class="preview-empty">Paste a valid YouTube/Vimeo URL</div>`;
+}
+
 
   function wireAltButton(scope) {
     const btn = scope.querySelector('.try-alt');

@@ -148,12 +148,41 @@
             {{ vform.DELETE }}
           {% endif %}
           <div class="preview">
-            {% if vform.instance and vform.instance.embed_src %}
-              <iframe src="{{ vform.instance.embed_src }}" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-            {% else %}
-              <div class="preview-empty">Embed preview will appear here</div>
-            {% endif %}
-          </div>
+          {% if vform.instance and vform.instance.youtube_id %}
+            <a class="video-card" href="{{ vform.instance.url }}" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/{{ vform.instance.youtube_id }}/hqdefault.jpg"
+                  alt="{{ vform.instance.title|default:artist.name }}"
+                  loading="lazy"
+                >
+                <div class="play-badge">▶</div>
+              </div>
+              <div class="video-meta">
+                <div class="video-title">{{ vform.instance.title|default:"Open video" }}</div>
+                <div class="muted">Opens on YouTube</div>
+              </div>
+            </a>
+
+          {% elif vform.instance and vform.instance.vimeo_id %}
+            <a class="video-card" href="{{ vform.instance.url }}" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <div class="vimeo-badge">Vimeo</div>
+                <div class="play-badge">▶</div>
+              </div>
+              <div class="video-meta">
+                <div class="video-title">{{ vform.instance.title|default:"Open video" }}</div>
+                <div class="muted">Opens on Vimeo</div>
+              </div>
+            </a>
+
+          {% elif vform.url.value %}
+            <a class="btn" href="{{ vform.url.value }}" target="_blank" rel="noopener">Open link</a>
+          {% else %}
+            <div class="preview-empty">Paste a URL to preview</div>
+          {% endif %}
+        </div>
+
         </div>
       </div>
     {% endfor %}

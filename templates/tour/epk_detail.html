@@ -2,7 +2,7 @@
 {% block title %}{{ a.name }} — EPK{% endblock %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/epk.css' %}">
-    <script defer src="{% static 'js/epk.js' %}"></script>
+    {% comment %} <script defer src="{% static 'js/epk.js' %}"></script> {% endcomment %}
 {% endblock  %}
 {% block content %}
 <section class="tour-section epk">
@@ -27,27 +27,46 @@
     {% if a.apple_url %}<a class="btn ghost" href="{{ a.apple_url }}" target="_blank" rel="noopener">Apple Music</a>{% endif %}
   </div>
 
-  {% if a.videos.all %}
-    <h2>Videos</h2>
-    <div class="epk-videos">
-      {% for v in a.videos.all %}
-        <div class="video-embed">
-          {% if v.embed_src %}
-            <iframe
-              src="{{ v.embed_src }}"
-              title="{{ v.title|default:a.name }}"
-              loading="lazy"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen>
-            </iframe>
-          {% else %}
-            <a class="btn" href="{{ v.url }}" target="_blank" rel="noopener">{{ v.title|default:"Watch" }}</a>
-          {% endif %}
+  {% for v in a.videos.all %}
+  <div class="video-embed video-card-wrap">
+    {% if v.youtube_id %}
+      <a class="video-card" href="{{ v.url }}" target="_blank" rel="noopener">
+        <div class="video-thumb">
+          <img
+            src="https://i.ytimg.com/vi/{{ v.youtube_id }}/hqdefault.jpg"
+            alt="{{ v.title|default:a.name }}"
+            loading="lazy"
+          >
+          <div class="play-badge">▶</div>
         </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+        <div class="video-meta">
+          <div class="video-title">{{ v.title|default:"Watch video" }}</div>
+          <div class="muted">Opens on YouTube</div>
+        </div>
+      </a>
+
+    {% elif v.vimeo_id %}
+      <a class="video-card" href="{{ v.url }}" target="_blank" rel="noopener">
+        <div class="video-thumb">
+          <div class="vimeo-badge">Vimeo</div>
+          <div class="play-badge">▶</div>
+        </div>
+        <div class="video-meta">
+          <div class="video-title">{{ v.title|default:"Watch video" }}</div>
+          <div class="muted">Opens on Vimeo</div>
+        </div>
+      </a>
+
+    {% else %}
+      <a class="btn" href="{{ v.url }}" target="_blank" rel="noopener">
+        {{ v.title|default:"Watch" }}
+      </a>
+    {% endif %}
+  </div>
+{% endfor %}
+
+
+
 
 {% if a.photos.all %}
   <h2>Photos</h2>
