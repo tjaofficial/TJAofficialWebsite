@@ -1,0 +1,114 @@
+{% extends "controlpanel/dashboard.html" %}
+{% load static %}
+
+{% block title %}{% if hunt %}Edit Hunt{% else %}Create Hunt{% endif %}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/nfc_admin_hunt.css' %}">
+<script src="{% static 'js/nfc_admin_hunt.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="hunt-admin-wrap">
+    <div class="hunt-admin-header">
+        <div>
+            <h1 class="hunt-admin-title">
+                {% if hunt %}Edit Hunt{% else %}Create Hunt{% endif %}
+            </h1>
+            <p class="hunt-admin-subtitle">Set up the scavenger hunt details and NFC checkpoints.</p>
+        </div>
+    </div>
+
+    <form method="post" class="hunt-form-card" id="huntAdminForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="hunt-form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="hunt-form-grid">
+            <div class="hunt-form-group">
+                <label for="{{ form.event_name.id_for_label }}">Event Name</label>
+                {{ form.event_name }}
+                {{ form.event_name.errors }}
+            </div>
+
+            <div class="hunt-form-group">
+                <label for="{{ form.slug.id_for_label }}">Slug</label>
+                {{ form.slug }}
+                {{ form.slug.errors }}
+            </div>
+
+            <div class="hunt-form-group">
+                <label for="{{ form.reward_label.id_for_label }}">Reward Label</label>
+                {{ form.reward_label }}
+                {{ form.reward_label.errors }}
+            </div>
+
+            <div class="hunt-form-group">
+                <label for="{{ form.required_locations.id_for_label }}">Required Locations</label>
+                {{ form.required_locations }}
+                {{ form.required_locations.errors }}
+            </div>
+
+            <div class="hunt-form-group hunt-checkbox-group">
+                <label class="hunt-checkbox-label">
+                    {{ form.is_active }}
+                    <span>Active</span>
+                </label>
+                {{ form.is_active.errors }}
+            </div>
+
+            <div class="hunt-form-group">
+                <label for="{{ form.start_at.id_for_label }}">Start At</label>
+                {{ form.start_at }}
+                {{ form.start_at.errors }}
+            </div>
+
+            <div class="hunt-form-group">
+                <label for="{{ form.end_at.id_for_label }}">End At</label>
+                {{ form.end_at }}
+                {{ form.end_at.errors }}
+            </div>
+        </div>
+
+        <div class="hunt-form-group full-width">
+            <label for="{{ form.completion_message.id_for_label }}">Completion Message</label>
+            {{ form.completion_message }}
+            {{ form.completion_message.errors }}
+        </div>
+
+        <div class="hunt-locations-card">
+            <div class="hunt-locations-header">
+                <div>
+                    <h2>Locations</h2>
+                    <p>These are the NFC checkpoints users must find.</p>
+                </div>
+                <button type="button" class="btn primary" id="addLocationBtn">Add Location</button>
+            </div>
+
+            <div id="locationBuilder" class="hunt-location-builder"></div>
+
+            <div class="hunt-location-help">
+                Tip: keep keys simple and unique, like <code>merch</code>, <code>stage</code>, <code>lounge</code>, or <code>hidden</code>.
+            </div>
+        </div>
+
+        <div class="hunt-hidden-json">
+            <label for="{{ form.locations_json.id_for_label }}">Locations JSON</label>
+            {{ form.locations_json }}
+            {{ form.locations_json.errors }}
+        </div>
+
+        <div class="hunt-form-actions">
+            <button type="submit" class="btn primary">Save Hunt</button>
+            <a href="{% url 'control:accounts:nfc_hunt_admin_list' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{{ form.locations_json.value|default:"[]"|json_script:"hunt-locations-initial" }}
+
+{% endblock %}

@@ -1,0 +1,287 @@
+.hunt-admin-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.hunt-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.hunt-admin-title {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.1;
+}
+
+.hunt-admin-subtitle {
+    margin: 6px 0 0;
+    color: #9eb0c2;
+    font-size: 15px;
+}
+
+.hunt-admin-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.hunt-admin-card,
+.hunt-form-card,
+.hunt-locations-card {
+    background: #0f1318;
+    border: 1px solid #1a1f27;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.hunt-form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.hunt-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.hunt-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hunt-form-group.full-width {
+    width: 100%;
+}
+
+.hunt-form-group label {
+    font-weight: 700;
+    color: #e7edf3;
+}
+
+.hunt-form-group input,
+.hunt-form-group select,
+.hunt-form-group textarea,
+.hunt-hidden-json textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #253040;
+    background: #0b0f14;
+    color: #e7edf3;
+    font: inherit;
+}
+
+.hunt-form-group textarea,
+.hunt-hidden-json textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.hunt-checkbox-group {
+    justify-content: flex-end;
+}
+
+.hunt-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+}
+
+.hunt-locations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.hunt-locations-header h2 {
+    margin: 0;
+}
+
+.hunt-locations-header p {
+    margin: 4px 0 0;
+    color: #9eb0c2;
+}
+
+.hunt-location-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hunt-location-row {
+    border: 1px solid #1f2935;
+    background: #111821;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.hunt-location-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.hunt-location-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hunt-location-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #b7c4d3;
+}
+
+.hunt-location-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #253040;
+    background: #0b0f14;
+    color: #e7edf3;
+}
+
+.hunt-location-remove {
+    align-self: end;
+    min-height: 42px;
+}
+
+.hunt-location-help {
+    margin-top: 14px;
+    color: #9eb0c2;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.hunt-hidden-json {
+    display: none;
+}
+
+.hunt-form-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hunt-form-errors {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(160, 20, 30, 0.15);
+    border: 1px solid rgba(160, 20, 30, 0.35);
+    color: #ffd7dc;
+}
+
+.hunt-table-wrap {
+    overflow-x: auto;
+}
+
+.hunt-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.hunt-table th,
+.hunt-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #1f2935;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.hunt-table th {
+    color: #9eb0c2;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.hunt-table-title {
+    font-weight: 700;
+    color: #e7edf3;
+}
+
+.hunt-table-meta {
+    font-size: 13px;
+    color: #8ea1b5;
+    margin-top: 4px;
+}
+
+.hunt-badge {
+    display: inline-flex;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hunt-badge.active {
+    background: rgba(25, 135, 84, 0.18);
+    color: #88e0b0;
+}
+
+.hunt-badge.inactive {
+    background: rgba(108, 117, 125, 0.18);
+    color: #c0cad4;
+}
+
+.hunt-table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hunt-empty-state {
+    text-align: center;
+    padding: 48px 20px;
+}
+
+.hunt-empty-state h3 {
+    margin: 0 0 8px;
+}
+
+.hunt-empty-state p {
+    margin: 0 0 18px;
+    color: #9eb0c2;
+}
+
+@media (max-width: 768px) {
+    .hunt-admin-wrap {
+        padding: 14px;
+    }
+
+    .hunt-admin-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hunt-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hunt-location-row-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hunt-form-actions,
+    .hunt-admin-actions,
+    .hunt-table-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hunt-admin-title {
+        font-size: 26px;
+    }
+}

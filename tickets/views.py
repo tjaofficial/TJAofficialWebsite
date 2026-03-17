@@ -24,6 +24,7 @@ from django.urls import reverse
 from datetime import timedelta
 import logging
 from coreutils.mailer import send_notification_update
+from accounts.models import NfcHuntEntry
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -207,12 +208,43 @@ def _extract_uuid(text: str):
     except Exception:
         return None
 
-@csrf_exempt  # we’re posting from JS; you can add CSRF if you prefer
+def _parse_scan_payload(raw: str):
+    raw = (raw or "").strip()
+    if not raw:
+        return {"kind": "invalid", "message": "Empty scan."}
+
+    # Try JSON payload first
+    try:
+        data = json.loads(raw)
+        scan_type = data.get("type")
+        token = data.get("token")
+
+        if scan_type == "ticket" and token:
+            parsed_uuid = _extract_uuid(str(token))
+            if parsed_uuid:
+                return {"kind": "ticket", "token": parsed_uuid}
+
+        if scan_type == "nfc_hunt" and token:
+            return {"kind": "nfc_hunt", "token": str(token).strip()}
+
+    except Exception:
+        pass
+
+    # Fallback: existing ticket UUID logic
+    parsed_uuid = _extract_uuid(raw)
+    if parsed_uuid:
+        return {"kind": "ticket", "token": parsed_uuid}
+
+    return {"kind": "invalid", "message": "No valid QR payload found."}
+
+@csrf_exempt
 @is_super
 def scan_api(request):
     """
     POST JSON: {"code": "...", "autocheckin": true/false}
-    Returns JSON with status: "ok" | "already" | "invalid"
+    Supports both:
+    - ticket QR
+    - nfc hunt QR
     """
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)
@@ -223,49 +255,121 @@ def scan_api(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     raw = (data.get("code") or "").strip()
-    token = _extract_uuid(raw)
-    if not token:
-        return JsonResponse({"status": "invalid", "message": "No valid token found."})
+    parsed = _parse_scan_payload(raw)
 
-    t = Ticket.objects.select_related("ticket_type", "ticket_type__event").filter(qr_token=token).first()
-    if not t:
-        return JsonResponse({"status": "invalid", "message": "Ticket not found."})
-
-    # If autocheckin requested, mark as checked in (idempotent)
-    autocheck = bool(data.get("autocheckin"))
-    redeem = bool(data.get("redeem"))
-    should_checkin = autocheck or redeem
-
-    if t.checked_in_at:
+    if parsed["kind"] == "invalid":
         return JsonResponse({
-            "status": "already",
-            "message": "Already checked in.",
+            "status": "invalid",
+            "message": parsed.get("message", "Invalid QR code.")
+        })
+
+    if parsed["kind"] == "ticket":
+        token = parsed["token"]
+
+        t = Ticket.objects.select_related("ticket_type", "ticket_type__event").filter(qr_token=token).first()
+        if not t:
+            return JsonResponse({"status": "invalid", "message": "Ticket not found."})
+
+        autocheck = bool(data.get("autocheckin"))
+        redeem = bool(data.get("redeem"))
+        should_checkin = autocheck or redeem
+
+        if t.checked_in_at:
+            return JsonResponse({
+                "status": "already",
+                "scan_type": "ticket",
+                "message": "Already checked in.",
+                "ticket": {
+                    "event": t.ticket_type.event.name if t.ticket_type and t.ticket_type.event else "",
+                    "type": t.ticket_type.name if t.ticket_type else "",
+                    "email": t.purchaser_email,
+                    "name": t.purchaser_name,
+                    "checked_in_at": t.checked_in_at.isoformat(),
+                    "token": str(t.qr_token),
+                }
+            })
+
+        if should_checkin:
+            t.checked_in_at = timezone.now()
+            t.save(update_fields=["checked_in_at"])
+
+        return JsonResponse({
+            "status": "ok",
+            "scan_type": "ticket",
+            "message": "Valid ticket.",
             "ticket": {
                 "event": t.ticket_type.event.name if t.ticket_type and t.ticket_type.event else "",
                 "type": t.ticket_type.name if t.ticket_type else "",
                 "email": t.purchaser_email,
                 "name": t.purchaser_name,
-                "checked_in_at": t.checked_in_at.isoformat(),
+                "checked_in_at": t.checked_in_at.isoformat() if t.checked_in_at else None,
                 "token": str(t.qr_token),
             }
         })
 
-    if should_checkin:
-        t.checked_in_at = timezone.now()
-        t.save(update_fields=["checked_in_at"])
+    if parsed["kind"] == "nfc_hunt":
+        hunt_token = parsed["token"]
 
+        entry = (
+            NfcHuntEntry.objects
+            .select_related("user", "hunt")
+            .filter(qr_token=hunt_token)
+            .first()
+        )
+
+        if not entry:
+            return JsonResponse({
+                "status": "invalid",
+                "scan_type": "nfc_hunt",
+                "message": "Hunt reward not found."
+            })
+
+        if not entry.completed:
+            return JsonResponse({
+                "status": "invalid",
+                "scan_type": "nfc_hunt",
+                "message": "Hunt is not completed yet."
+            })
+
+        autocheck = bool(data.get("autocheckin"))
+        redeem = bool(data.get("redeem"))
+        should_redeem = autocheck or redeem
+
+        if entry.redeemed:
+            return JsonResponse({
+                "status": "already",
+                "scan_type": "nfc_hunt",
+                "message": "This hunt reward was already redeemed.",
+                "hunt": {
+                    "event": str(entry.hunt.event_name.name),
+                    "user": getattr(entry.user, "username", "") or getattr(entry.user, "email", ""),
+                    "completed_at": entry.completed_at.isoformat() if entry.completed_at else None,
+                    "redeemed_at": entry.redeemed_at.isoformat() if entry.redeemed_at else None,
+                    "token": entry.qr_token,
+                }
+            })
+
+        if should_redeem:
+            entry.redeemed = True
+            entry.redeemed_at = timezone.now()
+            entry.save(update_fields=["redeemed", "redeemed_at", "updated_at"])
+
+        return JsonResponse({
+            "status": "ok",
+            "scan_type": "nfc_hunt",
+            "message": "Hunt reward is valid." if not should_redeem else "Hunt reward redeemed successfully.",
+            "hunt": {
+                "event": str(entry.hunt.event_name.name),
+                "user": getattr(entry.user, "username", "") or getattr(entry.user, "email", ""),
+                "completed_at": entry.completed_at.isoformat() if entry.completed_at else None,
+                "redeemed_at": entry.redeemed_at.isoformat() if entry.redeemed_at else None,
+                "token": entry.qr_token,
+            }
+        })
 
     return JsonResponse({
-        "status": "ok",
-        "message": "Valid ticket.",
-        "ticket": {
-            "event": t.ticket_type.event.name if t.ticket_type and t.ticket_type.event else "",
-            "type": t.ticket_type.name if t.ticket_type else "",
-            "email": t.purchaser_email,
-            "name": t.purchaser_name,  # ✅ add this
-            "checked_in_at": t.checked_in_at.isoformat() if t.checked_in_at else None,
-            "token": str(t.qr_token),
-        }
+        "status": "invalid",
+        "message": "Unsupported scan type."
     })
 
 @is_super

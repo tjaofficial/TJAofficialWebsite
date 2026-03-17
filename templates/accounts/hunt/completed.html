@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static shop_extras %}
+{% block title %}{{ hunt.event_name }} Completed{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/nfc_hunt.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="hunt-shell">
+        <div class="hunt-card hunt-card-win">
+            <div class="hunt-badge win">COMPLETED</div>
+
+            <h1 class="hunt-title">You Unlocked the Prize</h1>
+            <p class="hunt-subtitle">
+                Show this screen to the merch table to claim your reward.
+            </p>
+
+            {% if hunt.completion_message %}
+                <div class="hunt-message-panel">
+                    {{ hunt.completion_message }}
+                </div>
+            {% endif %}
+
+            {% if hunt.reward_label %}
+                <div class="hunt-reward-label">
+                    Reward: {{ hunt.reward_label }}
+                </div>
+            {% endif %}
+
+            <div class="hunt-qr-section">
+                <div id="hunt-qr-code"
+                     class="hunt-qr-code"
+                     data-qr-token="{{ qr_token }}"></div>
+            </div>
+
+            <div class="hunt-token-box">
+                <div class="hunt-token-label">Verification Token</div>
+                <div class="hunt-token-value">{{ qr_token }}</div>
+            </div>
+
+            {% if entry.redeemed %}
+                <div class="hunt-redeemed-status redeemed">
+                    Already redeemed
+                </div>
+            {% else %}
+                <div class="hunt-redeemed-status pending">
+                    Ready to redeem
+                </div>
+            {% endif %}
+
+            <div class="hunt-actions">
+                <a href="{% url 'control:accounts:hunt_progress' hunt.slug %}" class="hunt-btn hunt-btn-secondary">
+                    View Progress
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{% static 'js/nfc_hunt.js' %}"></script>
+{% endblock  %}

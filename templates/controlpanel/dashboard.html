@@ -47,6 +47,7 @@
 						{% if request.user.is_superuser %}
 							<li><a href="{% url 'control:media_submissions_list' %}">Media Submissions</a></li>
 							<li><a href="{% url 'control:media_albums_list' %}">Media Albums</a></li>
+							<li><a href="{% url 'control:accounts:nfc_hunt_admin_list' %}">NFC Hunt Manager</a></li>
 						{% endif %}
 						{% comment %} <li><a href="{% url 'control:equipment:list' %}">Equipment</a></li> {% endcomment %}
 					</ul>

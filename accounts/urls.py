@@ -27,4 +27,10 @@ urlpatterns = [
     path("password/reset/complete/", auth_views.PasswordResetCompleteView.as_view(
         template_name="accounts/password_reset_complete.html"
     ), name="password_reset_complete"),
+    path("hunt/<slug:hunt_slug>/tap/<str:location_key>/", views.hunt_tap_view, name="hunt_tap"),
+    path("hunt/<slug:hunt_slug>/progress/", views.hunt_progress_view, name="hunt_progress"),
+    path("hunt/<slug:hunt_slug>/complete/", views.hunt_complete_view, name="hunt_complete"),
+    path("hunt/admin/", views.hunt_admin_list_view, name="nfc_hunt_admin_list"),
+    path("hunt/admin/add/", views.hunt_admin_add_view, name="nfc_hunt_admin_add"),
+    path("hunt/admin/<int:pk>/edit/", views.hunt_admin_edit_view, name="nfc_hunt_admin_edit"),
 ]

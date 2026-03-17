@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static shop_extras %}
+{% block title %}{{ hunt.event_name }} Hunt Progress{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/nfc_hunt.css' %}">
+    <script src="{% static 'js/nfc_hunt.js' %}"></script>
+{% endblock  %}
+{% block content %}
+    <div class="hunt-shell">
+        <div class="hunt-card hunt-card-main">
+            <div class="hunt-badge">NFC HUNT</div>
+
+            <h1 class="hunt-title">{{ hunt.event_name }}</h1>
+            <p class="hunt-subtitle">Find all checkpoints to unlock the prize.</p>
+
+            {% if messages %}
+                <div class="hunt-messages">
+                    {% for message in messages %}
+                        <div class="hunt-message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="hunt-progress-summary">
+                <div class="hunt-progress-meta">
+                    <span>{{ found_count }} / {{ required_count }} found</span>
+                    <span>{{ progress_percent }}%</span>
+                </div>
+
+                <div class="hunt-progress-bar">
+                    <div class="hunt-progress-fill" style="width: {{ progress_percent }}%;"></div>
+                </div>
+            </div>
+
+            <div class="hunt-location-list">
+                {% for item in location_rows %}
+                    <div class="hunt-location-item {% if item.found %}found{% else %}missing{% endif %}">
+                        <div class="hunt-location-left">
+                            <div class="hunt-location-icon">
+                                {% if item.found %}
+                                    ✓
+                                {% else %}
+                                    ?
+                                {% endif %}
+                            </div>
+                            <div class="hunt-location-text">
+                                <h3>{{ item.label }}</h3>
+                                {% if item.found %}
+                                    <p>Unlocked</p>
+                                {% else %}
+                                    <p>Still hidden</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="hunt-location-right">
+                            {% if item.found %}
+                                <span class="hunt-chip found">Found</span>
+                            {% else %}
+                                <span class="hunt-chip missing">Missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if entry.completed %}
+                <div class="hunt-actions">
+                    <a href="{% url 'control:accounts:hunt_complete' hunt.slug %}" class="hunt-btn hunt-btn-primary">
+                        View Prize Screen
+                    </a>
+                </div>
+            {% else %}
+                <div class="hunt-tip-box">
+                    Tap the next NFC checkpoint to keep going.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock  %}

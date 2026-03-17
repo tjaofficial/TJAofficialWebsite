@@ -1,0 +1,75 @@
+{% extends "controlpanel/dashboard.html" %}
+{% load static %}
+
+{% block title %}NFC Hunts{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/nfc_admin_hunt.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="hunt-admin-wrap">
+    <div class="hunt-admin-header">
+        <div>
+            <h1 class="hunt-admin-title">NFC Hunts</h1>
+            <p class="hunt-admin-subtitle">Create and manage scavenger hunts for your shows.</p>
+        </div>
+
+        <div class="hunt-admin-actions">
+            <a href="{% url 'control:accounts:nfc_hunt_admin_add' %}" class="btn primary">Create Hunt</a>
+        </div>
+    </div>
+
+    <div class="hunt-admin-card">
+        {% if hunts %}
+            <div class="hunt-table-wrap">
+                <table class="hunt-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Slug</th>
+                            <th>Status</th>
+                            <th>Locations</th>
+                            <th>Reward</th>
+                            <th>Updated</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hunt in hunts %}
+                            <tr>
+                                <td>
+                                    <div class="hunt-table-title">{{ hunt.event_name }}</div>
+                                </td>
+                                <td>
+                                    <div class="hunt-table-meta">{{ hunt.slug }}</div>
+                                </td>
+                                <td>
+                                    {% if hunt.is_active %}
+                                        <span class="hunt-badge active">Active</span>
+                                    {% else %}
+                                        <span class="hunt-badge inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ hunt.required_locations }}</td>
+                                <td>{{ hunt.reward_label|default:"—" }}</td>
+                                <td>{{ hunt.updated_at|date:"M j, Y g:i A" }}</td>
+                                <td class="hunt-table-actions">
+                                    <a href="{% url 'control:accounts:nfc_hunt_admin_edit' hunt.id %}" class="btn">Edit</a>
+                                    <a href="{% url 'control:accounts:hunt_progress' hunt.slug %}" class="btn">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="hunt-empty-state">
+                <h3>No hunts yet</h3>
+                <p>Create your first NFC scavenger hunt.</p>
+                <a href="{% url 'control:accounts:nfc_hunt_admin_add' %}" class="btn primary">Create Hunt</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

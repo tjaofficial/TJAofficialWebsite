@@ -1,0 +1,367 @@
+:root {
+    --hunt-bg: #0c0c10;
+    --hunt-card: #171821;
+    --hunt-card-2: #1f2130;
+    --hunt-text: #f6f7fb;
+    --hunt-muted: #b8bdd0;
+    --hunt-line: rgba(255, 255, 255, 0.08);
+    --hunt-primary: #7c5cff;
+    --hunt-success: #1fd18a;
+    --hunt-warning: #ffcc4d;
+    --hunt-danger: #ff5c7a;
+    --hunt-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    --hunt-radius: 20px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at top, #1a1b29 0%, var(--hunt-bg) 45%);
+    color: var(--hunt-text);
+    font-family: Inter, Arial, sans-serif;
+    min-height: 100%;
+}
+
+body.hunt-body {
+    min-height: 100vh;
+}
+
+.hunt-shell {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 18px 14px 40px;
+}
+
+.hunt-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid var(--hunt-line);
+    border-radius: var(--hunt-radius);
+    box-shadow: var(--hunt-shadow);
+    padding: 18px;
+    backdrop-filter: blur(10px);
+}
+
+.hunt-card-main,
+.hunt-card-win {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hunt-badge {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(124, 92, 255, 0.16);
+    color: #d8ceff;
+    border: 1px solid rgba(124, 92, 255, 0.3);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.hunt-badge.win {
+    background: rgba(31, 209, 138, 0.12);
+    color: #bff7df;
+    border-color: rgba(31, 209, 138, 0.28);
+}
+
+.hunt-title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.hunt-subtitle {
+    margin: 0;
+    color: var(--hunt-muted);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.hunt-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hunt-message {
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    border: 1px solid var(--hunt-line);
+    background: rgba(255,255,255,0.04);
+}
+
+.hunt-message.success {
+    border-color: rgba(31, 209, 138, 0.25);
+    background: rgba(31, 209, 138, 0.10);
+}
+
+.hunt-message.info {
+    border-color: rgba(124, 92, 255, 0.25);
+    background: rgba(124, 92, 255, 0.10);
+}
+
+.hunt-message.warning,
+.hunt-message.error {
+    border-color: rgba(255, 92, 122, 0.25);
+    background: rgba(255, 92, 122, 0.10);
+}
+
+.hunt-progress-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--hunt-card-2);
+    border: 1px solid var(--hunt-line);
+}
+
+.hunt-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hunt-progress-bar {
+    width: 100%;
+    height: 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+
+.hunt-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--hunt-primary), #ad7bff);
+    transition: width 0.25s ease;
+}
+
+.hunt-location-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hunt-location-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--hunt-line);
+    background: rgba(255,255,255,0.03);
+}
+
+.hunt-location-item.found {
+    border-color: rgba(31, 209, 138, 0.22);
+    background: rgba(31, 209, 138, 0.06);
+}
+
+.hunt-location-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.hunt-location-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    font-weight: 800;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.hunt-location-text h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.hunt-location-text p {
+    margin: 0;
+    color: var(--hunt-muted);
+    font-size: 13px;
+}
+
+.hunt-chip {
+    display: inline-flex;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.hunt-chip.found {
+    background: rgba(31, 209, 138, 0.14);
+    color: #bbf4db;
+}
+
+.hunt-chip.missing {
+    background: rgba(255,255,255,0.08);
+    color: var(--hunt-muted);
+}
+
+.hunt-tip-box,
+.hunt-message-panel,
+.hunt-reward-label,
+.hunt-token-box {
+    border-radius: 16px;
+    border: 1px solid var(--hunt-line);
+    background: var(--hunt-card-2);
+    padding: 14px;
+}
+
+.hunt-message-panel,
+.hunt-reward-label {
+    line-height: 1.5;
+}
+
+.hunt-reward-label {
+    font-weight: 700;
+}
+
+.hunt-qr-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0 4px;
+}
+
+.hunt-qr-code {
+    width: 100%;
+    max-width: 260px;
+    min-height: 260px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hunt-qr-code canvas,
+.hunt-qr-code img {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    display: block;
+}
+
+.hunt-token-label {
+    font-size: 12px;
+    color: var(--hunt-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.hunt-token-value {
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-all;
+    font-family: monospace;
+}
+
+.hunt-redeemed-status {
+    text-align: center;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+.hunt-redeemed-status.pending {
+    background: rgba(255, 204, 77, 0.10);
+    color: #ffe7a1;
+    border: 1px solid rgba(255, 204, 77, 0.25);
+}
+
+.hunt-redeemed-status.redeemed {
+    background: rgba(31, 209, 138, 0.10);
+    color: #bbf4db;
+    border: 1px solid rgba(31, 209, 138, 0.25);
+}
+
+.hunt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hunt-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.hunt-btn:hover {
+    transform: translateY(-1px);
+}
+
+.hunt-btn-primary {
+    background: linear-gradient(90deg, var(--hunt-primary), #a06bff);
+    color: #fff;
+}
+
+.hunt-btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid var(--hunt-line);
+}
+
+@media (min-width: 640px) {
+    .hunt-shell {
+        padding: 28px 18px 50px;
+    }
+
+    .hunt-card {
+        padding: 24px;
+    }
+
+    .hunt-title {
+        font-size: 36px;
+    }
+
+    .hunt-subtitle {
+        font-size: 16px;
+    }
+
+    .hunt-location-item {
+        padding: 16px;
+    }
+
+    .hunt-actions {
+        flex-direction: row;
+    }
+
+    .hunt-actions .hunt-btn {
+        min-width: 180px;
+    }
+}

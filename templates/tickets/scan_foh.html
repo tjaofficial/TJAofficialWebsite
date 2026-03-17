@@ -17,6 +17,140 @@
     .foh-kv {display:grid;grid-template-columns:140px 1fr;gap:8px}
     .foh-kv div{padding:2px 0}
     #qrReader video { border-radius: 12px; }
+    @media (max-width: 640px) {
+      .foh-big { font-size: 38px; }
+      .foh-sub { font-size: 15px; }
+      .foh-row { flex-direction: column; align-items: stretch; }
+      .foh-kv { grid-template-columns: 110px 1fr; gap: 6px; }
+      #qrReader { max-width: 100% !important; }
+    }
+    .foh-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+
+    .foh-modal-overlay.show {
+      display: flex;
+    }
+
+    .foh-modal {
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow: auto;
+      border: 1px solid #1a1f27;
+      border-radius: 18px;
+      background: #0f1318;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      position: relative;
+    }
+
+    .foh-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid #1a1f27;
+      position: sticky;
+      top: 0;
+      background: #0f1318;
+      z-index: 2;
+    }
+
+    .foh-modal-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: #e7edf3;
+    }
+
+    .foh-modal-close {
+      background: transparent;
+      border: 1px solid #2a313b;
+      color: #e7edf3;
+      border-radius: 10px;
+      min-width: 40px;
+      min-height: 40px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .foh-modal-body {
+      padding: 20px;
+    }
+
+    .foh-modal-stage {
+      min-height: 240px;
+      border: 1px solid #1a1f27;
+      border-radius: 16px;
+      background: #0b0f14;
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .foh-modal-flash {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .15s ease;
+      pointer-events: none;
+    }
+
+    .foh-modal-flash.show {
+      opacity: 1;
+    }
+
+    .foh-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .foh-center-stack {
+      width: 100%;
+    }
+
+    .foh-center-stack .foh-big,
+    .foh-center-stack .foh-sub {
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .foh-modal {
+        max-width: 100%;
+        max-height: 92vh;
+      }
+
+      .foh-modal-body {
+        padding: 14px;
+      }
+
+      .foh-modal-header {
+        padding: 14px;
+      }
+
+      .foh-modal-title {
+        font-size: 18px;
+      }
+
+      .foh-modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
   <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -61,14 +195,14 @@
       <p class="foh-sub">Focus the input and scan a ticket.</p>
     </div>
     <div id="ok" class="foh-hide">
-      <p class="foh-big">VALID ✅</p>
+      <p class="foh-big" id="ok_title">VALID ✅</p>
 
       <div class="foh-kv">
-        <div>Purchaser:</div><div id="ok_name"></div>
-        <div>Event:</div><div id="ok_event"></div>
-        <div>Type:</div><div id="ok_type"></div>
-        <div>Email:</div><div id="ok_email"></div>
-        <div>Checked-in:</div><div id="ok_checkin"></div>
+        <div id="ok_label_1">Purchaser:</div><div id="ok_value_1"></div>
+        <div id="ok_label_2">Event:</div><div id="ok_value_2"></div>
+        <div id="ok_label_3">Type:</div><div id="ok_value_3"></div>
+        <div id="ok_label_4">Email:</div><div id="ok_value_4"></div>
+        <div id="ok_label_5">Checked-in:</div><div id="ok_value_5"></div>
       </div>
 
       <div class="foh-row" style="justify-content:center;margin-top:14px;">
@@ -78,18 +212,67 @@
     </div>
 
     <div id="already" class="foh-hide">
-      <p class="foh-big">ALREADY CHECKED-IN ⚠️</p>
+      <p class="foh-big" id="already_title">ALREADY CHECKED-IN ⚠️</p>
       <div class="foh-kv">
-        <div>Purchaser:</div><div id="al_name"></div>
-        <div>Event:</div><div id="al_event"></div>
-        <div>Type:</div><div id="al_type"></div>
-        <div>Email:</div><div id="al_email"></div>
-        <div>When:</div><div id="al_checkin"></div>
+        <div id="al_label_1">Purchaser:</div><div id="al_value_1"></div>
+        <div id="al_label_2">Event:</div><div id="al_value_2"></div>
+        <div id="al_label_3">Type:</div><div id="al_value_3"></div>
+        <div id="al_label_4">Email:</div><div id="al_value_4"></div>
+        <div id="al_label_5">When:</div><div id="al_value_5"></div>
       </div>
     </div>
+
     <div id="bad" class="foh-hide">
       <p class="foh-big">INVALID ❌</p>
       <p class="foh-sub" id="bad_msg"></p>
+    </div>
+  </div>
+
+  <div id="fohModalOverlay" class="foh-modal-overlay">
+    <div class="foh-modal">
+      <div class="foh-modal-header">
+        <h2 id="fohModalTitle" class="foh-modal-title">Scan Result</h2>
+        <button id="fohModalClose" type="button" class="foh-modal-close">✕</button>
+      </div>
+
+      <div class="foh-modal-body">
+        <div class="foh-modal-stage">
+          <div id="modalFlash" class="foh-modal-flash"></div>
+
+          <div id="modalOk" class="foh-hide foh-center-stack">
+            <p class="foh-big" id="modal_ok_title">VALID ✅</p>
+
+            <div class="foh-kv">
+              <div id="modal_ok_label_1">Purchaser:</div><div id="modal_ok_value_1"></div>
+              <div id="modal_ok_label_2">Event:</div><div id="modal_ok_value_2"></div>
+              <div id="modal_ok_label_3">Type:</div><div id="modal_ok_value_3"></div>
+              <div id="modal_ok_label_4">Email:</div><div id="modal_ok_value_4"></div>
+              <div id="modal_ok_label_5">Checked-in:</div><div id="modal_ok_value_5"></div>
+            </div>
+
+            <div class="foh-modal-actions">
+              <button id="modalRedeemBtn" type="button" class="btn primary foh-hide">Redeem / Check In</button>
+              <button id="modalCancelBtn" type="button" class="btn foh-hide">Cancel</button>
+            </div>
+          </div>
+
+          <div id="modalAlready" class="foh-hide foh-center-stack">
+            <p class="foh-big" id="modal_already_title">ALREADY USED ⚠️</p>
+            <div class="foh-kv">
+              <div id="modal_al_label_1">Purchaser:</div><div id="modal_al_value_1"></div>
+              <div id="modal_al_label_2">Event:</div><div id="modal_al_value_2"></div>
+              <div id="modal_al_label_3">Type:</div><div id="modal_al_value_3"></div>
+              <div id="modal_al_label_4">Email:</div><div id="modal_al_value_4"></div>
+              <div id="modal_al_label_5">When:</div><div id="modal_al_value_5"></div>
+            </div>
+          </div>
+
+          <div id="modalBad" class="foh-hide foh-center-stack">
+            <p class="foh-big">INVALID ❌</p>
+            <p class="foh-sub" id="modal_bad_msg"></p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -99,166 +282,261 @@
 
 <script>
 (function(){
-  const redeemBtn = document.getElementById('redeemBtn');
-  const cancelBtn = document.getElementById('cancelBtn');
+  const redeemBtn = document.getElementById('modalRedeemBtn');
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  const modalOverlay = document.getElementById('fohModalOverlay');
+  const modalCloseBtn = document.getElementById('fohModalClose');
+  const modalTitle = document.getElementById('fohModalTitle');
+  const modalFlash = document.getElementById('modalFlash');
+
   let pendingCode = null;
+  let pendingScanType = null;
 
   const input = document.getElementById('scanInput');
   const btn   = document.getElementById('scanBtn');
-  const stage = document.getElementById('stage');
-  const flash = document.getElementById('flash');
   const autoc = document.getElementById('autocheck');
 
-  const idle     = document.getElementById('idle');
-  const ok       = document.getElementById('ok');
-  const already  = document.getElementById('already');
-  const bad      = document.getElementById('bad');
+  const ok       = document.getElementById('modalOk');
+  const already  = document.getElementById('modalAlready');
+  const bad      = document.getElementById('modalBad');
 
   const okSnd  = document.getElementById('snd_ok');
   const errSnd = document.getElementById('snd_err');
 
-  let camStatus = null;
+  const camStartBtn = document.getElementById('camStart');
+  const camStopBtn  = document.getElementById('camStop');
+  let camStatus = document.getElementById('camStatus');
+
   let scanning = false;
   let lastCode = null;
   let lastAt = 0;
-
+  let html5Qr = null;
 
   function extractUuid(text){
     const m = (text || "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
     return m ? m[0].toLowerCase() : null;
   }
 
-  function show(which){
-    [idle, ok, already, bad].forEach(el => el.classList.add('foh-hide'));
-    which.classList.remove('foh-hide');
-  }
-
-  function flashColor(cls){
-    flash.className = 'foh-flash ' + cls + ' show';
-    setTimeout(()=> flash.classList.remove('show'), 180);
-  }
-
-  function resetSoon(force=false){
-    if(!force && pendingCode) return; // waiting for Redeem/Cancel
-    setTimeout(()=>{
-      input.value = '';
-      show(idle);
-      pendingCode = null;
-      redeemBtn.classList.add('foh-hide');
-      cancelBtn.classList.add('foh-hide');
-      input.focus();
-      if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
-    }, 900);
-  }
-
-
-
-  async function doScan(raw){
-    if(!raw) return;
-    const body = JSON.stringify({ code: raw, autocheckin: autoc.checked });
-    try{
-      const res = await fetch("{% url 'control:tickets:scan_api' %}", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body
-      });
-      const data = await res.json();
-
-      if(data.status === 'ok'){
-        if (camStatus && scanning) camStatus.textContent = "Camera: VALID ✅";
-
-        document.getElementById('ok_name').textContent  = data.ticket.name || '';
-        document.getElementById('ok_event').textContent = data.ticket.event || '';
-        document.getElementById('ok_type').textContent  = data.ticket.type || '';
-        document.getElementById('ok_email').textContent = data.ticket.email || '';
-        document.getElementById('ok_checkin').textContent =
-          data.ticket.checked_in_at
-            ? new Date(data.ticket.checked_in_at).toLocaleString()
-            : (autoc.checked ? 'now' : 'not yet');
-
-        show(ok);
-
-        // Green feedback always for a valid ticket
-        flashColor('foh-green');
-        okSnd && okSnd.play().catch(()=>{});
-
-        // If autocheck is OFF, wait for user action
-        if(!autoc.checked){
-          pendingCode = extractUuid(raw) || raw; // store clean token if possible
-          redeemBtn.classList.remove('foh-hide');
-          cancelBtn.classList.remove('foh-hide');
-          if (camStatus && scanning) camStatus.textContent = "Camera: waiting for Redeem…";
-          return;
-        }
-
-        // Autocheck is ON, so reset for next scan
-        resetSoon();
-
-      }else if(data.status === 'already'){
-        if (camStatus && scanning) camStatus.textContent = "Camera: already checked-in ⚠️";
-        document.getElementById('al_name').textContent = data.ticket.name || '';
-        document.getElementById('al_event').textContent = data.ticket.event || '';
-        document.getElementById('al_type').textContent  = data.ticket.type || '';
-        document.getElementById('al_email').textContent = data.ticket.email || '';
-        document.getElementById('al_checkin').textContent = data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : '';
-        show(already);
-        flashColor('foh-red');
-        errSnd && errSnd.play().catch(()=>{});
-        resetSoon();
-      }else{
-        if (camStatus && scanning) camStatus.textContent = "Camera: INVALID ❌";
-        document.getElementById('bad_msg').textContent = data.message || 'Unknown code';
-        show(bad);
-        flashColor('foh-red');
-        errSnd && errSnd.play().catch(()=>{});
-        resetSoon();
-      }
-    }catch(e){
-      if (camStatus && scanning) camStatus.textContent = "Camera: network error";
-      document.getElementById('bad_msg').textContent = 'Network error';
-      show(bad);
-      flashColor('foh-red');
-      errSnd && errSnd.play().catch(()=>{});
-      resetSoon();
-    }
-  }
-
-  btn.addEventListener('click', (e)=>{ e.preventDefault(); doScan(input.value.trim()); });
-  input.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      doScan(input.value.trim());
-    }
-  });
-
-  window.addEventListener('click', (e) => {
-    // If we're waiting for Redeem/Cancel, DO NOT steal focus (prevents jump)
-    if (pendingCode) return;
-
-    // Don't steal focus when clicking buttons/inputs/camera
-    if (e.target.closest('button, input, label, #qrWrap, #qrReader')) return;
-
-    input.focus({ preventScroll: true });
-  });
-
-  input.focus({ preventScroll: true });
-
-
-    // --- Camera QR Scanner (html5-qrcode) ---
-  const camStartBtn = document.getElementById('camStart');
-  const camStopBtn  = document.getElementById('camStop');
-  camStatus = document.getElementById('camStatus');
-
-
-  let html5Qr = null;
-
   function canScanAgain(code){
-    // prevent rapid double-fires if camera keeps seeing the same QR
     const now = Date.now();
     if(code === lastCode && (now - lastAt) < 1500) return false;
     lastCode = code;
     lastAt = now;
     return true;
+  }
+
+  function openModal(titleText = 'Scan Result') {
+    modalTitle.textContent = titleText;
+    modalOverlay.classList.add('show');
+  }
+
+  function closeModal() {
+    modalOverlay.classList.remove('show');
+  }
+
+  function show(which){
+    [ok, already, bad].forEach(el => el.classList.add('foh-hide'));
+    which.classList.remove('foh-hide');
+  }
+
+  function flashColor(cls){
+    modalFlash.className = 'foh-modal-flash ' + cls + ' show';
+    setTimeout(() => modalFlash.classList.remove('show'), 180);
+  }
+
+  function setOkFields(title, rows) {
+    document.getElementById('modal_ok_title').textContent = title || 'VALID ✅';
+
+    for (let i = 1; i <= 5; i++) {
+      const labelEl = document.getElementById(`modal_ok_label_${i}`);
+      const valueEl = document.getElementById(`modal_ok_value_${i}`);
+      const row = rows[i - 1] || { label: '', value: '' };
+
+      labelEl.textContent = row.label || '';
+      valueEl.textContent = row.value || '';
+    }
+  }
+
+  function setAlreadyFields(title, rows) {
+    document.getElementById('modal_already_title').textContent = title || 'ALREADY USED ⚠️';
+
+    for (let i = 1; i <= 5; i++) {
+      const labelEl = document.getElementById(`modal_al_label_${i}`);
+      const valueEl = document.getElementById(`modal_al_value_${i}`);
+      const row = rows[i - 1] || { label: '', value: '' };
+
+      labelEl.textContent = row.label || '';
+      valueEl.textContent = row.value || '';
+    }
+  }
+
+  function formatDate(value) {
+    if (!value) return '';
+    try {
+      return new Date(value).toLocaleString();
+    } catch (e) {
+      return value;
+    }
+  }
+
+  function resetSoon(force=false){
+    if(!force && pendingCode) return;
+
+    setTimeout(() => {
+      input.value = '';
+      pendingCode = null;
+      pendingScanType = null;
+      redeemBtn.classList.add('foh-hide');
+      cancelBtn.classList.add('foh-hide');
+      redeemBtn.textContent = "Redeem / Check In";
+      closeModal();
+      input.focus({ preventScroll: true });
+      if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
+    }, 900);
+  }
+
+  async function parseJsonResponse(res) {
+    const contentType = res.headers.get('content-type') || '';
+    const rawText = await res.text();
+
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Non-JSON response (${res.status}): ${rawText.slice(0, 250)}`);
+    }
+
+    try {
+      return JSON.parse(rawText);
+    } catch (err) {
+      throw new Error(`Invalid JSON (${res.status}): ${rawText.slice(0, 250)}`);
+    }
+  }
+
+  async function doScan(raw){
+    if(!raw) return;
+
+    const body = JSON.stringify({
+      code: raw,
+      autocheckin: autoc.checked
+    });
+
+    try{
+      const res = await fetch("{% url 'control:tickets:scan_api' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body
+      });
+
+      const data = await parseJsonResponse(res);
+      console.log("SCAN DATA:", data);
+
+      if(data.status === 'ok'){
+        if (camStatus && scanning) camStatus.textContent = "Camera: VALID ✅";
+
+        if (data.scan_type === 'ticket') {
+          setOkFields('VALID TICKET ✅', [
+            { label: 'Purchaser:', value: data.ticket?.name || '' },
+            { label: 'Event:', value: data.ticket?.event || '' },
+            { label: 'Type:', value: data.ticket?.type || '' },
+            { label: 'Email:', value: data.ticket?.email || '' },
+            {
+              label: 'Checked-in:',
+              value: data.ticket?.checked_in_at
+                ? formatDate(data.ticket.checked_in_at)
+                : (autoc.checked ? 'now' : 'not yet')
+            }
+          ]);
+        } else if (data.scan_type === 'nfc_hunt') {
+          setOkFields('HUNT REWARD VALID ✅', [
+            { label: 'User:', value: data.hunt?.user || '' },
+            { label: 'Event:', value: data.hunt?.event || '' },
+            { label: 'Status:', value: 'Completed' },
+            { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
+            { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || (autoc.checked ? 'now' : 'not yet') }
+          ]);
+        } else {
+          document.getElementById('modal_bad_msg').textContent = data.message || 'Unknown valid response';
+          show(bad);
+          openModal('Invalid Scan');
+          flashColor('foh-red');
+          errSnd && errSnd.play().catch(()=>{});
+          resetSoon();
+          return;
+        }
+
+        show(ok);
+        openModal(data.scan_type === 'nfc_hunt' ? 'Hunt Reward' : 'Ticket Check');
+        flashColor('foh-green');
+        okSnd && okSnd.play().catch(()=>{});
+
+        if(!autoc.checked){
+          pendingCode = raw;
+          pendingScanType = data.scan_type || null;
+          redeemBtn.classList.remove('foh-hide');
+          cancelBtn.classList.remove('foh-hide');
+          redeemBtn.textContent = data.scan_type === 'nfc_hunt' ? 'Redeem Reward' : 'Redeem / Check In';
+          if (camStatus && scanning) camStatus.textContent = "Camera: waiting for Redeem…";
+          return;
+        }
+
+        resetSoon();
+        return;
+      }
+
+      if(data.status === 'already'){
+        if (camStatus && scanning) camStatus.textContent = "Camera: already used ⚠️";
+
+        if (data.scan_type === 'ticket') {
+          setAlreadyFields('ALREADY CHECKED-IN ⚠️', [
+            { label: 'Purchaser:', value: data.ticket?.name || '' },
+            { label: 'Event:', value: data.ticket?.event || '' },
+            { label: 'Type:', value: data.ticket?.type || '' },
+            { label: 'Email:', value: data.ticket?.email || '' },
+            { label: 'When:', value: formatDate(data.ticket?.checked_in_at) || '' }
+          ]);
+        } else if (data.scan_type === 'nfc_hunt') {
+          setAlreadyFields('HUNT ALREADY REDEEMED ⚠️', [
+            { label: 'User:', value: data.hunt?.user || '' },
+            { label: 'Event:', value: data.hunt?.event || '' },
+            { label: 'Status:', value: 'Already redeemed' },
+            { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
+            { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || '' }
+          ]);
+        } else {
+          setAlreadyFields('ALREADY USED ⚠️', [
+            { label: 'Message:', value: data.message || '' },
+            { label: '', value: '' },
+            { label: '', value: '' },
+            { label: '', value: '' },
+            { label: '', value: '' }
+          ]);
+        }
+
+        show(already);
+        openModal(data.scan_type === 'nfc_hunt' ? 'Already Redeemed' : 'Already Checked In');
+        flashColor('foh-red');
+        errSnd && errSnd.play().catch(()=>{});
+        resetSoon();
+        return;
+      }
+
+      if (camStatus && scanning) camStatus.textContent = "Camera: INVALID ❌";
+      document.getElementById('modal_bad_msg').textContent = data.message || 'Unknown code';
+      show(bad);
+      openModal('Invalid Scan');
+      flashColor('foh-red');
+      errSnd && errSnd.play().catch(()=>{});
+      resetSoon();
+
+    }catch(e){
+      console.error("Scanner error:", e);
+      if (camStatus && scanning) camStatus.textContent = "Camera: scanner error";
+      document.getElementById('modal_bad_msg').textContent = e?.message || 'Scanner error';
+      show(bad);
+      openModal('Scanner Error');
+      flashColor('foh-red');
+      errSnd && errSnd.play().catch(()=>{});
+      resetSoon();
+    }
   }
 
   async function startCamera(){
@@ -275,7 +553,6 @@
       camStartBtn.disabled = true;
       camStopBtn.disabled = false;
 
-      // Prefer rear camera when available
       const config = { fps: 12, qrbox: { width: 280, height: 280 } };
 
       await html5Qr.start(
@@ -284,20 +561,15 @@
         (decodedText) => {
           const text = (decodedText || "").trim();
           if (!text) return;
-
-          // If we're waiting on Redeem/Cancel, pause scanning.
           if (pendingCode) return;
 
-          // Debounce on UUID when possible (more stable than full URL text)
           const token = extractUuid(text) || text;
-
           if (!canScanAgain(token)) return;
 
           camStatus.textContent = "Camera: checking…";
           doScan(text);
         },
-
-        () => { /* ignore per-frame decode errors */ }
+        () => {}
       );
 
       camStatus.textContent = "Camera: scanning…";
@@ -327,9 +599,35 @@
     }
   }
 
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    doScan(input.value.trim());
+  });
 
-  camStartBtn && camStartBtn.addEventListener("click", (e)=>{ e.preventDefault(); startCamera(); });
-  camStopBtn && camStopBtn.addEventListener("click", (e)=>{ e.preventDefault(); stopCamera(); });
+  input.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      doScan(input.value.trim());
+    }
+  });
+
+  window.addEventListener('click', (e) => {
+    if (pendingCode) return;
+    if (e.target.closest('button, input, label, #qrWrap, #qrReader, .foh-modal, .foh-modal-overlay')) return;
+    input.focus({ preventScroll: true });
+  });
+
+  input.focus({ preventScroll: true });
+
+  camStartBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    startCamera();
+  });
+
+  camStopBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    stopCamera();
+  });
 
   redeemBtn.addEventListener('click', async (e)=>{
     e.preventDefault();
@@ -338,7 +636,7 @@
     if(!pendingCode) return;
 
     redeemBtn.disabled = true;
-    redeemBtn.textContent = "Checking in...";
+    redeemBtn.textContent = pendingScanType === 'nfc_hunt' ? 'Redeeming...' : 'Checking in...';
 
     const body = JSON.stringify({ code: pendingCode, redeem: true });
 
@@ -350,40 +648,74 @@
         body
       });
 
-      const data = await res.json();
-      console.log("Redeem response:", data);
+      const data = await parseJsonResponse(res);
+      console.log("REDEEM DATA:", data);
 
       if(data.status === 'ok'){
-        // update check-in time from server
-        document.getElementById('ok_checkin').textContent =
-          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : 'now';
+        if (data.scan_type === 'ticket') {
+          setOkFields('VALID TICKET ✅', [
+            { label: 'Purchaser:', value: data.ticket?.name || '' },
+            { label: 'Event:', value: data.ticket?.event || '' },
+            { label: 'Type:', value: data.ticket?.type || '' },
+            { label: 'Email:', value: data.ticket?.email || '' },
+            { label: 'Checked-in:', value: formatDate(data.ticket?.checked_in_at) || 'now' }
+          ]);
+        } else if (data.scan_type === 'nfc_hunt') {
+          setOkFields('HUNT REWARD REDEEMED ✅', [
+            { label: 'User:', value: data.hunt?.user || '' },
+            { label: 'Event:', value: data.hunt?.event || '' },
+            { label: 'Status:', value: 'Redeemed' },
+            { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
+            { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || 'now' }
+          ]);
+        }
 
+        show(ok);
+        openModal(data.scan_type === 'nfc_hunt' ? 'Hunt Reward' : 'Ticket Check');
         flashColor('foh-green');
         okSnd && okSnd.play().catch(()=>{});
 
       } else if (data.status === 'already') {
-        // show already state (idempotent)
-        document.getElementById('al_name').textContent = data.ticket.name || '';
-        document.getElementById('al_event').textContent = data.ticket.event || '';
-        document.getElementById('al_type').textContent  = data.ticket.type || '';
-        document.getElementById('al_email').textContent = data.ticket.email || '';
-        document.getElementById('al_checkin').textContent =
-          data.ticket.checked_in_at ? new Date(data.ticket.checked_in_at).toLocaleString() : '';
+        if (data.scan_type === 'ticket') {
+          setAlreadyFields('ALREADY CHECKED-IN ⚠️', [
+            { label: 'Purchaser:', value: data.ticket?.name || '' },
+            { label: 'Event:', value: data.ticket?.event || '' },
+            { label: 'Type:', value: data.ticket?.type || '' },
+            { label: 'Email:', value: data.ticket?.email || '' },
+            { label: 'When:', value: formatDate(data.ticket?.checked_in_at) || '' }
+          ]);
+        } else if (data.scan_type === 'nfc_hunt') {
+          setAlreadyFields('HUNT ALREADY REDEEMED ⚠️', [
+            { label: 'User:', value: data.hunt?.user || '' },
+            { label: 'Event:', value: data.hunt?.event || '' },
+            { label: 'Status:', value: 'Already redeemed' },
+            { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
+            { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || '' }
+          ]);
+        } else {
+          document.getElementById('modal_bad_msg').textContent = data.message || 'Redeem failed';
+          show(bad);
+          openModal('Redeem Failed');
+        }
 
         show(already);
+        openModal(data.scan_type === 'nfc_hunt' ? 'Already Redeemed' : 'Already Checked In');
         flashColor('foh-red');
         errSnd && errSnd.play().catch(()=>{});
+
       } else {
-        document.getElementById('bad_msg').textContent = data.message || 'Redeem failed';
+        document.getElementById('modal_bad_msg').textContent = data.message || 'Redeem failed';
         show(bad);
+        openModal('Redeem Failed');
         flashColor('foh-red');
         errSnd && errSnd.play().catch(()=>{});
       }
 
     } catch (err) {
-      console.error(err);
-      document.getElementById('bad_msg').textContent = 'Network error';
+      console.error("Scanner error:", err);
+      document.getElementById('modal_bad_msg').textContent = err?.message || 'Scanner error';
       show(bad);
+      openModal('Scanner Error');
       flashColor('foh-red');
       errSnd && errSnd.play().catch(()=>{});
     } finally {
@@ -391,6 +723,7 @@
       redeemBtn.textContent = "Redeem / Check In";
 
       pendingCode = null;
+      pendingScanType = null;
       lastCode = null;
       lastAt = 0;
 
@@ -406,17 +739,30 @@
     e.stopPropagation();
 
     pendingCode = null;
+    pendingScanType = null;
     lastCode = null;
     lastAt = 0;
 
     redeemBtn.classList.add('foh-hide');
     cancelBtn.classList.add('foh-hide');
 
+    closeModal();
+
     if (camStatus && scanning) camStatus.textContent = "Camera: scanning…";
     resetSoon(true);
   });
 
+  modalCloseBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (pendingCode) return;
+    closeModal();
+  });
 
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target !== modalOverlay) return;
+    if (pendingCode) return;
+    closeModal();
+  });
 
 })();
 </script>
