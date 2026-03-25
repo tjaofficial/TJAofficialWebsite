@@ -644,7 +644,11 @@ def public_events(request):
     now = timezone.now()
 
     # Prefetch only active types to speed up template work
-    active_types = TicketType.objects.filter(active=True, name="General Admission").order_by('price_cents', 'sales_start')
+    active_types = TicketType.objects.filter(
+        active=True,
+        sales_start__lte=now,
+        sales_end__gte=now,
+    ).order_by("price_cents", "sales_start")
 
     base = (
         Event.objects
@@ -653,7 +657,12 @@ def public_events(request):
         .prefetch_related(Prefetch("ticket_types", queryset=active_types, to_attr="prefetched_types"))
         .annotate(
             has_tickets=Exists(
-                TicketType.objects.filter(event_id=OuterRef("pk"), active=True)
+                TicketType.objects.filter(
+                    event_id=OuterRef("pk"),
+                    active=True,
+                    sales_start__lte=now,
+                    sales_end__gte=now,
+                )
             ),
             # Example: the earliest sales_end across all TTs for this event
             first_sales_end=Min("ticket_types__sales_end")
@@ -689,13 +698,12 @@ def public_events(request):
     next_show = hero  # keep your naming if you need it elsewhere
     next_tt = None
     next_sales_end = None
+    
     if next_show:
-        # Use the prefetched list (no DB hit), or fall back to manager
-        types_list = getattr(next_show, "prefetched_types", None) or list(next_show.ticket_types.all())
+        types_list = getattr(next_show, "prefetched_types", []) or []
         if types_list:
-            next_tt = types_list[0]  # because we ordered in Prefetch
-        # Or aggregate to get the earliest sales_end:
-        next_sales_end = next_show.first_sales_end  # annotated above
+            next_tt = types_list[0]
+            next_sales_end = next_tt.sales_end
 
     # Distinct filter options from Venues that have published events
     vqs = Venue.objects.filter(event__published=True)
