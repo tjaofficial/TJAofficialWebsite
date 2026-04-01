@@ -13,7 +13,6 @@ class CustomerProfile(models.Model):
     SEX_CHOICES = (
         ("M", "Male"),
         ("F", "Female"),
-        ("NB", "Non-binary"),
         ("PNTS", "Prefer not to say"),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="rewards_profile")

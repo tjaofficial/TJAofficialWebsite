@@ -1,0 +1,11 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Unsubscribe{% endblock %}
+{% block content %}
+  <h1>Unsubscribe</h1>
+  <p>You are about to unsubscribe <strong>{{ subscriber.email }}</strong> from future marketing emails.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn primary">Yes, unsubscribe me</button>
+  </form>
+{% endblock %}

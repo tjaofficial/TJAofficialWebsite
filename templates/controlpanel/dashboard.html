@@ -30,7 +30,13 @@
 						<li><a href="{% url 'control:rewards_control:redemptions' %}">Redemptions</a></li>
 						<li><a href="{% url 'control:rewards_control:items' %}">Reward Items</a></li>
 					</ul>
-					<a href="{% url 'control:subscribers:list' %}">Subscribers</a>
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Audience</h4>
+					<ul>
+						<li><a href="{% url 'control:subscribers:list' %}">Subscribers</a></li>
+						<li><a href="{% url 'control:subscribers:audience_outreach' %}">Audience Outreach</a></li>
+					</ul>
+				</div>
 					<a href="#">Artists</a>
 					<ul>
 						<li><a href="{% url 'control:pages:artist_list' %}">Artist List</a></li>

@@ -1,0 +1,388 @@
+{% extends 'controlpanel/dashboard.html' %}
+{% block title %}Audience Outreach{% endblock %}
+
+{% block content %}
+<h1>Audience Outreach</h1>
+<p>Send marketing emails to subscribers or ticket buyers.</p>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:12px 16px; margin:10px 0; border-radius:10px; background:#1d2733; color:#fff;">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div style="margin-bottom:16px;">
+  <a href="{% url 'control:subscribers:sync_ticket_buyers' %}" class="btn">Sync Ticket Buyers into Subscribers</a>
+</div>
+
+<div style="display:grid; grid-template-columns: 1.1fr 1.4fr; gap:24px; align-items:start;">
+
+  <div class="card" style="padding:20px;">
+    <h3>Load Audience</h3>
+
+    <form method="get" style="margin-bottom:20px;">
+      <div style="margin-bottom:12px;">
+        <label>Audience Type</label>
+        <select name="audience_type" id="audienceTypeSelect" class="input" style="width:100%;">
+            <option value="subscribers" {% if audience_type == "subscribers" %}selected{% endif %}>Subscribers</option>
+            <option value="ticket_buyers" {% if audience_type == "ticket_buyers" %}selected{% endif %}>Ticket Buyers</option>
+            <option value="rewards_accounts" {% if audience_type == "rewards_accounts" %}selected{% endif %}>Rewards Accounts</option>
+            <option value="all_audiences" {% if audience_type == "all_audiences" %}selected{% endif %}>All Audiences Combined</option>
+        </select>
+      </div>
+
+      <div id="eventWrap" style="{% if audience_type != 'ticket_buyers' and audience_type != 'all_audiences' %}display:none;{% endif %}">
+        <label>Event</label>
+        <select name="event_id" class="input" style="width:100%;">
+          <option value="">-- Select Event --</option>
+          {% for event in events %}
+            <option value="{{ event.id }}" {% if selected_event and selected_event.id == event.id %}selected{% endif %}>
+              {{ event }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn primary" style="margin-top:14px;">Load Audience</button>
+    </form>
+
+    <hr>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0;">
+      <strong>Recipients ({{ audience|length }})</strong>
+      <div>
+        <button type="button" id="selectAllBtn" class="btn">Select All</button>
+        <button type="button" id="clearAllBtn" class="btn">Clear All</button>
+      </div>
+    </div>
+
+    <input type="search" id="recipientSearch" class="input" placeholder="Search by name or email..." style="width:100%; margin-bottom:12px;">
+
+    <div style="max-height:500px; overflow:auto; border:1px solid #233041; border-radius:12px; padding:10px;">
+      {% for row in audience %}
+        <label class="recipient-row" data-search="{{ row.email|lower }} {{ row.full_name|lower }}" style="display:flex; gap:10px; align-items:flex-start; padding:10px; border-bottom:1px solid #1a2430;">
+          <input type="checkbox" class="recipient-check" value="{{ row.email }}" checked>
+          <div>
+            <div><strong>{{ row.full_name|default:"No Name" }}</strong></div>
+            <div>{{ row.email }}</div>
+            <div style="font-size:12px; opacity:.8;">Source: {{ row.source }}</div>
+            {% if row.ticket_count %}
+              <div style="font-size:12px; opacity:.8;">Tickets: {{ row.ticket_count }}</div>
+            {% endif %}
+          </div>
+        </label>
+      {% empty %}
+        <p style="margin:0;">No recipients loaded yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+    <div class="card email-composer-card" style="padding:20px;">
+        <h3>Compose Campaign</h3>
+
+        <form method="post" id="campaignForm">
+            {% csrf_token %}
+            <input type="hidden" name="audience_type" id="hiddenAudienceType" value="{{ audience_type }}">
+            <input type="hidden" name="event_id" id="hiddenEventId" value="{% if selected_event %}{{ selected_event.id }}{% endif %}">
+            <div id="selectedEmailsContainer"></div>
+            
+            <div class="email-helper-panel" style="padding:12px; border-radius:12px; background:#121c27; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; margin-bottom:12px;">
+                    <div>
+                    <label>Load Template</label>
+                    <select name="template_id" class="input" style="width:100%;">
+                        <option value="">-- Select Template --</option>
+                        {% for template in templates %}
+                        <option value="{{ template.id }}" {% if selected_template_id == template.id|stringformat:"s" %}selected{% endif %}>
+                            {{ template.title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                    <div>
+                    <button type="submit" name="action" value="load_template" class="btn">Load Template</button>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; margin-bottom:12px;">
+                    <div>
+                    <label>Load Draft</label>
+                    <select name="draft_id" class="input" style="width:100%;">
+                        <option value="">-- Select Draft --</option>
+                        {% for draft in drafts %}
+                        <option value="{{ draft.id }}" {% if selected_draft_id == draft.id|stringformat:"s" %}selected{% endif %}>
+                            {{ draft.title|default:draft.subject }}{% if draft.event_name_snapshot %} — {{ draft.event_name_snapshot }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                    <div>
+                    <button type="submit" name="action" value="load_draft" class="btn">Load Draft</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button type="submit" name="action" value="save_template" class="btn">Save as Template</button>
+                    <button type="submit" name="action" value="save_draft" class="btn">Save Draft</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label>Internal Title (optional)</label>
+                <input
+                    type="text"
+                    name="title"
+                    id="campaignTitle"
+                    class="input"
+                    style="width:100%;"
+                    placeholder="Optional campaign title"
+                    value="{{ draft_title }}"
+                >
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label>Subject</label>
+                <input
+                    type="text"
+                    name="subject"
+                    id="campaignSubject"
+                    class="input"
+                    style="width:100%;"
+                    placeholder="Email subject"
+                    value="{{ draft_subject }}"
+                >
+            </div>
+
+            <div class="email-helper-panel" style="padding:12px; border-radius:12px; background:#121c27; margin-bottom:12px;">
+            <div style="margin-bottom:10px;">
+                <strong>Merge Tags</strong>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                {% for tag in available_tags %}
+                <button type="button" class="btn insert-tag-btn" data-tag="{{ tag }}">{{ tag }}</button>
+                {% endfor %}
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <strong>Formatting Helpers</strong>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn format-btn" data-wrap="<strong>|</strong>"><strong>B</strong></button>
+                <button type="button" class="btn format-btn" data-wrap="<em>|</em>"><em>I</em></button>
+                <button type="button" class="btn format-btn" data-wrap="<p>|</p>">Paragraph</button>
+                <button type="button" class="btn format-btn" data-wrap="<br>|">Line Break</button>
+                <button type="button" class="btn format-btn" data-wrap='<a href="https://tjaofficial.com">|</a>'>Link</button>
+                <button type="button" class="btn format-btn" data-wrap='<div style="margin:20px 0;"><a href="https://tjaofficial.com" style="display:inline-block; padding:12px 18px; background:#2563eb; color:#fff; text-decoration:none; border-radius:10px;">|</a></div>'>Button Link</button>
+            </div>
+
+            <div style="margin-top:12px; font-size:13px; opacity:.85;">
+                Tip: highlight text first, then click a helper button.
+            </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+            <label>Body</label>
+            <textarea
+                name="body"
+                id="campaignBody"
+                class="input"
+                rows="16"
+                style="width:100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;"
+                placeholder="Write your message here... You can use HTML and merge tags."
+            >{{ draft_body }}</textarea>
+            </div>
+
+            <div style="margin-bottom:12px;">
+            <label>Send test to</label>
+            <input
+                type="email"
+                name="test_email"
+                id="testEmail"
+                class="input"
+                style="width:100%;"
+                placeholder="Optional — defaults to your account email"
+                value="{{ draft_test_email }}"
+            >
+            </div>
+
+            <div style="padding:12px; border-radius:12px; background:#121c27; margin-bottom:14px;">
+            This is a marketing email, so an unsubscribe link is automatically included.
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="submit" name="action" value="preview" class="btn">Preview</button>
+            <button type="submit" name="action" value="send_test" class="btn">Send Test Email</button>
+            <button type="submit" name="action" value="send" class="btn primary">Send to Selected</button>
+            </div>
+        </form>
+    </div>
+    {% if preview_mode %}
+        <div class="card" style="padding:20px; margin-top:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div>
+                <h3 style="margin:0;">Email Preview</h3>
+                <p style="margin:8px 0 0;"><strong>Subject:</strong> {{ preview_subject }}</p>
+            </div>
+            <div style="font-size:13px; opacity:.8;">
+                Preview uses a sample selected recipient.
+            </div>
+            </div>
+
+            <div style="border:1px solid #233041; border-radius:14px; overflow:hidden; background:#0b0f14; margin-top:16px;">
+            <iframe id="emailPreviewFrame" style="width:100%; min-height:720px; border:0; background:#fff;"></iframe>
+            </div>
+        </div>
+
+        {{ preview_html|json_script:"email-preview-html" }}
+
+        <script>
+            (function() {
+            const iframe = document.getElementById("emailPreviewFrame");
+            const raw = document.getElementById("email-preview-html");
+            if (!iframe || !raw) return;
+
+            const html = JSON.parse(raw.textContent);
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+            })();
+        </script>
+    {% endif %}
+</div>
+
+<script>
+(function() {
+  const audienceTypeSelect = document.getElementById("audienceTypeSelect");
+  const eventWrap = document.getElementById("eventWrap");
+  const hiddenAudienceType = document.getElementById("hiddenAudienceType");
+  const hiddenEventId = document.getElementById("hiddenEventId");
+  const selectAllBtn = document.getElementById("selectAllBtn");
+  const clearAllBtn = document.getElementById("clearAllBtn");
+  const recipientSearch = document.getElementById("recipientSearch");
+  const selectedEmailsContainer = document.getElementById("selectedEmailsContainer");
+  const campaignForm = document.getElementById("campaignForm");
+  const campaignBody = document.getElementById("campaignBody");
+
+  const recipientChecks = () => Array.from(document.querySelectorAll(".recipient-check"));
+  const rows = Array.from(document.querySelectorAll(".recipient-row"));
+  const insertTagButtons = Array.from(document.querySelectorAll(".insert-tag-btn"));
+  const formatButtons = Array.from(document.querySelectorAll(".format-btn"));
+
+  function insertAtCursor(textarea, text) {
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = before + text + after;
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+  }
+
+  function wrapSelection(textarea, pattern) {
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const replacement = pattern.replace("|", selected || "Text here");
+
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+
+    textarea.value = before + replacement + after;
+    textarea.focus();
+
+    const cursorPos = start + replacement.length;
+    textarea.selectionStart = textarea.selectionEnd = cursorPos;
+  }
+
+  if (audienceTypeSelect) {
+    audienceTypeSelect.addEventListener("change", function() {
+      eventWrap.style.display = (this.value === "ticket_buyers" || this.value === "all_audiences") ? "" : "none";
+    });
+  }
+
+  if (selectAllBtn) {
+    selectAllBtn.addEventListener("click", function() {
+      recipientChecks().forEach(cb => {
+        if (cb.closest(".recipient-row").style.display !== "none") {
+          cb.checked = true;
+        }
+      });
+    });
+  }
+
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", function() {
+      recipientChecks().forEach(cb => cb.checked = false);
+    });
+  }
+
+  if (recipientSearch) {
+    recipientSearch.addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      rows.forEach(row => {
+        const hay = row.dataset.search || "";
+        row.style.display = !q || hay.includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  insertTagButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      insertAtCursor(campaignBody, this.dataset.tag);
+    });
+  });
+
+  formatButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      wrapSelection(campaignBody, this.dataset.wrap);
+    });
+  });
+
+  if (campaignForm) {
+    campaignForm.addEventListener("submit", function(e) {
+      selectedEmailsContainer.innerHTML = "";
+
+      if (hiddenAudienceType && audienceTypeSelect) {
+        hiddenAudienceType.value = audienceTypeSelect.value;
+      }
+
+      const selected = recipientChecks().filter(cb => cb.checked);
+
+      selected.forEach(cb => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "selected_emails";
+        input.value = cb.value;
+        selectedEmailsContainer.appendChild(input);
+      });
+
+      const submitter = e.submitter;
+      if (!submitter) return;
+
+      const action = submitter.value;
+
+      if (action === "send" && !selected.length) {
+        e.preventDefault();
+        alert("Select at least one recipient.");
+        return;
+      }
+
+      if (action === "send") {
+        const ok = confirm(`Send this campaign to ${selected.length} selected recipient(s)?`);
+        if (!ok) {
+          e.preventDefault();
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}
