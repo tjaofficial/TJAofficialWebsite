@@ -90,6 +90,12 @@
 						</ul>
 					</div>
 				{% endif %}
+				<div>
+					<h4 onclick="expandCollapseNav(this)"><span>-</span> Account</h4>
+					<ul>
+						<li><a href="{% url 'control:accounts:password_change' %}"> Reset Password</a></li>
+					</ul>
+				</div>
 				<form action="{% url 'control:accounts:logout' %}" method="post" style="display:inline">
 					{% csrf_token %}
 					<button type="submit">Logout</button>

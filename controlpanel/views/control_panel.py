@@ -24,6 +24,12 @@ def dashboard(request):
     }
     return render(request, "controlpanel/dashboard.html", ctx)
 
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
+from django.utils.crypto import get_random_string
+
 def control_add_artist(request):
     if request.method == "POST":
         form = CreateArtistWithUserForm(request.POST, request.FILES)
@@ -31,41 +37,48 @@ def control_add_artist(request):
             username = form.cleaned_data["username"]
             email = form.cleaned_data["email"]
 
-            # 1) Create user with no usable password
-            user = User.objects.create_user(username=username, email=email)
-            user.set_unusable_password()
-            user.is_active = True
-            user.save()
+            try:
+                with transaction.atomic():
+                    temp_password = get_random_string(32)
+                    user = User.objects.create_user(
+                        username=username,
+                        email=email,
+                        password=temp_password,
+                    )
+                    user.is_active = True
+                    user.save()
 
-            # Ensure profile exists & force reset if you keep the middleware
-            profile = getattr(user, "profile", None)
-            if profile:
-                profile.must_reset_password = True
-                profile.save(update_fields=["must_reset_password"])
+                    artist = form.save(commit=False)
+                    artist.user = user
+                    artist.save()
 
-            # 2) Create the Artist and link to user
-            artist = form.save(commit=False)
-            artist.user = user
-            artist.save()
+                prf = InvitePasswordResetForm(data={"email": email})
+                if prf.is_valid():
+                    prf.save(
+                        request=request,
+                        use_https=request.is_secure(),
+                        email_template_name="accounts/password_reset_email.txt",
+                        subject_template_name="accounts/password_reset_subject.txt",
+                        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                    )
+                    messages.success(
+                        request,
+                        f"Artist '{artist.name}' created. A password setup email was sent to {email}."
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "Artist created, but password reset email could not be prepared."
+                    )
 
-            # 3) Fire the password reset email (standard Django flow)
-            prf = InvitePasswordResetForm(data={"email": email})
-            if prf.is_valid():
-                # uses the templates wired in accounts/urls.py
-                prf.save(
-                    request=request,
-                    use_https=request.is_secure(),
-                    email_template_name="accounts/password_reset_email.txt",
-                    subject_template_name="accounts/password_reset_subject.txt",
-                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-                )
-                messages.success(request, f"Artist '{artist.name}' created. A password reset link was emailed to {email}.")
-            else:
-                messages.warning(request, "Artist created, but password reset email could not be prepared.")
+                return redirect("control:pages:artist_list")
 
-            return redirect("control:pages_cp:artist_list")  # adjust
+            except Exception as e:
+                messages.error(request, f"Could not create artist: {e}")
+
     else:
         form = CreateArtistWithUserForm()
+
     return render(request, "controlpanel/add_artist.html", {"form": form})
 
 @is_super

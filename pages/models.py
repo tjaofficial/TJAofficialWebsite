@@ -178,9 +178,21 @@ class Artist(models.Model):
     def __str__(self):
         return self.name
 
+    def _generate_unique_slug(self):
+        base_slug = slugify(self.name)[:180] or "artist"
+        slug = base_slug
+        counter = 2
+
+        while Artist.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            suffix = f"-{counter}"
+            slug = f"{base_slug[:180 - len(suffix)]}{suffix}"
+            counter += 1
+
+        return slug
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)[:180]
+            self.slug = self._generate_unique_slug()
         super().save(*args, **kwargs)
 
 class ArtistPhoto(models.Model):

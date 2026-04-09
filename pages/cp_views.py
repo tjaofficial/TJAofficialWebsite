@@ -97,7 +97,10 @@ def artist_edit(request, pk):
 
 @login_required
 def artist_dashboard(request, artist_id):
-    artist = get_object_or_404(Artist, pk=artist_id)
+    if request.user.is_superuser:
+        artist = get_object_or_404(Artist, id=artist_id)
+    else:
+        artist = get_object_or_404(Artist, id=artist_id, user=request.user)
 
     # --- Totals across all events ---
     base = Ticket.objects.filter(sold_by_artist_id=artist.id)

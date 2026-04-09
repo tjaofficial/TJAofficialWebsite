@@ -54,6 +54,11 @@ class PasswordChangeViewCustom(auth_views.PasswordChangeView):
 class PasswordChangeDoneViewCustom(auth_views.PasswordChangeDoneView):
     template_name = "accounts/password_change_done.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["artist"] = getattr(self.request.user, "artist_dashboard", None)
+        return context
+
 def redirect_login(request):
     if request.user.is_superuser:
         return redirect('control:events:venues')
