@@ -311,6 +311,7 @@
   let lastCode = null;
   let lastAt = 0;
   let html5Qr = null;
+  
 
   function extractUuid(text){
     const m = (text || "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
@@ -427,11 +428,44 @@
       });
 
       const data = await parseJsonResponse(res);
-      console.log("SCAN DATA:", data);
+
+      const isPressTech =
+  data.scan_type === 'press_tech' ||
+  data.message === 'Press/Tech access granted.' ||
+  (raw && raw.includes('"type":"press_tech"'));
+
+if (isPressTech) {
+  if (camStatus && scanning) camStatus.textContent = "Camera: PRESS / TECH ✅";
+
+  setOkFields('PRESS / TECH ✅', [
+    { label: 'Access:', value: data.press_tech?.label || 'Press/Tech' },
+    { label: 'Status:', value: data.press_tech?.access || 'Always Allowed' },
+    { label: 'Type:', value: 'Staff Access QR' },
+    { label: 'Token:', value: data.press_tech?.token || '' },
+    { label: 'Checked-in:', value: data.press_tech?.checked_in_at ? formatDate(data.press_tech.checked_in_at) : 'not tracked' }
+  ]);
+
+  show(ok);
+  openModal('Press / Tech Access');
+  flashColor('foh-green');
+  okSnd && okSnd.play().catch(()=>{});
+
+  pendingCode = null;
+  pendingScanType = null;
+  redeemBtn.classList.add('foh-hide');
+  cancelBtn.classList.add('foh-hide');
+
+  resetSoon();
+  return;
+}
+      console.log("SCAN TYPE:", data.scan_type);
+console.log("SCAN STATUS:", data.status);
 
       if(data.status === 'ok'){
         if (camStatus && scanning) camStatus.textContent = "Camera: VALID ✅";
-
+        if (data.scan_type === 'press_tech') {
+  console.log("PRESS TECH BRANCH HIT");
+}
         if (data.scan_type === 'ticket') {
           setOkFields('VALID TICKET ✅', [
             { label: 'Purchaser:', value: data.ticket?.name || '' },
@@ -651,29 +685,71 @@
       const data = await parseJsonResponse(res);
       console.log("REDEEM DATA:", data);
 
-      if(data.status === 'ok'){
-        if (data.scan_type === 'ticket') {
-          setOkFields('VALID TICKET ✅', [
-            { label: 'Purchaser:', value: data.ticket?.name || '' },
-            { label: 'Event:', value: data.ticket?.event || '' },
-            { label: 'Type:', value: data.ticket?.type || '' },
-            { label: 'Email:', value: data.ticket?.email || '' },
-            { label: 'Checked-in:', value: formatDate(data.ticket?.checked_in_at) || 'now' }
-          ]);
-        } else if (data.scan_type === 'nfc_hunt') {
-          setOkFields('HUNT REWARD REDEEMED ✅', [
-            { label: 'User:', value: data.hunt?.user || '' },
-            { label: 'Event:', value: data.hunt?.event || '' },
-            { label: 'Status:', value: 'Redeemed' },
-            { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
-            { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || 'now' }
-          ]);
-        }
+       if(data.status === 'ok'){
+  if (camStatus && scanning) camStatus.textContent = "Camera: VALID ✅";
 
-        show(ok);
-        openModal(data.scan_type === 'nfc_hunt' ? 'Hunt Reward' : 'Ticket Check');
-        flashColor('foh-green');
-        okSnd && okSnd.play().catch(()=>{});
+  if (data.scan_type === 'ticket') {
+    setOkFields('VALID TICKET ✅', [
+      { label: 'Purchaser:', value: data.ticket?.name || '' },
+      { label: 'Event:', value: data.ticket?.event || '' },
+      { label: 'Type:', value: data.ticket?.type || '' },
+      { label: 'Email:', value: data.ticket?.email || '' },
+      {
+        label: 'Checked-in:',
+        value: data.ticket?.checked_in_at
+          ? formatDate(data.ticket.checked_in_at)
+          : (autoc.checked ? 'now' : 'not yet')
+      }
+    ]);
+  } else if (data.scan_type === 'nfc_hunt') {
+    setOkFields('HUNT REWARD VALID ✅', [
+      { label: 'User:', value: data.hunt?.user || '' },
+      { label: 'Event:', value: data.hunt?.event || '' },
+      { label: 'Status:', value: 'Completed' },
+      { label: 'Completed:', value: formatDate(data.hunt?.completed_at) || '' },
+      { label: 'Redeemed:', value: formatDate(data.hunt?.redeemed_at) || (autoc.checked ? 'now' : 'not yet') }
+    ]);
+  } else if (data.scan_type === 'press_tech') {
+    setOkFields('PRESS / TECH ✅', [
+      { label: 'Access:', value: data.press_tech?.label || 'Press/Tech' },
+      { label: 'Status:', value: data.press_tech?.access || 'Always Allowed' },
+      { label: 'Type:', value: 'Staff Access QR' },
+      { label: 'Token:', value: data.press_tech?.token || '' },
+      { label: 'Checked-in:', value: data.press_tech?.checked_in_at ? formatDate(data.press_tech.checked_in_at) : 'not tracked' }
+    ]);
+  } else {
+    document.getElementById('modal_bad_msg').textContent = data.message || 'Unknown valid response';
+    show(bad);
+    openModal('Invalid Scan');
+    flashColor('foh-red');
+    errSnd && errSnd.play().catch(()=>{});
+    resetSoon();
+    return;
+  }
+
+  show(ok);
+  openModal(
+    data.scan_type === 'nfc_hunt'
+      ? 'Hunt Reward'
+      : data.scan_type === 'press_tech'
+        ? 'Press / Tech Access'
+        : 'Ticket Check'
+  );
+  flashColor('foh-green');
+  okSnd && okSnd.play().catch(()=>{});
+
+  if(!autoc.checked && data.scan_type !== 'press_tech'){
+    pendingCode = raw;
+    pendingScanType = data.scan_type || null;
+    redeemBtn.classList.remove('foh-hide');
+    cancelBtn.classList.remove('foh-hide');
+    redeemBtn.textContent = data.scan_type === 'nfc_hunt' ? 'Redeem Reward' : 'Redeem / Check In';
+    if (camStatus && scanning) camStatus.textContent = "Camera: waiting for Redeem…";
+    return;
+  }
+
+  resetSoon();
+  return;
 
       } else if (data.status === 'already') {
         if (data.scan_type === 'ticket') {

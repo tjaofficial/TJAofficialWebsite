@@ -227,6 +227,9 @@ def _parse_scan_payload(raw: str):
         if scan_type == "nfc_hunt" and token:
             return {"kind": "nfc_hunt", "token": str(token).strip()}
 
+        if scan_type == "press_tech" and token:
+            return {"kind": "press_tech", "token": str(token).strip()}
+
     except Exception:
         pass
 
@@ -367,6 +370,20 @@ def scan_api(request):
             }
         })
 
+    if parsed["kind"] == "press_tech":
+        return JsonResponse({
+            "status": "ok",
+            "scan_type": "press_tech",
+            "message": "Press/Tech access granted.",
+            "press_tech": {
+                "label": "Press/Tech",
+                "name": "Press/Tech",
+                "token": parsed["token"],
+                "access": "Always Allowed",
+                "checked_in_at": timezone.now().isoformat() if (bool(data.get("autocheckin")) or bool(data.get("redeem"))) else None,
+            }
+        })
+    
     return JsonResponse({
         "status": "invalid",
         "message": "Unsupported scan type."
@@ -659,7 +676,26 @@ def public_success(request, event_id):
     # Webhook will actually fulfill & send email. This page is just a "thanks".
     return render(request, "tickets/public_success.html", {"event": ev})
 
+@is_super
+def press_tech_qr_png(request):
+    payload = json.dumps({
+        "type": "press_tech",
+        "token": "pt_7f4d91ac_greenroom_access"
+    })
 
+    qr = qrcode.QRCode(box_size=8, border=2)
+    qr.add_data(payload)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return HttpResponse(buf.getvalue(), content_type="image/png")
+
+@is_super
+def press_tech_pass(request):
+    return render(request, "tickets/press_tech_pass.html", {})
 
 
 

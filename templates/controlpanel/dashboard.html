@@ -78,6 +78,7 @@
 						<ul>
 							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:list' %}">Event Tickets</a></li>{% endif %}
 							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:sales' %}">Sold Tickets</a></li>{% endif %}
+							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:press_tech_pass' %}">Press/Tech Pass</a></li>{% endif %}
 							<li><a href="{% url 'control:tickets:scan_foh' %}">FOH Scan</a></li>
 							{% if request.user.is_superuser %}<li><a href="{% url 'control:tickets:scan' %}">Scan</a></li>{% endif %}
 						</ul>

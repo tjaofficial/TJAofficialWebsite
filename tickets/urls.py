@@ -31,4 +31,6 @@ urlpatterns = [
     path("buy/<int:event_id>/", views.public_purchase, name="public_purchase"),
     path("buy/<int:event_id>/checkout/", views.public_create_checkout, name="public_checkout"),
     path("buy/<int:event_id>/success/", views.public_success, name="public_success"),
+    path("qr/press-tech.png", views.press_tech_qr_png, name="press_tech_qr_png"),
+    path("press-tech/pass/", views.press_tech_pass, name="press_tech_pass"),
 ]
